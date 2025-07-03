@@ -13,7 +13,8 @@ function Talents() {
     axios
       .get('http://localhost:1337/api/talents?populate=*')
       .then((response) => {
-        setTalents(response.data.data);  // zorg dat dit overeenkomt met je API response
+        console.log('API Response:', response.data); // 👈 LOG!
+        setTalents(response.data.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -22,6 +23,7 @@ function Talents() {
         setLoading(false);
       });
   }, []);
+
 
   const handleDelete = async (id, naam) => {
   const confirmDelete = window.confirm(`Ben je zeker dat je ${naam} wilt verwijderen?`);
@@ -56,12 +58,7 @@ function Talents() {
       <div className="bg-white w-full p-8 h-screen">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {talents.map((talent) => {
-            const {
-              id,
-              voornaam,
-              achternaam,
-              Image,
-            } = talent;
+            const { id, voornaam, achternaam, Image } = talent;
 
             const imageUrl = Image?.url ? `http://localhost:1337${Image.url}` : null;
             const fullName = `${voornaam} ${achternaam}`;
@@ -85,6 +82,7 @@ function Talents() {
               </div>
             );
           })}
+
         </div>
       </div>
     </>
