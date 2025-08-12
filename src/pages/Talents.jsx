@@ -13,7 +13,7 @@ function Talents() {
     axios
       .get('http://localhost:1337/api/talents?populate=*')
       .then((response) => {
-        console.log('API Response:', response.data); // 👈 LOG!
+        console.log('API Response:', response.data); 
         setTalents(response.data.data);
         setLoading(false);
       })
@@ -30,23 +30,22 @@ function Talents() {
   if (!confirmDelete) return;
 
   const token = localStorage.getItem('jwt');
-  if (!token) {
-    alert('Je bent niet ingelogd. Log opnieuw in.');
-    return;
-  }
-
+  
   try {
-    // DELETE request naar Strapi om het talent te verwijderen
-    await axios.delete(`http://localhost:1337/api/talents/${id}`, {
+    console.log('Deleting talent with ID:', id);
+    console.log('Using token:', token ? 'Token exists' : 'No token');
+    
+    const response = await axios.delete(`http://localhost:1337/api/talents/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-
-    // Frontend state bijwerken
+    
+    console.log('Delete response status:', response.status);
+    console.log('Delete response data:', response.data);
+    
     setTalents((prev) => prev.filter((t) => t.id !== id));
     alert('Talent succesvol verwijderd!');
   } catch (error) {
-    console.error('Verwijderen mislukt:', error.response?.data || error.message);
-    alert(`Verwijderen mislukt: ${error.response?.data?.error?.message || error.message}`);
+    console.error('Delete error:', error.response?.data || error.message);
   }
 };
 
@@ -59,9 +58,8 @@ function Talents() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {talents.map((talent) => {
             const { id, voornaam, achternaam, Image } = talent;
-
-            const imageUrl = Image?.url ? `http://localhost:1337${Image.url}` : null;
             const fullName = `${voornaam} ${achternaam}`;
+            const imageUrl = Image?.url ? `http://localhost:1337${Image.url}` : null;
 
             return (
               <div key={id} className="border p-4 rounded shadow flex flex-col">
@@ -82,7 +80,6 @@ function Talents() {
               </div>
             );
           })}
-
         </div>
       </div>
     </>
