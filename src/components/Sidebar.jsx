@@ -8,10 +8,10 @@ function Sidebar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className='bg-gray-dark w-[20%] h-screen'>
+    <div className='bg-secondary-dark w-[20%] h-screen'>
       <nav className='flex flex-col py-4'>
         <ul className='flex flex-col gap-2'>
-          <li className={`${isActive('/dashboard') ? 'bg-green text-black' : 'hover:underline'}`}>
+          <li className={`${isActive('/dashboard') ? 'bg-black text-white' : 'hover:underline'}`}>
             <button
               onClick={() => navigate('/dashboard')}
               className={`px-4 py-2 w-full text-left rounded 
@@ -20,7 +20,7 @@ function Sidebar() {
               Dashboard
             </button>
           </li>
-          <li className={`${isActive('/talents') ? 'bg-green text-black' : 'hover:underline'}`}>
+          <li className={`${isActive('/talents') ? 'bg-black text-white' : 'hover:underline'}`}>
             <button
               onClick={() => navigate('/talents')}
               className={`px-4 py-2 w-full text-left rounded`}
@@ -28,7 +28,7 @@ function Sidebar() {
               Talents
             </button>
           </li>
-          <li className={`${isActive('/orders') ? 'bg-green text-black' : 'hover:underline'}`}>
+          <li className={`${isActive('/orders') ? 'bg-black text-white' : 'hover:underline'}`}>
             <button
               onClick={() => navigate('/orders')}
               className={`px-4 py-2 w-full text-left rounded`}
@@ -36,7 +36,7 @@ function Sidebar() {
               Orders
             </button>
           </li>
-          <li className={`${isActive('/organize') ? 'bg-green text-black' : 'hover:underline'}`}>
+          <li className={`${isActive('/organize') ? 'bg-black text-white' : 'hover:underline'}`}>
             <button
               onClick={() => navigate('/organize')}
               className={`px-4 py-2 w-full text-left rounded `}
@@ -50,7 +50,7 @@ function Sidebar() {
                 localStorage.removeItem('jwt');
                 navigate('/login');
               }}
-              className="px-4 py-2 w-full text-left hover:underline text-white bg-red-600"
+              className="px-4 py-2 w-full text-left hover:underline text-white bg-red"
             >
               Uitloggen
             </button>
