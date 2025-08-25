@@ -28,4 +28,4 @@ jobs:
           user: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           localDir: "build"
-          remoteDir: "admin-dev.fanflix.be/httpdocs"
+          remoteDir: "admin-dev.fanflix.be"
