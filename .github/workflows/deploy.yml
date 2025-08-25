@@ -21,18 +21,11 @@ jobs:
       - name: Build
         run: yarn build
         
-      - name: Deploy to Plesk
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: Deploy to Plesk  
+        uses: sebastianpopp/ftp-action@releases/v2
         with:
-          server: admin-dev.fanflix.be
-          username: ${{ secrets.FTP_USERNAME }}
+          host: 136.144.244.96
+          user: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./build/
-          server-dir: /httpdocs/
-          protocol: ftp
-          port: 21
-          timeout: 60000
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+          localDir: "build"
+          remoteDir: "httpdocs"
