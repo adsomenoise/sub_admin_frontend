@@ -1,6 +1,209 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+// Modal component voor talent toevoegen
+function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [], allSocialOptions = [] }) {
+  const [form, setForm] = useState({
+    voornaam: '',
+    achternaam: '',
+    email: '',
+    wachtwoord: '',
+    slug: '',
+    description: '',
+    rugnummer: 0,
+    price: '',
+    gsm_nummer: '',
+    socialLinks: '',
+    fastDelivery: false,
+    enrollAccepted: true,
+    active: true,
+    videoURL: '',
+    deliveryDays: '',
+    fastDeliveryDays: '',
+    viewCount: 0,
+    completeOrderCount: 0,
+    social_channel: '',
+    categories: [],
+    tags: [],
+    Image: null,
+    banner: null,
+  });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
+
+  if (!open) return null;
+
+  const handleChange = (e) => {
+    const { name, value, type, checked, files } = e.target;
+    if (type === 'checkbox') {
+      setForm(f => ({ ...f, [name]: checked }));
+    } else if (type === 'file') {
+      if (name === 'newImage') {
+        setForm(f => ({ ...f, Image: files[0] }));
+        setImagePreview(URL.createObjectURL(files[0]));
+      } else if (name === 'newBanner') {
+        setForm(f => ({ ...f, banner: files[0] }));
+        setBannerPreview(URL.createObjectURL(files[0]));
+      }
+    } else {
+      setForm(f => ({ ...f, [name]: value }));
+    }
+  };
+
+  const handleCheckboxChange = (field, id) => {
+    setForm(f => {
+      const arr = Array.isArray(f[field]) ? [...f[field]] : [];
+      const exists = arr.some(item => item.id === id);
+      return {
+        ...f,
+        [field]: exists ? arr.filter(item => item.id !== id) : [...arr, { id }],
+      };
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(form);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[70%] relative">
+        <button onClick={onClose} className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <h2 className="text-xl font-bold mb-2">Nieuw Talent Toevoegen</h2>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-sm font-semibold">Voornaam</label>
+              <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded" required />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Achternaam</label>
+              <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded" required />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Email</label>
+              <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-1 w-full rounded" required />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Wachtwoord</label>
+              <input type="password" name="wachtwoord" value={form.wachtwoord} onChange={handleChange} className="border p-1 w-full rounded" required />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Slug</label>
+              <input type="text" name="slug" value={form.slug} onChange={handleChange} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Beschrijving</label>
+              <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Rugnummer</label>
+              <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Prijs</label>
+              <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">GSM nummer</label>
+              <input type="tel" name="gsm_nummer" value={form.gsm_nummer} onChange={handleChange} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Social Links</label>
+              <input type="text" name="socialLinks" value={form.socialLinks} onChange={handleChange} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Video URL</label>
+              <input type="text" name="videoURL" value={form.videoURL} onChange={handleChange} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Levering (dagen)</label>
+              <input type="number" name="deliveryDays" value={form.deliveryDays} onChange={handleChange} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Spoedlevering (dagen)</label>
+              <input type="number" name="fastDeliveryDays" value={form.fastDeliveryDays} onChange={handleChange} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">View Count</label>
+              <input type="number" name="viewCount" value={form.viewCount} onChange={handleChange} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Complete Order Count</label>
+              <input type="number" name="completeOrderCount" value={form.completeOrderCount} onChange={handleChange} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Social kanaal</label>
+              <select name="social_channel" value={form.social_channel} onChange={handleChange} className="border p-1 w-full rounded">
+                <option value="">Selecteer kanaal</option>
+                {allSocialOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-semibold">Categorieën</label>
+              <div className="flex flex-wrap gap-2">
+                {allCategories.map(cat => (
+                  <label key={cat.id} className="flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      checked={form.categories.some(c => c.id === cat.id)}
+                      onChange={() => handleCheckboxChange('categories', cat.id)}
+                    />
+                    {cat.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-semibold">Tags</label>
+              <div className="flex flex-wrap gap-2">
+                {allTags.map(tag => (
+                  <label key={tag.id} className="flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      checked={form.tags.some(t => t.id === tag.id)}
+                      onChange={() => handleCheckboxChange('tags', tag.id)}
+                    />
+                    {tag.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Afbeelding</label>
+              {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
+              <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold">Banner</label>
+              {bannerPreview && (
+                <img src={bannerPreview} alt="Banner" className="w-16 h-16 object-cover rounded mb-1" />
+              )}
+              <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="block" />
+            </div>
+            <div className="col-span-2 flex gap-4 mt-2">
+              <label className="flex items-center gap-1">
+                <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} /> Actief
+              </label>
+              <label className="flex items-center gap-1">
+                <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} /> Spoedlevering
+              </label>
+              <label className="flex items-center gap-1">
+                <input type="checkbox" name="enrollAccepted" checked={!!form.enrollAccepted} onChange={handleChange} /> Goedgekeurd
+              </label>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
+            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Toevoegen</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 // Modal component voor talent bewerken
 function EditTalentModal({ open, onClose, talent, onSave, allCategories = [], allTags = [], allSocialOptions = [] }) {
@@ -352,6 +555,7 @@ function Talents() {
   // Modal state
   const [editTalent, setEditTalent] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const handleEdit = (talent) => {
     setEditTalent(talent);
@@ -502,6 +706,38 @@ function Talents() {
     }
   };
 
+  // Talent toevoegen
+  const handleAddTalent = async (form) => {
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
+    try {
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (key === 'categories' || key === 'tags') {
+          formData.append(key, JSON.stringify(value.map(obj => obj.id)));
+        } else if (key === 'Image' && value) {
+          formData.append('Image', value);
+        } else if (key === 'banner' && value) {
+          formData.append('banner', value);
+        } else {
+          formData.append(key, value);
+        }
+      });
+      // Forceer active/enrollAccepted op true
+      formData.set('active', 'true');
+      formData.set('enrollAccepted', 'true');
+
+      await fetch(`${API_BASE_URL}/api/talents`, {
+        method: 'POST',
+        body: formData,
+      });
+      setShowAddModal(false);
+      setMessage('Talent succesvol toegevoegd!');
+      fetchTalents();
+    } catch (err) {
+      setMessage('Fout bij toevoegen talent.');
+    }
+  };
+
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="text-xl">Laden...</div>
@@ -519,8 +755,11 @@ function Talents() {
       <div className="bg-white w-full p-8 min-h-screen">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-secondary-800">Talenten Beheren</h1>
-          <div className="text-sm text-secondary-600">
-            Totaal: {talents.length} talenten
+          <div className='flex gap-8 items-center'>
+            <div className="text-sm text-secondary-600">
+              Totaal: {talents.length} talenten
+            </div>
+            <button className='bg-green text-white px-4 py-2 rounded' onClick={() => setShowAddModal(true)}>Voeg talent toe</button>
           </div>
         </div>
 
@@ -643,6 +882,14 @@ function Talents() {
               allTags={allTags}
               allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
             />
+        <AddTalentModal
+          open={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSave={handleAddTalent}
+          allCategories={allCategories}
+          allTags={allTags}
+          allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+        />
           </div>
         )}
       </div>
