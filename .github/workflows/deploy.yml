@@ -18,6 +18,16 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
         
+      - name: Create environment file
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            echo "REACT_APP_API_BASE_URL=https://api-dev.fanflix.be" > .env
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "REACT_APP_API_BASE_URL=https://api-staging.fanflix.be" > .env
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "REACT_APP_API_BASE_URL=https://api.fanflix.be" > .env
+          fi
+        
       - name: Build
         run: yarn build
         
