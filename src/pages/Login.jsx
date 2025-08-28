@@ -14,7 +14,7 @@ function Login() {
 
   try {
     // 1. Log in en krijg JWT + user basis info
-    const response = await axios.post('http://localhost:1337/api/auth/local', {
+    const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}/api/auth/local`, {
       identifier,
       password,
     });
@@ -22,7 +22,7 @@ function Login() {
     const jwt = response.data.jwt;
 
     // 2. Haal nu de volledige user info (inclusief role) op met JWT
-      const userResponse = await axios.get('http://localhost:1337/api/users/me?populate=role', {
+      const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}/api/users/me?populate=role`, {
         headers: { Authorization: `Bearer ${jwt}` }
       });
 
