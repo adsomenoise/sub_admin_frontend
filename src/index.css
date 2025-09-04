@@ -1,64 +1,32 @@
 @import "tailwindcss";
 
-@layer theme {
-  :root {
-    /* Custom colors */
-    --color-main-dark: #440873;
-    --color-secondary-light: #E3E1E5;
-    --color-secondary-dark: #666666;
-    --color-accent-green: #00FFA8;
-  }
-}
+/* Je theme-definities */
+@theme {
+  /* Kleuren */
+  --color-main-dark: #440873;
+  --color-main-light: #C266FC;
+  --color-secondary-light: #F3F3F3;
+  --color-secondary-dark: #E3E1E5;
+  --color-green: #3BB143;
+  --color-red: #FF0000;
 
-@layer utilities {
-  /* Custom color utilities */
-  .bg-main-dark {
-    background-color: var(--color-main-dark);
-  }
-  .bg-secondary-light {
-    background-color: var(--color-secondary-light);
-  }
-  .bg-secondary-dark {
-    background-color: var(--color-secondary-dark);
-  }
-  .bg-accent-green {
-    background-color: var(--color-accent-green);
-  }
-  .text-main-dark {
-    color: var(--color-main-dark);
-  }
-  .text-secondary-light {
-    color: var(--color-secondary-light);
-  }
-  .text-secondary-dark {
-    color: var(--color-secondary-dark);
-  }
-  .text-accent-green {
-    color: var(--color-accent-green);
-  }
-  
-  /* Custom spacing */
-  .w-blocks {
-    width: 90%;
-  }
-  .mx-blocks {
-    margin-inline: 90%;
-  }
-  
-  /* Custom border radius */
-  .rounded-blocks {
-    border-radius: 2rem;
-  }
-}
+  /* Spacing */
+  --spacing-blocks: 90%;
+  --spacing-smallblocks: 80%;
 
-/* Custom breakpoint for 3xl */
-@media (min-width: 1600px) {
-  .\\33xl\\:text-\\[1\\.5rem\\] {
-    font-size: 1.5rem;
-  }
-  .\\33xl\\:h-\\[50vh\\] {
-    height: 50vh;
-  }
+  /* Border radius */
+  --radius-blocks: 2rem;
+
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  --breakpoint-3xl: 1700px;
+
+  /* Fonts */
+  --font-spacegrotesk: "SpaceGrotesk", sans-serif;
 }
 
 body {
