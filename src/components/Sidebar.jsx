@@ -36,6 +36,14 @@ function Sidebar() {
               Orders
             </button>
           </li>
+          <li className={`${isActive('/financials') ? 'bg-black text-white' : 'hover:underline'}`}>
+            <button
+              onClick={() => navigate('/financials')}
+              className={`px-4 py-2 w-full text-left rounded`}
+            >
+              Financials
+            </button>
+          </li>
           <li className={`${isActive('/organize') ? 'bg-black text-white' : 'hover:underline'}`}>
             <button
               onClick={() => navigate('/organize')}
@@ -52,7 +60,7 @@ function Sidebar() {
               }}
               className="px-4 py-2 w-full text-left hover:underline text-white bg-red"
             >
-              Uitloggen
+              Log out
             </button>
           </li>
         </ul>

@@ -10,6 +10,7 @@ import Navigation from './components/Navigation.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Talents from './pages/Talents.jsx';
 import Organize from './pages/Organize.jsx';
+import Financials from './pages/Financials.jsx';
 
 function App() {
   return (
@@ -37,6 +38,19 @@ function App() {
               <div className="flex">
                 <Sidebar />
                 <Orders />
+              </div>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/financials"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <div className="flex">
+                <Sidebar />
+                <Financials />
               </div>
             </PrivateRoute>
           }
