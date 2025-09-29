@@ -645,7 +645,7 @@ function Talents() {
       setError(null);
       setMessage('');
       const token = localStorage.getItem('jwt');
-      // Populate both Image and banner
+      // Populate both Image and banner, ensure completedOrders is included
       const response = await axios.get(
         `${API_BASE_URL}/api/talents?populate=Image,banner&filters[enrollAccepted][$eq]=true`,
         {
@@ -772,6 +772,7 @@ function Talents() {
         fastDeliveryDays: form.fastDeliveryDays ? Number(form.fastDeliveryDays) : null,
         viewCount: form.viewCount ? Number(form.viewCount) : 0,
         completeOrderCount: form.completeOrderCount ? Number(form.completeOrderCount) : 0,
+        completedOrders: form.completedOrders ? Number(form.completedOrders) : 0,
         active: !!form.active,
         fastDelivery: !!form.fastDelivery,
         enrollAccepted: !!form.enrollAccepted,
@@ -917,6 +918,7 @@ function Talents() {
         fastDeliveryDays: form.fastDeliveryDays ? Number(form.fastDeliveryDays) : null,
         viewCount: form.viewCount ? Number(form.viewCount) : 0,
         completeOrderCount: form.completeOrderCount ? Number(form.completeOrderCount) : 0,
+        completedOrders: form.completedOrders ? Number(form.completedOrders) : 0,
         social_channel: form.social_channel || '',
         fastDelivery: !!form.fastDelivery,
         // Forceer active en enrollAccepted op true

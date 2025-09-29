@@ -79,41 +79,41 @@ function Organize() {
   };
 
   return (
-    <div className="bg-gray w-blocks rounded-blocks mx-auto p-8 min-h-screen">
-      <div className='bg-white rounded-blocks w-full h-full p-8'>
-        <h1 className="text-2xl font-bold mb-6">Categorieën beheren</h1>
-        <form onSubmit={handleAddCategory} className="mb-6 flex gap-4">
-          <input
-            type="text"
-            value={newCategory}
-            onChange={e => setNewCategory(e.target.value)}
-            placeholder="Nieuwe categorie naam"
-            className="border px-4 py-2 rounded"
-          />
-          <button type="submit" className="bg-green px-6 py-2 rounded">Toevoegen</button>
+    <div className="bg-gray w-[60%] rounded-blocks mx-auto p-8 h-[80vh] mt-8">
+      <h1 className="text-2xl font-bold mb-6 ml-8">Setup</h1>
+      <div className='bg-white rounded-blocks w-full p-8 mb-4'>
+        <form onSubmit={handleAddCategory} className="mb-6 flex gap-4 justify-between items-center">
+          <h3>Categories</h3>
+          <div className='flex gap-2 justify-between items-center'>
+            <input
+              type="text"
+              value={newCategory}
+              onChange={e => setNewCategory(e.target.value)}
+              placeholder="New category name"
+              className="border px-4 py-2 rounded-full"
+            />
+            <button type="submit" className="bg-green px-6 py-2 rounded-full">Add</button>
+          </div>
         </form>
         {loading ? (
           <p>Loading...</p>
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (
-          <div className="flex gap-8">
-            <ul className="space-y-2 w-1/2">
+          <div className="flex flex-col gap-8">
+            <ul className="space-y-2 w-full h-72 mt-8 overflow-y-auto">
               {categories.map(cat => (
                 <li key={cat.id} className="border-b border-gray py-2 flex justify-between items-center">
                   <span>{cat.attributes?.name || cat.name}</span>
                   <button 
                     onClick={() => openDeleteModal(cat)}
-                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                    className="text-green text-sm underline hover:no-underline cursor-pointer"
                   >
-                    Verwijderen
+                    Delete
                   </button>
                 </li>
               ))}
             </ul>
-            <div className="bg-gray w-1/2 h-auto flex justify-center items-center rounded-3xl">
-              <p>WIP.</p>
-            </div>
           </div>
         )}
 
@@ -143,6 +143,9 @@ function Organize() {
           </div>
         )}
 
+      </div>
+      <div className="bg-white rounded-blocks w-full p-8 mb-4">
+        <h3>Delivery days</h3>
       </div>
     </div>
   );

@@ -18,15 +18,15 @@ function Navigation() {
             <li className={`${isActive('/dashboard') ? 'bg-green' : 'hover:underline bg-white'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/dashboard')}
-                className={`px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`cursor-pointer px-6 py-2 w-full text-left rounded hover:underline`}
               >
-                Dashboard
+                Home
               </button>
             </li>
             <li className={`${isActive('/talents') ? 'bg-green' : 'hover:underline bg-white'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/talents')}
-                className={`px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`cursor-pointer px-6 py-2 w-full text-left rounded hover:underline`}
               >
                 Talents
               </button>
@@ -34,7 +34,7 @@ function Navigation() {
             <li className={`${isActive('/orders') ? 'bg-green' : 'hover:underline bg-white'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/orders')}
-                className={`px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`cursor-pointer px-6 py-2 w-full text-left rounded hover:underline`}
               >
                 Orders
               </button>
@@ -42,7 +42,7 @@ function Navigation() {
             <li className={`${isActive('/financials') ? 'bg-green' : 'hover:underline bg-white'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/financials')}
-                className={`px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`cursor-pointer px-6 py-2 w-full text-left rounded hover:underline`}
               >
                 Financials
               </button>
@@ -50,9 +50,9 @@ function Navigation() {
             <li className={`${isActive('/organize') ? 'bg-green' : 'bg-white'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/organize')}
-                className={`px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`px-6 py-2 w-full text-left rounded hover:underline cursor-pointer`}
               >
-                Organize
+                Setup
               </button>
             </li>
           </ul>
@@ -63,7 +63,7 @@ function Navigation() {
                   localStorage.removeItem('user');
                   navigate('/login');
                 }}
-                className="px-6 py-2 w-full text-left hover:underline bg-green rounded-blocks"
+                className="px-6 py-2 w-full text-left hover:underline bg-green rounded-blocks cursor-pointer"
               >
                 Sign out
               </button>

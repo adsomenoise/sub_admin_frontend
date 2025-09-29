@@ -106,6 +106,40 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
             }
         );
         setRecordedBlob(null);
+
+        // Increment completed orders count for the talent
+        if (order.talent) {
+            try {
+                const talentId = order.talent.documentId || order.talent.id;
+                console.log('Incrementing completed orders for talent:', talentId);
+                
+                // Get current talent data to find current completedOrders count
+                const talentRes = await axios.get(`${API_BASE_URL}/api/talents/${talentId}`, {
+                    headers: { Authorization: `Bearer ${jwt}` }
+                });
+                
+                const currentCount = talentRes.data.data?.completedOrders || 0;
+                const newCount = currentCount + 1;
+                
+                // Update talent's completed orders count
+                await axios.put(
+                    `${API_BASE_URL}/api/talents/${talentId}`,
+                    {
+                        data: {
+                            completedOrders: newCount
+                        }
+                    },
+                    {
+                        headers: { Authorization: `Bearer ${jwt}` }
+                    }
+                );
+                
+                console.log(`Talent completed orders updated from ${currentCount} to ${newCount}`);
+            } catch (talentError) {
+                console.error('Error updating talent completed orders:', talentError);
+                // Don't fail the whole process if this fails
+            }
+        }
         
         // Update parent component
         if (onOrderUpdate) {

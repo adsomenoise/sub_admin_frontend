@@ -10,6 +10,7 @@ function Dashboard() {
   const [inProgressOrders, setInProgressOrders] = useState([]);
   const [talent, setTalent] = useState(null);
   const [spotlightedTalents, setSpotlightedTalents] = useState([]);
+  const [topPerformerTalent, setTopPerformerTalent] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -126,8 +127,68 @@ function Dashboard() {
       }
     };
 
+    const fetchTopPerformerTalent = async () => {
+      try {
+        console.log("Fetching top performer talent...");
+        
+        let talentsRes;
+        try {
+          // Haal alle talents op met completedOrders data
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+            params: {
+              'populate[Image]': '*',
+              'populate[banner]': '*', 
+              'populate[categories]': '*',
+              'pagination[limit]': 100 // Haal meer talents op om de beste te vinden
+            },
+            headers: { Authorization: `Bearer ${jwt}` }
+          });
+        } catch (authError) {
+          console.log("Auth failed for talents, trying without auth:", authError.message);
+          // Try without auth
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+            params: {
+              'populate[Image]': '*',
+              'populate[banner]': '*', 
+              'populate[categories]': '*',
+              'pagination[limit]': 100
+            }
+          });
+        }
+        
+        console.log("All talents response:", talentsRes.data);
+        
+        // Handle response data
+        let allTalents = [];
+        if (talentsRes.data.data && Array.isArray(talentsRes.data.data)) {
+          allTalents = talentsRes.data.data;
+        } else if (Array.isArray(talentsRes.data)) {
+          allTalents = talentsRes.data;
+        }
+        
+        // Vind het talent met de hoogste completedOrders
+        let topPerformer = null;
+        let maxCompletedOrders = -1;
+        
+        allTalents.forEach(talent => {
+          const completedOrders = talent.completedOrders || 0;
+          if (completedOrders > maxCompletedOrders) {
+            maxCompletedOrders = completedOrders;
+            topPerformer = talent;
+          }
+        });
+        
+        console.log("Top performer talent:", topPerformer);
+        console.log("Max completed orders:", maxCompletedOrders);
+        setTopPerformerTalent(topPerformer);
+        
+      } catch (error) {
+        console.error('Fout bij ophalen top performer talent:', error);
+      }
+    };
+
     const fetchData = async () => {
-      await Promise.all([fetchOrders(), fetchSpotlightedTalents()]);
+      await Promise.all([fetchOrders(), fetchSpotlightedTalents(), fetchTopPerformerTalent()]);
       setLoading(false);
     };
 
@@ -256,12 +317,26 @@ function Dashboard() {
                             </div>
                           </div>
                           <div className='flex flex-col w-1/2 h-full gap-4'>
-                            <div className='bg-black w-full h-[80%] rounded-3xl flex justify-center items-center'>
-                              <p className='text-white'>Spotlighted talent next week</p>
+                            <div 
+                              className='w-full h-[85%] rounded-3xl'
+                              style={{
+                                backgroundImage: topPerformerTalent?.Image?.url ? `url(${API_BASE_URL}${topPerformerTalent.Image.url})` : "none",
+                                backgroundSize: "cover",
+                                backgroundPosition: "top",
+                                backgroundColor: topPerformerTalent?.Image?.url ? 'transparent' : 'black'
+                              }}
+                            >
+                              {topPerformerTalent ? (
+                                <>
+                                  <p className='text-white text-lg font-bold ml-4 mt-4'>Talent with most completed orders</p>
+                                </>
+                              ) : (
+                                <p className='text-white'>No top performer found</p>
+                              )}
                             </div>
                             <button
                               onClick={() => navigate('/talents')}
-                              className="bg-transparent cursor-pointer border-2 text-black text-lg px-12 py-3 w-full h-[20%] rounded-3xl"
+                              className="bg-transparent cursor-pointer border-2 text-black text-lg px-12 py-3 w-full h-[15%] rounded-3xl"
                             >
                               Manage Talents
                             </button>
@@ -272,8 +347,36 @@ function Dashboard() {
                   </div>
                 )}
               </div>
-              <div className='bg-black rounded-4xl h-[40%] w-full'>
-                <p className="text-white text-center flex justify-center items-center h-full">FINANCIALS</p>
+              <div id='financials' className='bg-black rounded-4xl h-[40%] flex flex-col justify-between w-full p-8 py-6'>
+                <div>
+                  <p>Financials</p>
+                  <h4 className='font-bold'>Explore our financials and data here.</h4>
+                  <hr className='mt-4' />
+                </div>
+                <div className='flex flex-1 justify-evenly'>
+                  <div className='flex mt-8 gap-8'>
+                    <div className='flex flex-col gap-3 items-center'>
+                      <h2 className='font-bold'>4</h2>
+                      <p className='font-light'>Open Orders</p>
+                    </div>
+                    <div className="flex flex-col gap-3 items-center">
+                      <h2 className='font-bold'>€242</h2>
+                      <p className='font-light'>Open revenue</p>
+                    </div>
+                  </div>
+                  <hr className='h-[70%] my-auto w-[1px] bg-white'/>
+                  <div class="flex mt-8 gap-8">
+                    <div className='flex flex-col gap-3 items-center'>
+                      <h2 className='font-bold'>451</h2>
+                      <p className='font-light'>Delivered orders</p>
+                    </div>
+                    <div className='flex flex-col gap-3 items-center'>
+                      <h2 className='font-bold'>€9539</h2>
+                      <p className='font-light'>Total revenue</p>
+                    </div>
+                  </div>
+                </div>
+                <button className='bg-white text-black w-max text-xl font-bold rounded-full px-4 py-2 self-end'>See more</button>
               </div>
             </div>
           </div>
