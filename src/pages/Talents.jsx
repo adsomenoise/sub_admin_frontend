@@ -401,60 +401,100 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[70%] relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+      <div className="bg-gray-dark rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[65%] relative">
+        <button onClick={onClose} className="absolute top-2 right-4 text-4xl text-white cursor-pointer">&times;</button>
         <form onSubmit={handleSubmit} className="space-y-3">
           <h2 className="text-xl font-bold mb-2">{form.voornaam || ''} {form.achternaam || ''}</h2>
-          <div className='flex'>
-            <div className='w-[30%] h-full flex flex-col'>
-              <div className='h-[40%] bg-purple-600'>
-
+          <div className='flex gap-4 h-[80vh]'>
+            <div className='w-[30%] h-full flex gap-4 flex-col'>
+              <div 
+                className='h-[40%] w-full rounded-[1rem]'
+                style={{
+                  backgroundImage: imagePreview ? `url(${imagePreview})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundColor: imagePreview ? 'transparent' : 'black',
+                }}
+              >
+                {/* Afbeelding */}
+                <div className="p-3 flex flex-col h-full justify-between">
+                  <label className="block text-sm text-white font-semibold">Profile picture</label>
+                  <div className='flex flex-col'>
+                    <label className="bg-white/60 text-sm rounded-full w-fit border-2 border-black px-3 py-1 cursor-pointer">
+                      Upload file
+                      <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="hidden" />
+                    </label>
+                    {form.Image?.url && (
+                      <button type="button" onClick={handleRemoveImage} className="bg-white/60 w-fit text-sm rounded-full border-2 border-black px-3 py-1">Delete picture</button>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className='h-[60%] bg-green-600'>
-
+              <div className='h-[60%] w-full bg-green-600 rounded-[1rem]'>
+                Profile video
               </div>
             </div>
-            <div className='w-[70%] h-full flex flex-col'>
-              <div className='h-[30%] bg-red-600'>
-
-              </div>  
-              <div className='h-[70%] bg-blue-500'>
-
+            <div className='w-[70%] h-full flex gap-4 flex-col'>
+              <div 
+                className='h-[30%] w-full p-4 rounded-[1rem]'
+                style={{
+                  backgroundImage: bannerPreview ? `url(${bannerPreview})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundColor: bannerPreview ? 'transparent' : '#dc2626'
+                }}
+              >
+                <div className="flex flex-col h-full">
+                  <label className="block text-sm text-white font-semibold mb-2">Banner picture</label>
+                  <div className="flex-grow"></div>
+                  <div className="flex gap-2">
+                    <label className="bg-white/60 text-black text-sm rounded-full border-2 border-black px-3 py-1 cursor-pointer inline-block">
+                      Upload file
+                      <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="hidden" />
+                    </label>
+                    {(form.banner?.url || (Array.isArray(form.banner) && form.banner.length > 0) || bannerPreview) && (
+                      <button type="button" onClick={handleRemoveBanner} className="text-xs text-red-300">Verwijder banner</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className='h-[70%] w-full bg-blue-500 rounded-[1rem] p-4'>
+                {/* Voornaam */}
+                <div>
+                  <label className="block text-sm font-semibold">Voornaam</label>
+                  <input type="text" name="voornaam" value={form.voornaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
+                </div>
+                {/* Achternaam */}
+                <div>
+                  <label className="block text-sm font-semibold">Achternaam</label>
+                  <input type="text" name="achternaam" value={form.achternaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
+                </div>
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-semibold">Email</label>
+                  <input type="email" name="email" value={form.email || ''} onChange={handleChange} className="border p-1 w-full rounded" />
+                </div>
+                {/* Beschrijving */}
+                <div>
+                  <label className="block text-sm font-semibold">Beschrijving</label>
+                  <textarea name="description" value={form.description || ''} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
+                </div>
+                {/* Rugnummer */}
+                <div>
+                  <label className="block text-sm font-semibold">Rugnummer</label>
+                  <input type="number" name="rugnummer" value={form.rugnummer || 0} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
+                </div>
+                {/* Prijs */}
+                <div>
+                  <label className="block text-sm font-semibold">Prijs</label>
+                  <input type="number" name="price" value={form.price || ''} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
+                </div>
               </div>  
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            {/* Voornaam */}
-            <div>
-              <label className="block text-sm font-semibold">Voornaam</label>
-              <input type="text" name="voornaam" value={form.voornaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Achternaam */}
-            <div>
-              <label className="block text-sm font-semibold">Achternaam</label>
-              <input type="text" name="achternaam" value={form.achternaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-semibold">Email</label>
-              <input type="email" name="email" value={form.email || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Beschrijving */}
-            <div>
-              <label className="block text-sm font-semibold">Beschrijving</label>
-              <textarea name="description" value={form.description || ''} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
-            </div>
-            {/* Rugnummer */}
-            <div>
-              <label className="block text-sm font-semibold">Rugnummer</label>
-              <input type="number" name="rugnummer" value={form.rugnummer || 0} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
-            </div>
-            {/* Prijs */}
-            <div>
-              <label className="block text-sm font-semibold">Prijs</label>
-              <input type="number" name="price" value={form.price || ''} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
-            </div>
+            
             {/* GSM nummer */}
             <div>
               <label className="block text-sm font-semibold">GSM nummer</label>
@@ -465,11 +505,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
               <label className="block text-sm font-semibold">Social Links</label>
               <input type="text" name="socialLinks" value={form.socialLinks || ''} onChange={handleChange} className="border p-1 w-full rounded" />
             </div>
-            {/* Video URL */}
-            <div>
-              <label className="block text-sm font-semibold">Video URL</label>
-              <input type="text" name="videoURL" value={form.videoURL || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
             {/* Levering (dagen) */}
             <div>
               <label className="block text-sm font-semibold">Levering (dagen)</label>
@@ -479,16 +514,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
             <div>
               <label className="block text-sm font-semibold">Spoedlevering (dagen)</label>
               <input type="number" name="fastDeliveryDays" value={form.fastDeliveryDays || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* View Count */}
-            <div>
-              <label className="block text-sm font-semibold">View Count</label>
-              <input type="number" name="viewCount" value={form.viewCount || 0} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Complete Order Count */}
-            <div>
-              <label className="block text-sm font-semibold">Complete Order Count</label>
-              <input type="number" name="completeOrderCount" value={form.completeOrderCount || 0} onChange={handleChange} className="border p-1 w-full rounded" />
             </div>
             {/* Social kanaal (enum) */}
             <div>
@@ -544,27 +569,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
                   );
                 })}
               </div>
-            </div>
-            {/* Afbeelding */}
-            <div>
-              <label className="block text-sm font-semibold">Afbeelding</label>
-              {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
-              <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
-              {form.Image?.url && (
-                <button type="button" onClick={handleRemoveImage} className="text-xs text-red-600">Verwijder huidige afbeelding</button>
-              )}
-            </div>
-            {/* Banner */}
-            <div>
-              <label className="block text-sm font-semibold">Banner</label>
-              {bannerPreview && (
-                <img src={bannerPreview} alt="Banner" className="w-16 h-16 object-cover rounded mb-1" />
-              )}
-              <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="block" />
-              {/* Show remove button if there is a banner (object, array, or preview) */}
-              {(form.banner?.url || (Array.isArray(form.banner) && form.banner.length > 0) || bannerPreview) && (
-                <button type="button" onClick={handleRemoveBanner} className="text-xs text-red-600">Verwijder huidige banner</button>
-              )}
             </div>
             {/* Booleans */}
             <div className="col-span-2 flex gap-4 mt-2">
