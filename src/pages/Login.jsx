@@ -13,32 +13,113 @@ function Login() {
   setMessage('');
 
   try {
-    // 1. Log in en krijg JWT + user basis info
+    console.log('🚀 Starting login process...');
+    
+    // 1. Login met standaard Strapi endpoint
     const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}/api/auth/local`, {
       identifier,
       password,
     });
 
+    console.log('✅ Login API response received');
+    console.log('📦 Full response data:', response.data);
+
     const jwt = response.data.jwt;
+    const user = response.data.user;
 
-    // 2. Haal nu de volledige user info (inclusief role) op met JWT
-      const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}/api/users/me?populate=role`, {
-        headers: { Authorization: `Bearer ${jwt}` }
-      });
+    console.log('👤 User object:', user);
 
-    const user = userResponse.data;
-
-    if (user.role?.name !== 'SuperadminRole') {
-      setMessage('Alleen de Big boss mag inloggen!');
+    // 2. Controleer of de gebruiker geldig is
+    if (!user) {
+      console.error('❌ No user in response');
+      setMessage('Geen gebruiker gegevens ontvangen!');
       return;
     }
 
-    // 3. Sla JWT op en ga door
-    localStorage.setItem('jwt', jwt);
-    navigate('/dashboard');
+    // 3. Haal alle beschikbare rollen op om de naam te matchen
+    console.log('🔍 Fetching available roles...');
+    
+    try {
+      const rolesResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}/api/users-permissions/roles`, {
+        headers: { Authorization: `Bearer ${jwt}` }
+      });
+
+      const roles = rolesResponse.data.roles;
+      console.log('📋 Available roles:', roles);
+
+      // Nu proberen we de user data met rol op te halen
+      let userRole = null;
+      
+      try {
+        const userWithRoleResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}/api/users/me?populate=role`, {
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
+
+        const userWithRole = userWithRoleResponse.data;
+        console.log('👤 User with role data:', userWithRole);
+        userRole = userWithRole?.role;
+      } catch (userError) {
+        console.log('⚠️ Could not fetch user with role, trying alternative approach...');
+        
+        // Alternatieve aanpak: gebruik rol ID uit user object als het bestaat
+        if (user.role && typeof user.role === 'number') {
+          console.log('🔍 User has role ID:', user.role);
+          userRole = roles.find(role => role.id === user.role);
+          console.log('🎯 Found role by ID:', userRole);
+        }
+      }
+
+      if (!userRole) {
+        console.error('❌ No role found for user');
+        setMessage('Gebruiker heeft geen rol toegewezen!');
+        return;
+      }
+
+      const roleName = userRole.name;
+      console.log('🎯 Checking role name:', roleName);
+
+      if (roleName !== 'Subadmin') {
+        console.error(`❌ Wrong role. Expected: Subadmin, Got: ${roleName}`);
+        setMessage(`Alleen gebruikers met Subadmin rol mogen inloggen! Jouw rol: ${roleName}`);
+        return;
+      }
+
+      console.log('✅ Role check passed!');
+
+      // 4. Success! Sla gegevens op en navigeer
+      const completeUser = {
+        ...user,
+        role: userRole
+      };
+
+      localStorage.setItem('jwt', jwt);
+      localStorage.setItem('user', JSON.stringify(completeUser));
+      setMessage('Login succesvol! Doorsturen...');
+      
+      console.log('✅ Login successful, navigating to dashboard...');
+      
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+
+    } catch (roleError) {
+      console.error('❌ Error fetching roles or user:', roleError);
+      if (roleError.response?.status === 403) {
+        setMessage('Geen toestemming om rol informatie op te halen. Contacteer admin.');
+      } else {
+        setMessage('Kon gebruiker rol niet verifiëren. Probeer opnieuw.');
+      }
+    }
+
   } catch (err) {
-    console.error('Login error:', err);
-    setMessage('Fout bij inloggen. Controleer je gegevens.');
+    console.error('❌ Login error:', err);
+    console.error('❌ Error response:', err.response?.data);
+    
+    if (err.response?.status === 400) {
+      setMessage('Onjuiste inloggegevens. Controleer je e-mail en wachtwoord.');
+    } else {
+      setMessage('Fout bij inloggen. Controleer je gegevens.');
+    }
   }
 };
 

@@ -7,7 +7,6 @@ import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Orders from './pages/Orders.jsx';
 import Navigation from './components/Navigation.jsx';
-import Sidebar from './components/Sidebar.jsx';
 import Talents from './pages/Talents.jsx';
 import Organize from './pages/Organize.jsx';
 import Financials from './pages/Financials.jsx';
@@ -22,8 +21,7 @@ function App() {
           element={
             <PrivateRoute>
               <Navigation />
-              <div className="flex">
-                <Sidebar />
+              <div className="flex h-full">
                 <Dashboard />
               </div>
             </PrivateRoute>
@@ -36,7 +34,6 @@ function App() {
             <PrivateRoute>
               <Navigation />
               <div className="flex">
-                <Sidebar />
                 <Orders />
               </div>
             </PrivateRoute>
@@ -49,7 +46,6 @@ function App() {
             <PrivateRoute>
               <Navigation />
               <div className="flex">
-                <Sidebar />
                 <Financials />
               </div>
             </PrivateRoute>
@@ -62,7 +58,6 @@ function App() {
             <PrivateRoute>
               <Navigation />
               <div className="flex">
-                <Sidebar />
                 <Talents />
               </div>
             </PrivateRoute>
@@ -75,7 +70,6 @@ function App() {
             <PrivateRoute>
               <Navigation />
               <div className="flex">
-                <Sidebar />
                 <Organize />
               </div>
             </PrivateRoute>

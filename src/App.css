@@ -21,10 +21,6 @@
     @apply text-base;
   }
 }
-
-body{
-    background-color: #E3E1E5;
-}
 @keyframes scrollRightToLeft {
     0% {
       transform: translateX(-100%);

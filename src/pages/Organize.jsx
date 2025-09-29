@@ -79,63 +79,71 @@ function Organize() {
   };
 
   return (
-    <div className="bg-white w-full p-8 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Categorieën beheren</h1>
-      <form onSubmit={handleAddCategory} className="mb-6 flex gap-4">
-        <input
-          type="text"
-          value={newCategory}
-          onChange={e => setNewCategory(e.target.value)}
-          placeholder="Nieuwe categorie naam"
-          className="border px-4 py-2 rounded"
-        />
-        <button type="submit" className="bg-green text-white px-6 py-2 rounded">Toevoegen</button>
-      </form>
-      {loading ? (
-        <p>Loading...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : (
-        <ul className="space-y-2">
-          {categories.map(cat => (
-            <li key={cat.id} className="border-b py-2 flex justify-between items-center">
-              <span>{cat.attributes?.name || cat.name}</span>
-              <button 
-                onClick={() => openDeleteModal(cat)}
-                className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-              >
-                Verwijderen
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Categorie verwijderen</h2>
-            <p className="text-gray-600 mb-6">
-              Weet je zeker dat je de categorie <strong>"{categoryToDelete?.attributes?.name || categoryToDelete?.name}"</strong> wilt verwijderen?
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={closeDeleteModal}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
-              >
-                Annuleren
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-              >
-                Verwijderen
-              </button>
+    <div className="bg-gray w-blocks rounded-blocks mx-auto p-8 min-h-screen">
+      <div className='bg-white rounded-blocks w-full h-full p-8'>
+        <h1 className="text-2xl font-bold mb-6">Categorieën beheren</h1>
+        <form onSubmit={handleAddCategory} className="mb-6 flex gap-4">
+          <input
+            type="text"
+            value={newCategory}
+            onChange={e => setNewCategory(e.target.value)}
+            placeholder="Nieuwe categorie naam"
+            className="border px-4 py-2 rounded"
+          />
+          <button type="submit" className="bg-green px-6 py-2 rounded">Toevoegen</button>
+        </form>
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : (
+          <div className="flex gap-8">
+            <ul className="space-y-2 w-1/2">
+              {categories.map(cat => (
+                <li key={cat.id} className="border-b border-gray py-2 flex justify-between items-center">
+                  <span>{cat.attributes?.name || cat.name}</span>
+                  <button 
+                    onClick={() => openDeleteModal(cat)}
+                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                  >
+                    Verwijderen
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="bg-gray w-1/2 h-auto flex justify-center items-center rounded-3xl">
+              <p>WIP.</p>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold mb-4 text-gray-800">Categorie verwijderen</h2>
+              <p className="text-gray-600 mb-6">
+                Weet je zeker dat je de categorie <strong>"{categoryToDelete?.attributes?.name || categoryToDelete?.name}"</strong> wilt verwijderen?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+                >
+                  Annuleren
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                >
+                  Verwijderen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

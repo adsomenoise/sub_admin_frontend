@@ -30,6 +30,39 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
   const [imagePreview, setImagePreview] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
 
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!open) {
+      setForm({
+        voornaam: '',
+        achternaam: '',
+        email: '',
+        wachtwoord: '',
+        slug: '',
+        description: '',
+        rugnummer: 0,
+        price: '',
+        gsm_nummer: '',
+        socialLinks: '',
+        fastDelivery: false,
+        enrollAccepted: true,
+        active: true,
+        videoURL: '',
+        deliveryDays: '',
+        fastDeliveryDays: '',
+        viewCount: 0,
+        completeOrderCount: 0,
+        social_channel: '',
+        categories: [],
+        tags: [],
+        Image: null,
+        banner: null,
+      });
+      setImagePreview(null);
+      setBannerPreview(null);
+    }
+  }, [open]);
+
   if (!open) return null;
 
   const handleChange = (e) => {
@@ -205,11 +238,52 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
   );
 }
 
+// Confirmation modal component voor delete bevestiging
+function DeleteConfirmationModal({ open, onClose, onConfirm, talentName }) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80">
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-[90%] mx-4">
+        <div className="text-center">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.696-.833-2.464 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Talent Verwijderen
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to delete<br />
+            <span className="font-semibold text-gray-900">{talentName}</span>? 
+          </p>
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+            >
+              Annuleren
+            </button>
+            <button
+              onClick={onConfirm}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              Verwijderen
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Modal component voor talent bewerken
-function EditTalentModal({ open, onClose, talent, onSave, allCategories = [], allTags = [], allSocialOptions = [] }) {
+function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategories = [], allTags = [], allSocialOptions = [] }) {
   const [form, setForm] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   useEffect(() => {
     if (talent) {
@@ -310,12 +384,46 @@ function EditTalentModal({ open, onClose, talent, onSave, allCategories = [], al
     onSave(form);
   };
 
+  const handleDeleteClick = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (onDelete) {
+      onDelete(talent);
+      setShowDeleteConfirmation(false);
+      onClose(); // Sluit de edit modal na bevestiging
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirmation(false);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[70%] relative">
         <button onClick={onClose} className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <h2 className="text-xl font-bold mb-2">Bewerk Talent</h2>
+          <h2 className="text-xl font-bold mb-2">{form.voornaam || ''} {form.achternaam || ''}</h2>
+          <div className='flex'>
+            <div className='w-[30%] h-full flex flex-col'>
+              <div className='h-[40%] bg-purple-600'>
+
+              </div>
+              <div className='h-[60%] bg-green-600'>
+
+              </div>
+            </div>
+            <div className='w-[70%] h-full flex flex-col'>
+              <div className='h-[30%] bg-red-600'>
+
+              </div>  
+              <div className='h-[70%] bg-blue-500'>
+
+              </div>  
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {/* Voornaam */}
             <div>
@@ -331,11 +439,6 @@ function EditTalentModal({ open, onClose, talent, onSave, allCategories = [], al
             <div>
               <label className="block text-sm font-semibold">Email</label>
               <input type="email" name="email" value={form.email || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Slug */}
-            <div>
-              <label className="block text-sm font-semibold">Slug</label>
-              <input type="text" name="slug" value={form.slug || ''} onChange={handleChange} className="border p-1 w-full rounded" />
             </div>
             {/* Beschrijving */}
             <div>
@@ -476,11 +579,28 @@ function EditTalentModal({ open, onClose, talent, onSave, allCategories = [], al
               </label>
             </div>
           </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Opslaan</button>
+          <div className="flex justify-between gap-2 mt-4">
+            <button 
+              type="button" 
+              onClick={handleDeleteClick}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Talent Verwijderen
+            </button>
+            <div className="flex gap-2">
+              <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
+              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Opslaan</button>
+            </div>
           </div>
         </form>
+        
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          open={showDeleteConfirmation}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+          talentName={`${form.voornaam || ''} ${form.achternaam || ''}`.trim()}
+        />
       </div>
     </div>
   );
@@ -493,8 +613,27 @@ function Talents() {
   const [message, setMessage] = useState('');
   const [allCategories, setAllCategories] = useState([]);
   const [allTags, setAllTags] = useState([]);
+  const [sortBy, setSortBy] = useState('naam'); // Default to alphabetical sorting
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
+
+  // Sorteer talenten functie
+  const sortTalents = useCallback((talentsArray, sortMethod) => {
+    if (!sortMethod) return talentsArray; // Return original order if no sort method selected
+    
+    return [...talentsArray].sort((a, b) => {
+      if (sortMethod === 'naam') {
+        const nameA = `${a.voornaam || ''} ${a.achternaam || ''}`.trim().toLowerCase();
+        const nameB = `${b.voornaam || ''} ${b.achternaam || ''}`.trim().toLowerCase();
+        return nameA.localeCompare(nameB);
+      } else if (sortMethod === 'rugnummer') {
+        const rugA = a.rugnummer || 999;
+        const rugB = b.rugnummer || 999;
+        return rugA - rugB;
+      }
+      return 0;
+    });
+  }, []);
 
   const fetchTalents = useCallback(async () => {
     try {
@@ -517,34 +656,49 @@ function Talents() {
       } else if (Array.isArray(response.data)) {
         talentsData = response.data;
       }
-      setTalents(talentsData);
+      const sortedTalents = sortTalents(talentsData, sortBy);
+      setTalents(sortedTalents);
       setLoading(false);
     } catch (error) {
       console.error('Fout bij ophalen talenten:', error);
       setError(`Kon talenten niet laden: ${error.response?.data?.error?.message || error.message}`);
       setLoading(false);
     }
-  }, [API_BASE_URL]);
+  }, [API_BASE_URL, sortBy, sortTalents]);
 
   useEffect(() => {
     fetchTalents();
   }, [fetchTalents]);
+
+  // Effect om te sorteren wanneer sortBy verandert
+  useEffect(() => {
+    if (talents.length > 0) {
+      const sortedTalents = sortTalents(talents, sortBy);
+      setTalents(sortedTalents);
+    }
+  }, [sortBy, sortTalents]);
 
   // Fetch categories and tags for checkboxes
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await axios.get(`${API_BASE_URL}/api/categories`);
-        setAllCategories(res.data.data || []);
+        const categories = res.data.data || [];
+        console.log('Loaded categories:', categories);
+        setAllCategories(categories);
       } catch (err) {
+        console.error('Error loading categories:', err);
         setAllCategories([]);
       }
     };
     const fetchTags = async () => {
       try {
         const res = await axios.get(`${API_BASE_URL}/api/tags`);
-        setAllTags(res.data.data || []);
+        const tags = res.data.data || [];
+        console.log('Loaded tags:', tags);
+        setAllTags(tags);
       } catch (err) {
+        console.error('Error loading tags:', err);
         setAllTags([]);
       }
     };
@@ -686,9 +840,6 @@ function Talents() {
 
 
   const handleDelete = async (talent) => {
-    const confirmDelete = window.confirm(`Ben je zeker dat je ${talent.voornaam} ${talent.achternaam} permanent wilt verwijderen?`);
-    if (!confirmDelete) return;
-
     const token = localStorage.getItem('jwt');
     
     try {
@@ -700,41 +851,153 @@ function Talents() {
       });
       
       console.log('Delete response:', response.status);
+      setMessage(`Talent ${talent.voornaam} ${talent.achternaam} succesvol verwijderd!`);
+      setShowModal(false); // Sluit de edit modal
+      setEditTalent(null); // Reset de edit talent state
       fetchTalents(); // Refresh de lijst
     } catch (error) {
       console.error('Delete error:', error.response?.data || error.message);
+      setMessage('Fout bij verwijderen van talent.');
     }
   };
 
   // Talent toevoegen
   const handleAddTalent = async (form) => {
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
-    try {
-      const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        if (key === 'categories' || key === 'tags') {
-          formData.append(key, JSON.stringify(value.map(obj => obj.id)));
-        } else if (key === 'Image' && value) {
-          formData.append('Image', value);
-        } else if (key === 'banner' && value) {
-          formData.append('banner', value);
-        } else {
-          formData.append(key, value);
-        }
-      });
-      // Forceer active/enrollAccepted op true
-      formData.set('active', 'true');
-      formData.set('enrollAccepted', 'true');
+    const token = localStorage.getItem('jwt');
+    if (!token) {
+      setMessage('Je bent niet ingelogd. Log opnieuw in.');
+      return;
+    }
 
-      await fetch(`${API_BASE_URL}/api/talents`, {
-        method: 'POST',
-        body: formData,
-      });
+    try {
+      console.log('Form data received:', form);
+      console.log('Categories in form:', form.categories);
+      console.log('Tags in form:', form.tags);
+      
+      // Eerst afbeeldingen uploaden indien aanwezig
+      let imageId = null;
+      let bannerId = null;
+
+      if (form.Image) {
+        const imgData = new FormData();
+        imgData.append('files', form.Image);
+        const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, imgData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        imageId = uploadRes.data[0].id;
+      }
+
+      if (form.banner) {
+        const bannerData = new FormData();
+        bannerData.append('files', form.banner);
+        const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, bannerData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        bannerId = uploadRes.data[0].id;
+      }
+
+      // Prepareer de talent data - MET relaties vanaf het begin
+      const talentData = {
+        voornaam: form.voornaam,
+        achternaam: form.achternaam,
+        email: form.email,
+        wachtwoord: form.wachtwoord,
+        slug: form.slug,
+        description: form.description,
+        rugnummer: form.rugnummer ? Number(form.rugnummer) : 0,
+        price: form.price ? Number(form.price) : null,
+        gsm_nummer: form.gsm_nummer || '',
+        socialLinks: form.socialLinks || '',
+        videoURL: form.videoURL || '',
+        deliveryDays: form.deliveryDays ? Number(form.deliveryDays) : null,
+        fastDeliveryDays: form.fastDeliveryDays ? Number(form.fastDeliveryDays) : null,
+        viewCount: form.viewCount ? Number(form.viewCount) : 0,
+        completeOrderCount: form.completeOrderCount ? Number(form.completeOrderCount) : 0,
+        social_channel: form.social_channel || '',
+        fastDelivery: !!form.fastDelivery,
+        // Forceer active en enrollAccepted op true
+        active: true,
+        enrollAccepted: true,
+        Image: imageId,
+        banner: bannerId,
+      };
+
+      // Voeg relaties toe aan de initial data
+      if (Array.isArray(form.categories) && form.categories.length > 0) {
+        const categoryIds = form.categories.map(cat => cat.id);
+        console.log('Adding categories to initial data:', categoryIds);
+        talentData.categories = categoryIds;
+      }
+
+      if (Array.isArray(form.tags) && form.tags.length > 0) {
+        const tagIds = form.tags.map(tag => tag.id);
+        console.log('Adding tags to initial data:', tagIds);
+        talentData.tags = tagIds;
+      }
+
+      console.log('Creating talent with data (including relations):', talentData);
+
+      // Maak het talent aan met alle data inclusief relaties
+      const response = await axios.post(
+        `${API_BASE_URL}/api/talents`,
+        { data: talentData },
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+        }
+      );
+
+      const createdTalent = response.data.data;
+      console.log('Talent created successfully with relations:', createdTalent);
+
+      // Nu voeg categories en tags toe in één update call
+      const relationData = {};
+      
+      if (Array.isArray(form.categories) && form.categories.length > 0) {
+        const categoryIds = form.categories.map(cat => cat.id);
+        console.log('Adding categories:', categoryIds);
+        relationData.categories = categoryIds;
+      }
+
+      if (Array.isArray(form.tags) && form.tags.length > 0) {
+        const tagIds = form.tags.map(tag => tag.id);
+        console.log('Adding tags:', tagIds);
+        relationData.tags = tagIds;
+      }
+
+      // Update relations in one call if there are any
+      if (Object.keys(relationData).length > 0) {
+        try {
+          console.log('Updating talent with relations:', relationData);
+          const relationResponse = await axios.put(
+            `${API_BASE_URL}/api/talents/${talentId}`,
+            { 
+              data: relationData
+            },
+            {
+              headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+            }
+          );
+          console.log('Relations added successfully:', relationResponse.data);
+        } catch (relationError) {
+          console.error('Error adding relations:', relationError.response?.data || relationError.message);
+          // Don't fail the whole process if relations fail
+        }
+      }
+
       setShowAddModal(false);
       setMessage('Talent succesvol toegevoegd!');
-      fetchTalents();
+      console.log('Refreshing talents list...');
+      await fetchTalents();
+      console.log('Talents list refreshed, new count:', talents.length);
     } catch (err) {
-      setMessage('Fout bij toevoegen talent.');
+      console.error('Add talent error:', err.response?.data || err.message);
+      setMessage(`Fout bij toevoegen talent: ${err.response?.data?.error?.message || err.message}`);
     }
   };
 
@@ -752,147 +1015,137 @@ function Talents() {
   
   return (
     <>
-      <div className="bg-white w-full p-8 min-h-screen">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-secondary-800">Talenten Beheren</h1>
-          <div className='flex gap-8 items-center'>
-            <div className="text-sm text-secondary-600">
-              Totaal: {talents.length} talenten
+    <div className='bg-gray w-[74%] p-8 mx-auto rounded-blocks'>
+        <div className="bg-white rounded-blocks p-8 min-h-screen">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-secondary-800">Manage Talents</h1>
+            <div className='flex gap-4 items-center'>
+              <div className="text-sm text-secondary-600">
+                In total: {talents.length} talents
+              </div>
+              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
+              <div className="relative">
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="appearance-none rounded-blocks pr-10 min-w-[140px] bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer"
+                >
+                  <option value="naam">A-Z</option>
+                  <option value="rugnummer">Back number</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
-            <button className='bg-green text-white px-4 py-2 rounded' onClick={() => setShowAddModal(true)}>Voeg talent toe</button>
           </div>
-        </div>
 
-        {message && (
-          <div className="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
-            {message}
-          </div>
-        )}
+          {message && (
+            <div className="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
+              {message}
+            </div>
+          )}
 
-        {talents.length === 0 ? (
-          <div className="text-center text-secondary-500 mt-10">
-            <p className="text-xl">Geen talenten gevonden.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-            {talents.map((talent) => {
-              const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
-              const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
-              const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
-              const talentId = talent.documentId || talent.id;
+          {talents.length === 0 ? (
+            <div className="text-center text-secondary-500 mt-10">
+              <p className="text-xl">Geen talenten gevonden.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-10 gap-y-4">
+              {talents.map((talent) => {
+                const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
+                const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
+                const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
+                const talentId = talent.documentId || talent.id;
 
-              return (
-                <div key={talentId} className="bg-white border relative border-gray-200 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                  {/* Status badges */}
-                  <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-                    {!enrollAccepted && (
-                      <span className="bg-red text-xs px-2 py-1 rounded">
-                        Pending
-                      </span>
-                    )}
-                    {!active && (
-                      <span className="bg-black text-white text-xs px-2 py-1 rounded">
-                        Gearchiveerd
-                      </span>
-                    )}
-                    {active && enrollAccepted && (
-                      <span className="bg-white text-xs px-2 py-1 rounded">
-                        Actief
-                      </span>
-                    )}
-                  </div>
+                return (
+                  <div key={talentId} className="relative overflow-hidden transition-shadow">
+                    {/* Status badges */}
+                    <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                      {!enrollAccepted && (
+                        <span className="bg-red text-xs px-2 py-1 rounded">
+                          Pending
+                        </span>
+                      )}
+                      {/* Status cirkel - groen voor actief, rood voor niet actief */}
+                      <div 
+                        className={`w-5 h-5 rounded-full border-3 ${
+                          active ? 'border-green-500' : 'border-red-500'
+                        } bg-transparent`}
+                        title={active ? 'Actief' : 'Gearchiveerd'}
+                      ></div>
+                    </div>
 
-                  {/* Afbeelding */}
-                  <div className="relative">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={fullName}
-                        className="w-full h-48 object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-48 bg-secondary-200 flex items-center justify-center">
-                        <div className="text-6xl text-secondary-400">👤</div>
+                    {/* Afbeelding */}
+                    <div className="relative">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={fullName}
+                          className="w-full h-60 rounded-[1rem] object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-48 bg-secondary-200 flex items-center justify-center">
+                          <div className="text-6xl text-secondary-400">👤</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-secondary-800 mb-2 truncate">
+                        {fullName}
+                      </h3>
+
+                      {/* Action buttons */}
+                      <div className="flex justify-between items-center pt-0">
+                        {/* Edit button */}
+                        <button
+                          onClick={() => handleEdit(talent)}
+                          className="text-green rounded-full transition-colors cursor-pointer"
+                          title="Bewerken"
+                        >
+                          Edit
+                        </button>
+
+                        {/* Archive/Activate button */}
+                        <button
+                          onClick={() => handleArchive(talent)}
+                          className={`rounded-full transition-colors cursor-pointer underline hover:no-underline`}
+                          title={active ? "Archiveren" : "Activeren"}
+                        >
+                          {active ? 'Archiveer' : 'Activeer'}
+                        </button>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-secondary-800 mb-2 truncate">
-                      {fullName}
-                    </h3>
-                    
-                    {talent.email && (
-                      <p className="text-sm text-secondary-600 mb-2 truncate">
-                        📧 {talent.email}
-                      </p>
-                    )}
-                    
-                    {talent.social_channel && (
-                      <p className="text-sm text-secondary-600 mb-3">
-                        📱 {talent.social_channel}
-                      </p>
-                    )}
-
-                    {/* Action buttons */}
-                    <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                      {/* Edit button */}
-                      <button
-                        onClick={() => handleEdit(talent)}
-                        className="flex items-center justify-center text-blue-600 rounded-full transition-colors"
-                        title="Bewerken"
-                      >
-                        Edit
-                      </button>
-
-                      {/* Archive/Activate button */}
-                      <button
-                        onClick={() => handleArchive(talent)}
-                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                          active 
-                            ? 'bg-secondary-100 hover:bg-secondary-200 text-secondary-600' 
-                            : 'bg-green-100 hover:bg-green-200 text-green-600'
-                        }`}
-                        title={active ? "Archiveren" : "Activeren"}
-                      >
-                        {active ? 'Archiveer' : 'Activeer'}
-                      </button>
-
-                      {/* Delete button */}
-                      <button
-                        onClick={() => handleDelete(talent)}
-                        className="flex items-center justify-center bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition-colors"
-                        title="Verwijderen"
-                      >
-                        Delete
-                      </button>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-            {/* Modal buiten de map-loop */}
-            <EditTalentModal
-              open={showModal}
-              onClose={handleCloseModal}
-              talent={editTalent}
-              onSave={handleSaveEdit}
-              allCategories={allCategories}
-              allTags={allTags}
-              allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
-            />
-        <AddTalentModal
-          open={showAddModal}
-          onClose={() => setShowAddModal(false)}
-          onSave={handleAddTalent}
-          allCategories={allCategories}
-          allTags={allTags}
-          allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
-        />
-          </div>
-        )}
-      </div>
+                );
+              })}
+              {/* Modal buiten de map-loop */}
+              <EditTalentModal
+                open={showModal}
+                onClose={handleCloseModal}
+                talent={editTalent}
+                onSave={handleSaveEdit}
+                onDelete={handleDelete}
+                allCategories={allCategories}
+                allTags={allTags}
+                allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+              />
+          <AddTalentModal
+            open={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onSave={handleAddTalent}
+            allCategories={allCategories}
+            allTags={allTags}
+            allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+          />
+            </div>
+          )}
+        </div>
+    </div>
     </>
   );
 }

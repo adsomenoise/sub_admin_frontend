@@ -1,71 +1,173 @@
-# Getting Started with Create React App
+# Fanflix Sub Admin Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Een React admin dashboard voor het beheren van talents, orders en content voor Fanflix. Deze interface is specifiek ontworpen voor sub-administrators.
 
-## Available Scripts
+## 🚀 Installatie en Setup
 
-In the project directory, you can run:
+### Vereisten
+- Node.js (versie 16 of hoger)
+- Yarn package manager
+- Git
+- Toegang tot Strapi backend
+
+### Stap 1: Clone de repository
+```bash
+git clone <repository-url>
+cd sub_admin_frontend
+```
+
+### Stap 2: Installeer dependencies
+```bash
+yarn install
+```
+
+### Stap 3: Environment variabelen
+Maak een `.env` bestand aan in de root directory:
+```env
+REACT_APP_API_BASE_URL=http://localhost:1337
+```
+
+### Stap 4: Start de development server
+```bash
+yarn start
+```
+
+De applicatie opent automatisch op [http://localhost:3000](http://localhost:3000).
+
+## 🛠 Tech Stack
+
+- **React** - Frontend framework
+- **Tailwind CSS** - Styling framework
+- **React Router** - Client-side routing
+- **Axios** - HTTP client voor API calls
+- **Strapi** - Headless CMS backend
+- **JWT** - Authenticatie
+
+## 📁 Project Structuur
+
+```
+src/
+├── components/
+│   ├── Navigation.jsx   # Hoofd navigatie
+│   ├── PrivateRoute.jsx # Route beveiliging
+│   ├── Sidebar.jsx      # Zijbalk navigatie
+│   └── OrderModal.jsx   # Order detail modal
+├── pages/
+│   ├── Dashboard.jsx    # Hoofd dashboard
+│   ├── Login.jsx        # Inlog pagina
+│   ├── Orders.jsx       # Order beheer
+│   ├── Talents.jsx      # Talent beheer
+│   └── Organize.jsx     # Content organisatie
+└── api/                 # API configuratie
+```
+
+## 🔐 Authenticatie
+
+Het systeem gebruikt JWT tokens voor authenticatie:
+1. Login via `/login` met credentials
+2. Token wordt opgeslagen in localStorage
+3. Privé routes zijn beveiligd met PrivateRoute component
+
+## 🎯 Features
+
+### Dashboard
+- 📊 **Overzicht** van recente orders
+- 👥 **Spotlighted talents** weergave
+- 💰 **Financieel overzicht**
+
+### Talent Management
+- ➕ **Toevoegen** van nieuwe talents
+- ✏️ **Bewerken** van bestaande talents
+- 🗑️ **Verwijderen** van talents
+- 📁 **Categorieën en tags** beheer
+- 🖼️ **Afbeelding uploads**
+- ✅ **Status management** (actief/gearchiveerd)
+
+### Order Management
+- 📋 **Order overzicht** met filtering
+- 🔄 **Status updates**
+- 📄 **Detail weergave**
+- 🎬 **Video uploads**
+
+## 🔧 Beschikbare Scripts
 
 ### `yarn start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `yarn test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Start de ontwikkelingsserver op port 3000.
 
 ### `yarn build`
+Bouwt de app voor productie in de `build` folder.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `yarn test`
+Start de test runner.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🎨 Styling
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Het project gebruikt **Tailwind CSS** voor styling. Configuratie:
+- `tailwind.config.js` - Tailwind configuratie
+- `src/index.css` - Globale styles
+- Custom CSS classes voor specifieke componenten
 
-### `yarn eject`
+### Belangrijke CSS Classes
+- `.bg-gray` - Grijze achtergrond
+- `.rounded-blocks` - Afgeronde hoeken
+- `.w-blocks` - Standaard container breedte
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🔗 API Integratie
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+De frontend communiceert met de Strapi backend voor:
+- **Authenticatie** - Login/logout
+- **Talents** - CRUD operaties
+- **Orders** - Beheer en status updates
+- **Categories/Tags** - Content organisatie
+- **File uploads** - Afbeeldingen en video's
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Belangrijke Endpoints
+```
+POST /api/auth/local          # Login
+GET /api/talents              # Talents ophalen
+POST /api/talents             # Talent aanmaken
+PUT /api/talents/:id          # Talent bijwerken
+DELETE /api/talents/:id       # Talent verwijderen
+GET /api/orders               # Orders ophalen
+POST /api/upload              # Bestanden uploaden
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🚀 Deployment
 
-## Learn More
+Voor productie deployment:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. Zet environment variabelen voor productie:
+```env
+REACT_APP_API_BASE_URL=https://your-strapi-backend.com
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+2. Bouw de applicatie:
+```bash
+yarn build
+```
 
-### Code Splitting
+3. Upload de `build` folder naar je hosting provider.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 🔒 Beveiliging
 
-### Analyzing the Bundle Size
+- JWT token authenticatie
+- Protected routes met PrivateRoute component
+- Role-based access (sub-admin niveau)
+- Automatische logout bij token expiry
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🐛 Troubleshooting
 
-### Making a Progressive Web App
+### Login problemen
+- Controleer of Strapi backend draait op poort 1337
+- Verificeer credentials in Strapi admin panel
+- Check browser console voor API errors
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Upload problemen
+- Controleer file size limits in Strapi
+- Verificeer upload permissions
+- Check browser network tab voor errors
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+*Voor meer informatie over het Strapi backend, raadpleeg de backend README.*
 # Auto-deploy trigger

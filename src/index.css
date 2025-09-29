@@ -3,11 +3,11 @@
 /* Je theme-definities */
 @theme {
   /* Kleuren */
-  --color-main-dark: #440873;
-  --color-main-light: #C266FC;
-  --color-secondary-light: #F3F3F3;
-  --color-secondary-dark: #E3E1E5;
-  --color-green: #3BB143;
+  --color-green: #02FFA8;
+  --color-gray: #E6E6E8;
+  --color-gray-dark: #C7C7C7;
+  --color-black: #000000;
+  --color-white: #FFFFFF;
   --color-red: #FF0000;
 
   /* Spacing */
