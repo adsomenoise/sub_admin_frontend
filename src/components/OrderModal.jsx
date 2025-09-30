@@ -163,14 +163,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                     // Use the correct ID from the talent list
                     const correctId = matchingTalent.documentId || matchingTalent.id;
                     console.log('Talent ID being used:', correctId);
-                    
-                    // Now get the talent WITH videos populated to get current videos
-                    const talentWithVideosRes = await axios.get(`${API_BASE_URL}/api/talents/${correctId}?populate=videos`, {
-                        headers: { Authorization: `Bearer ${jwt}` }
-                    });
-                    
-                    const talentWithVideos = talentWithVideosRes.data.data || talentWithVideosRes.data;
-                    console.log('Talent with videos data:', talentWithVideos);
+                    console.log('Full matching talent object:', JSON.stringify(matchingTalent, null, 2));
                     
                     // Get current completedOrders count from the original talent data
                     const currentCount = matchingTalent.completedOrders || matchingTalent.attributes?.completedOrders || 0;
@@ -181,45 +174,32 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                         completedOrders: newCount
                     };
                     
-                    // If showOnProfile is true, add the video to talent's videos
+                    // Update the order with ShowOnProfile boolean if checkbox was checked
                     if (showOnProfile && uploadedVideoId) {
+                        console.log('Updating order with ShowOnProfile: true');
+                        
                         try {
-                            // Get current videos from the talent WITH videos populated
-                            const currentVideos = talentWithVideos.videos || talentWithVideos.attributes?.videos || [];
-                            console.log('Current videos found:', currentVideos);
-                            
-                            // Extract existing video IDs
-                            let videoIds = [];
-                            if (Array.isArray(currentVideos)) {
-                                videoIds = currentVideos.map(v => {
-                                    if (typeof v === 'object' && v !== null) {
-                                        return v.id || v.documentId;
+                            await axios.put(
+                                `${API_BASE_URL}/api/orders/${order.documentId}`,
+                                {
+                                    data: {
+                                        ShowOnProfile: true
                                     }
-                                    return v;
-                                }).filter(id => id); // Remove any null/undefined IDs
-                            }
-                            
-                            console.log('Existing video IDs:', videoIds);
-                            
-                            // Add the new video ID
-                            videoIds.push(uploadedVideoId);
-                            console.log('Video IDs after adding new:', videoIds);
-                            
-                            // Limit to 10 videos - remove oldest if exceeding limit
-                            if (videoIds.length > 10) {
-                                videoIds = videoIds.slice(-10); // Keep only the last 10 videos
-                            }
-                            
-                            updateData.videos = videoIds;
-                        } catch (videoError) {
-                            console.error('Error handling videos, adding as first video:', videoError);
-                            // Fallback: just add the new video
-                            updateData.videos = [uploadedVideoId];
+                                },
+                                {
+                                    headers: { Authorization: `Bearer ${jwt}` }
+                                }
+                            );
+                            console.log('Order updated with ShowOnProfile: true');
+                        } catch (orderUpdateError) {
+                            console.error('Error updating order ShowOnProfile:', orderUpdateError);
                         }
                     }
                     
                     // Update talent's completed orders count and optionally videos
-                    await axios.put(
+                    console.log('Final update data:', updateData);
+                    
+                    const updateResponse = await axios.put(
                         `${API_BASE_URL}/api/talents/${correctId}`,
                         {
                             data: updateData
@@ -228,6 +208,8 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                             headers: { Authorization: `Bearer ${jwt}` }
                         }
                     );
+                    
+                    console.log('Talent update successful:', updateResponse.data);
                 }
             }
             
