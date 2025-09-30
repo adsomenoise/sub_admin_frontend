@@ -237,7 +237,7 @@ function Dashboard() {
                 <hr className='border-gray' />
               </div>
               {(newOrders.length === 0 && inProgressOrders.length === 0) ? (
-                <p>Geen bestellingen gevonden.</p>
+                <div className='h-[90%] flex items-center justify-center'><h4>No orders found.</h4></div>
               ) : (
                 <ul className="space-y-2 px-4">
                   {[...newOrders, ...inProgressOrders].slice(0, 15).map(order => (

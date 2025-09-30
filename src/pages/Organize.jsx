@@ -9,10 +9,14 @@ function Organize() {
   const [error, setError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [normalDeliveryDays, setNormalDeliveryDays] = useState(0);
+  const [fastDeliveryDays, setFastDeliveryDays] = useState(0);
+  const [deliveryLoading, setDeliveryLoading] = useState(false);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
 
   useEffect(() => {
     fetchCategories();
+    fetchDeliveryDays();
   }, []);
 
   const fetchCategories = async () => {
@@ -78,10 +82,97 @@ function Organize() {
     }
   };
 
+  const fetchDeliveryDays = async () => {
+    try {
+      // Fetch normal delivery days
+      const normalRes = await axios.get(`${API_BASE_URL}/api/normal-delivery`);
+      
+      let normalAmount = 0;
+      if (normalRes.data.data) {
+        normalAmount = normalRes.data.data.Amount || normalRes.data.data.attributes?.Amount || 0;
+      } else if (normalRes.data.attributes) {
+        normalAmount = normalRes.data.attributes.Amount || 0;
+      } else {
+        normalAmount = normalRes.data.Amount || 0;
+      }
+      
+      setNormalDeliveryDays(normalAmount);
+
+      // Fetch fast delivery days
+      const fastRes = await axios.get(`${API_BASE_URL}/api/fast-delivery`);
+      
+      let fastAmount = 0;
+      if (fastRes.data.data) {
+        fastAmount = fastRes.data.data.Amount || fastRes.data.data.attributes?.Amount || 0;
+      } else if (fastRes.data.attributes) {
+        fastAmount = fastRes.data.attributes.Amount || 0;
+      } else {
+        fastAmount = fastRes.data.Amount || 0;
+      }
+      
+      setFastDeliveryDays(fastAmount);
+    } catch (err) {
+      console.error("Fout bij ophalen delivery days:", err);
+    }
+  };
+
+  const updateDeliveryDays = async (type, newAmount) => {
+    if (newAmount < 0 || newAmount > 14) return;
+    
+    // Validation: fast delivery must be smaller than normal delivery
+    if (type === 'fast' && newAmount >= normalDeliveryDays) return;
+    if (type === 'normal' && newAmount <= fastDeliveryDays) {
+      // If reducing normal delivery would make it <= fast delivery, also reduce fast delivery
+      const newFastAmount = Math.max(0, newAmount - 1);
+      await updateDeliveryDays('fast', newFastAmount);
+    }
+    
+    setDeliveryLoading(true);
+    const jwt = localStorage.getItem('jwt');
+    
+    try {
+      const endpoint = type === 'normal' ? 'normal-delivery' : 'fast-delivery';
+      
+      let updateRes;
+      try {
+        updateRes = await axios.put(`${API_BASE_URL}/api/${endpoint}`, {
+          data: {
+            Amount: newAmount
+          }
+        }, {
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
+      } catch (authError) {
+        updateRes = await axios.put(`${API_BASE_URL}/api/${endpoint}`, {
+          data: {
+            Amount: newAmount
+          }
+        });
+      }
+      
+      // Update local state
+      if (type === 'normal') {
+        setNormalDeliveryDays(newAmount);
+      } else {
+        setFastDeliveryDays(newAmount);
+      }
+    } catch (err) {
+      setError("Delivery days updaten mislukt.");
+    } finally {
+      setDeliveryLoading(false);
+    }
+  };
+
+  const handleDeliveryChange = (type, change) => {
+    const currentValue = type === 'normal' ? normalDeliveryDays : fastDeliveryDays;
+    const newValue = currentValue + change;
+    updateDeliveryDays(type, newValue);
+  };
+
   return (
-    <div className="bg-gray w-[60%] rounded-blocks mx-auto p-8 h-[80vh] mt-8">
+    <div className="bg-gray w-[60%] rounded-blocks mx-auto p-8 h-[80vh] mt-8 flex flex-col">
       <h1 className="text-2xl font-bold mb-6 ml-8">Setup</h1>
-      <div className='bg-white rounded-blocks w-full p-8 mb-4'>
+      <div className='bg-white rounded-blocks w-full p-8 mb-4 flex-shrink-0'>
         <form onSubmit={handleAddCategory} className="mb-6 flex gap-4 justify-between items-center">
           <h3>Categories</h3>
           <div className='flex gap-2 justify-between items-center'>
@@ -101,7 +192,7 @@ function Organize() {
           <p className="text-red-500">{error}</p>
         ) : (
           <div className="flex flex-col gap-8">
-            <ul className="space-y-2 w-full h-72 mt-8 overflow-y-auto">
+            <ul className="space-y-2 w-full h-62 mt-4 overflow-y-auto">
               {categories.map(cat => (
                 <li key={cat.id} className="border-b border-gray py-2 flex justify-between items-center">
                   <span>{cat.attributes?.name || cat.name}</span>
@@ -144,8 +235,60 @@ function Organize() {
         )}
 
       </div>
-      <div className="bg-white rounded-blocks w-full p-8 mb-4">
+      <div id='delivery-days' className="bg-white rounded-blocks w-full p-8 flex-1 flex flex-col">
         <h3>Delivery days</h3>
+        
+        <div className="space-y-6 flex-1 flex flex-col justify-center w-[40%]">
+          {/* Normal delivery */}
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-medium">Normal delivery</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handleDeliveryChange('normal', -1)}
+                disabled={normalDeliveryDays <= 0 || deliveryLoading}
+                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                −
+              </button>
+              <span className="text-2xl font-bold w-8 text-center">
+                {normalDeliveryDays}
+              </span>
+              <button
+                onClick={() => handleDeliveryChange('normal', 1)}
+                disabled={normalDeliveryDays >= 14 || deliveryLoading}
+                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                +
+              </button>
+              <span className="text-gray-600 ml-4">days until delivered</span>
+            </div>
+          </div>
+
+          {/* Fast delivery */}
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-medium">Fast delivery</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handleDeliveryChange('fast', -1)}
+                disabled={fastDeliveryDays <= 0 || deliveryLoading}
+                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                −
+              </button>
+              <span className="text-2xl font-bold w-8 text-center">
+                {fastDeliveryDays}
+              </span>
+              <button
+                onClick={() => handleDeliveryChange('fast', 1)}
+                disabled={fastDeliveryDays >= 14 || fastDeliveryDays >= normalDeliveryDays - 1 || deliveryLoading}
+                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                +
+              </button>
+              <span className="text-gray-600 ml-4">days until delivered</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

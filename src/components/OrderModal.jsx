@@ -7,6 +7,9 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showThankYou, setShowThankYou] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [uploadedVideoId, setUploadedVideoId] = useState(null);
+    const [showOnProfile, setShowOnProfile] = useState(false);
     const mediaRecorderRef = useRef(null);
     const streamRef = useRef(null);
     const videoRef = useRef(null);
@@ -91,9 +94,6 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
         const uploadedFile = uploadRes.data[0];
         
         // Update order with video in 'orderVideo' field
-        // Strapi 5 uses documentId
-        console.log('Updating order with documentId:', order.documentId, 'Order object:', order);
-        
         const updateRes = await axios.put(
             `${API_BASE_URL}/api/orders/${order.documentId}`,
             {
@@ -106,48 +106,15 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
             }
         );
         setRecordedBlob(null);
-
-        // Increment completed orders count for the talent
-        if (order.talent) {
-            try {
-                const talentId = order.talent.documentId || order.talent.id;
-                console.log('Incrementing completed orders for talent:', talentId);
-                
-                // Get current talent data to find current completedOrders count
-                const talentRes = await axios.get(`${API_BASE_URL}/api/talents/${talentId}`, {
-                    headers: { Authorization: `Bearer ${jwt}` }
-                });
-                
-                const currentCount = talentRes.data.data?.completedOrders || 0;
-                const newCount = currentCount + 1;
-                
-                // Update talent's completed orders count
-                await axios.put(
-                    `${API_BASE_URL}/api/talents/${talentId}`,
-                    {
-                        data: {
-                            completedOrders: newCount
-                        }
-                    },
-                    {
-                        headers: { Authorization: `Bearer ${jwt}` }
-                    }
-                );
-                
-                console.log(`Talent completed orders updated from ${currentCount} to ${newCount}`);
-            } catch (talentError) {
-                console.error('Error updating talent completed orders:', talentError);
-                // Don't fail the whole process if this fails
-            }
-        }
+        setUploadedVideoId(uploadedFile.id);
         
         // Update parent component
         if (onOrderUpdate) {
             onOrderUpdate(updateRes.data.data);
         }
         
-        // Show thank you screen instead of closing immediately
-        setShowThankYou(true);
+        // Show confirmation screen instead of completing immediately
+        setShowConfirmation(true);
         } catch (error) {
         console.error('Upload error:', error);
         alert('Fout bij uploaden van video');
@@ -172,8 +139,207 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
 
     const handleCloseThankYou = () => {
         setShowThankYou(false);
+        setShowOnProfile(false); // Reset checkbox state
         onClose();
     };
+
+    const handleConfirmOrder = async () => {
+        try {
+            // Increment completed orders count for the talent
+            if (order.talent) {
+                // First get all talents to find the correct ID
+                const allTalentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+                    headers: { Authorization: `Bearer ${jwt}` }
+                });
+                
+                // Find our talent in the list
+                const talents = allTalentsRes.data.data || allTalentsRes.data || [];
+                const matchingTalent = talents.find(t => 
+                    t.id === order.talent.id || 
+                    t.documentId === order.talent.documentId
+                );
+                
+                if (matchingTalent) {
+                    // Use the correct ID from the talent list
+                    const correctId = matchingTalent.documentId || matchingTalent.id;
+                    console.log('Talent ID being used:', correctId);
+                    
+                    // Now get the talent WITH videos populated to get current videos
+                    const talentWithVideosRes = await axios.get(`${API_BASE_URL}/api/talents/${correctId}?populate=videos`, {
+                        headers: { Authorization: `Bearer ${jwt}` }
+                    });
+                    
+                    const talentWithVideos = talentWithVideosRes.data.data || talentWithVideosRes.data;
+                    console.log('Talent with videos data:', talentWithVideos);
+                    
+                    // Get current completedOrders count from the original talent data
+                    const currentCount = matchingTalent.completedOrders || matchingTalent.attributes?.completedOrders || 0;
+                    const newCount = parseInt(currentCount) + 1;
+                    
+                    // Prepare update data
+                    const updateData = {
+                        completedOrders: newCount
+                    };
+                    
+                    // If showOnProfile is true, add the video to talent's videos
+                    if (showOnProfile && uploadedVideoId) {
+                        try {
+                            // Get current videos from the talent WITH videos populated
+                            const currentVideos = talentWithVideos.videos || talentWithVideos.attributes?.videos || [];
+                            console.log('Current videos found:', currentVideos);
+                            
+                            // Extract existing video IDs
+                            let videoIds = [];
+                            if (Array.isArray(currentVideos)) {
+                                videoIds = currentVideos.map(v => {
+                                    if (typeof v === 'object' && v !== null) {
+                                        return v.id || v.documentId;
+                                    }
+                                    return v;
+                                }).filter(id => id); // Remove any null/undefined IDs
+                            }
+                            
+                            console.log('Existing video IDs:', videoIds);
+                            
+                            // Add the new video ID
+                            videoIds.push(uploadedVideoId);
+                            console.log('Video IDs after adding new:', videoIds);
+                            
+                            // Limit to 10 videos - remove oldest if exceeding limit
+                            if (videoIds.length > 10) {
+                                videoIds = videoIds.slice(-10); // Keep only the last 10 videos
+                            }
+                            
+                            updateData.videos = videoIds;
+                        } catch (videoError) {
+                            console.error('Error handling videos, adding as first video:', videoError);
+                            // Fallback: just add the new video
+                            updateData.videos = [uploadedVideoId];
+                        }
+                    }
+                    
+                    // Update talent's completed orders count and optionally videos
+                    await axios.put(
+                        `${API_BASE_URL}/api/talents/${correctId}`,
+                        {
+                            data: updateData
+                        },
+                        {
+                            headers: { Authorization: `Bearer ${jwt}` }
+                        }
+                    );
+                }
+            }
+            
+            setShowConfirmation(false);
+            setShowThankYou(true);
+        } catch (error) {
+            console.error('Error confirming order:', error);
+            alert('Fout bij bevestigen van order');
+        }
+    };
+
+    const handleCancelConfirmation = async () => {
+        try {
+            // Remove the video from the order if it was uploaded
+            if (uploadedVideoId) {
+                await axios.put(
+                    `${API_BASE_URL}/api/orders/${order.documentId}`,
+                    {
+                        data: {
+                            orderVideo: null
+                        }
+                    },
+                    {
+                        headers: { Authorization: `Bearer ${jwt}` },
+                    }
+                );
+                
+                // Also delete the uploaded file from Strapi media library
+                try {
+                    await axios.delete(`${API_BASE_URL}/api/upload/files/${uploadedVideoId}`, {
+                        headers: { Authorization: `Bearer ${jwt}` },
+                    });
+                } catch (deleteError) {
+                    console.log('Could not delete file from media library:', deleteError);
+                    // Continue even if file deletion fails
+                }
+            }
+            
+            setShowConfirmation(false);
+            setUploadedVideoId(null);
+            setShowOnProfile(false); // Reset checkbox state
+            
+            // Update parent component to reflect the removed video
+            if (onOrderUpdate) {
+                // Create updated order object without video
+                const updatedOrder = { 
+                    ...order, 
+                    orderVideo: null 
+                };
+                onOrderUpdate(updatedOrder);
+            }
+        } catch (error) {
+            console.error('Error canceling confirmation:', error);
+            alert('Fout bij annuleren van bevestiging');
+            setShowConfirmation(false);
+            setUploadedVideoId(null);
+            setShowOnProfile(false); // Reset checkbox state
+        }
+    };
+
+    // Show confirmation modal after video upload
+    if (showConfirmation) {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg max-w-md w-full p-8 text-center">
+                    <div className="mb-6">
+                        <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <span className="text-3xl">📋</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                            Order bevestigen
+                        </h2>
+                        <p className="text-gray-600 mb-4">
+                            Video is succesvol geüpload voor {order.to}.
+                        </p>
+                        <p className="text-gray-600 mb-4">
+                            Wil je deze order als voltooid markeren? Dit zal het aantal voltooide orders voor dit talent verhogen.
+                        </p>
+                        
+                        {/* Checkbox for profile display */}
+                        <div className="flex items-center justify-center mb-4">
+                            <input
+                                type="checkbox"
+                                id="showOnProfile"
+                                checked={showOnProfile}
+                                onChange={(e) => setShowOnProfile(e.target.checked)}
+                                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor="showOnProfile" className="text-sm text-gray-700 font-medium">
+                                Video weergeven op profiel
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleCancelConfirmation}
+                            className="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-medium"
+                        >
+                            Annuleren
+                        </button>
+                        <button
+                            onClick={handleConfirmOrder}
+                            className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium"
+                        >
+                            Bevestigen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Show thank you modal if upload was successful
     if (showThankYou) {
