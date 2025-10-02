@@ -6,7 +6,6 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
     voornaam: '',
     achternaam: '',
     email: '',
-    wachtwoord: '',
     slug: '',
     description: '',
     rugnummer: 0,
@@ -17,10 +16,6 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
     enrollAccepted: true,
     active: true,
     videoURL: '',
-    deliveryDays: '',
-    fastDeliveryDays: '',
-    viewCount: 0,
-    completeOrderCount: 0,
     social_channel: '',
     categories: [],
     tags: [],
@@ -37,7 +32,6 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
         voornaam: '',
         achternaam: '',
         email: '',
-        wachtwoord: '',
         slug: '',
         description: '',
         rugnummer: 0,
@@ -48,10 +42,6 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
         enrollAccepted: true,
         active: true,
         videoURL: '',
-        deliveryDays: '',
-        fastDeliveryDays: '',
-        viewCount: 0,
-        completeOrderCount: 0,
         social_channel: '',
         categories: [],
         tags: [],
@@ -65,6 +55,18 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
 
   if (!open) return null;
 
+  // Function to generate slug from voornaam and achternaam
+  const generateSlug = (voornaam, achternaam) => {
+    const combined = `${voornaam || ''} ${achternaam || ''}`.trim();
+    return combined
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\-]+/g, '')
+      .replace(/\-\-+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === 'checkbox') {
@@ -72,13 +74,24 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
     } else if (type === 'file') {
       if (name === 'newImage') {
         setForm(f => ({ ...f, Image: files[0] }));
-        setImagePreview(URL.createObjectURL(files[0]));
+        if (files[0]) {
+          setImagePreview(URL.createObjectURL(files[0]));
+        }
       } else if (name === 'newBanner') {
         setForm(f => ({ ...f, banner: files[0] }));
-        setBannerPreview(URL.createObjectURL(files[0]));
+        if (files[0]) {
+          setBannerPreview(URL.createObjectURL(files[0]));
+        }
       }
     } else {
-      setForm(f => ({ ...f, [name]: value }));
+      const newForm = { ...form, [name]: value };
+      // Auto-generate slug when voornaam or achternaam changes
+      if (name === 'voornaam' || name === 'achternaam') {
+        const voornaam = name === 'voornaam' ? value : form.voornaam;
+        const achternaam = name === 'achternaam' ? value : form.achternaam;
+        newForm.slug = generateSlug(voornaam, achternaam);
+      }
+      setForm(newForm);
     }
   };
 
@@ -103,30 +116,22 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
       <div className="bg-white rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[70%] relative">
         <button onClick={onClose} className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <h2 className="text-xl font-bold mb-2">Nieuw Talent Toevoegen</h2>
+          <h2 className="text-xl font-bold mb-2">Add a new talent</h2>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-semibold">Voornaam</label>
+              <label className="block text-sm font-semibold">First Name</label>
               <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded" required />
             </div>
             <div>
-              <label className="block text-sm font-semibold">Achternaam</label>
+              <label className="block text-sm font-semibold">Last Name</label>
               <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded" required />
             </div>
             <div>
               <label className="block text-sm font-semibold">Email</label>
-              <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-1 w-full rounded" required />
+              <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-1 w-full rounded" />
             </div>
             <div>
-              <label className="block text-sm font-semibold">Wachtwoord</label>
-              <input type="password" name="wachtwoord" value={form.wachtwoord} onChange={handleChange} className="border p-1 w-full rounded" required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Slug</label>
-              <input type="text" name="slug" value={form.slug} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Beschrijving</label>
+              <label className="block text-sm font-semibold">Description</label>
               <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
             </div>
             <div>
@@ -134,36 +139,12 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
               <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
             </div>
             <div>
-              <label className="block text-sm font-semibold">Prijs</label>
+              <label className="block text-sm font-semibold">Price</label>
               <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">GSM nummer</label>
-              <input type="tel" name="gsm_nummer" value={form.gsm_nummer} onChange={handleChange} className="border p-1 w-full rounded" />
             </div>
             <div>
               <label className="block text-sm font-semibold">Social Links</label>
               <input type="text" name="socialLinks" value={form.socialLinks} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Video URL</label>
-              <input type="text" name="videoURL" value={form.videoURL} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Levering (dagen)</label>
-              <input type="number" name="deliveryDays" value={form.deliveryDays} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Spoedlevering (dagen)</label>
-              <input type="number" name="fastDeliveryDays" value={form.fastDeliveryDays} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">View Count</label>
-              <input type="number" name="viewCount" value={form.viewCount} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Complete Order Count</label>
-              <input type="number" name="completeOrderCount" value={form.completeOrderCount} onChange={handleChange} className="border p-1 w-full rounded" />
             </div>
             <div>
               <label className="block text-sm font-semibold">Social kanaal</label>
@@ -175,7 +156,7 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
               </select>
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-semibold">Categorieën</label>
+              <label className="block text-sm font-semibold">Categories</label>
               <div className="flex flex-wrap gap-2">
                 {allCategories.map(cat => (
                   <label key={cat.id} className="flex items-center gap-1">
@@ -205,7 +186,7 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold">Afbeelding</label>
+              <label className="block text-sm font-semibold">Image</label>
               {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
               <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
             </div>
@@ -229,8 +210,8 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
             </div>
           </div>
           <div className="flex justify-end gap-2 mt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Toevoegen</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Add</button>
           </div>
         </form>
       </div>
@@ -876,74 +857,64 @@ function Talents() {
 
     try {
       console.log('Form data received:', form);
-      console.log('Categories in form:', form.categories);
-      console.log('Tags in form:', form.tags);
+      
+      // Validatie
+      if (!form.voornaam || !form.achternaam) {
+        setMessage('Voornaam en achternaam zijn verplicht.');
+        return;
+      }
       
       // Eerst afbeeldingen uploaden indien aanwezig
       let imageId = null;
       let bannerId = null;
 
       if (form.Image) {
+        console.log('Uploading image:', form.Image.name);
         const imgData = new FormData();
         imgData.append('files', form.Image);
         const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, imgData, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
         });
         imageId = uploadRes.data[0].id;
+        console.log('Image uploaded with ID:', imageId);
       }
 
       if (form.banner) {
+        console.log('Uploading banner:', form.banner.name);
         const bannerData = new FormData();
         bannerData.append('files', form.banner);
         const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, bannerData, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
         });
         bannerId = uploadRes.data[0].id;
+        console.log('Banner uploaded with ID:', bannerId);
       }
 
-      // Prepareer de talent data - MET relaties vanaf het begin
+      // Prepareer de talent data - alleen bestaande velden
       const talentData = {
-        voornaam: form.voornaam,
-        achternaam: form.achternaam,
-        email: form.email,
-        wachtwoord: form.wachtwoord,
-        slug: form.slug,
-        description: form.description,
+        voornaam: form.voornaam.trim(),
+        achternaam: form.achternaam.trim(),
+        email: form.email || '',
+        slug: form.slug || `${form.voornaam}-${form.achternaam}`.toLowerCase().replace(/\s+/g, '-'),
+        description: form.description || '',
         rugnummer: form.rugnummer ? Number(form.rugnummer) : 0,
-        price: form.price ? Number(form.price) : null,
+        price: form.price ? Number(form.price) : 0,
         gsm_nummer: form.gsm_nummer || '',
         socialLinks: form.socialLinks || '',
         videoURL: form.videoURL || '',
-        deliveryDays: form.deliveryDays ? Number(form.deliveryDays) : null,
-        fastDeliveryDays: form.fastDeliveryDays ? Number(form.fastDeliveryDays) : null,
-        viewCount: form.viewCount ? Number(form.viewCount) : 0,
-        completeOrderCount: form.completeOrderCount ? Number(form.completeOrderCount) : 0,
-        completedOrders: form.completedOrders ? Number(form.completedOrders) : 0,
         social_channel: form.social_channel || '',
         fastDelivery: !!form.fastDelivery,
-        // Forceer active en enrollAccepted op true
-        active: true,
-        enrollAccepted: true,
-        Image: imageId,
-        banner: bannerId,
+        active: !!form.active,
+        enrollAccepted: !!form.enrollAccepted,
       };
 
-      // Voeg relaties toe aan de initial data
-      if (Array.isArray(form.categories) && form.categories.length > 0) {
-        const categoryIds = form.categories.map(cat => cat.id);
-        console.log('Adding categories to initial data:', categoryIds);
-        talentData.categories = categoryIds;
-      }
+      // Voeg afbeeldingen toe als ze bestaan
+      if (imageId) talentData.Image = imageId;
+      if (bannerId) talentData.banner = bannerId;
 
-      if (Array.isArray(form.tags) && form.tags.length > 0) {
-        const tagIds = form.tags.map(tag => tag.id);
-        console.log('Adding tags to initial data:', tagIds);
-        talentData.tags = tagIds;
-      }
+      console.log('Creating talent with data (without relations):', talentData);
 
-      console.log('Creating talent with data (including relations):', talentData);
-
-      // Maak het talent aan met alle data inclusief relaties
+      // Maak eerst het talent aan zonder relaties
       const response = await axios.post(
         `${API_BASE_URL}/api/talents`,
         { data: talentData },
@@ -956,32 +927,29 @@ function Talents() {
       );
 
       const createdTalent = response.data.data;
-      console.log('Talent created successfully with relations:', createdTalent);
+      const talentId = createdTalent.documentId || createdTalent.id;
+      console.log('Talent created successfully:', createdTalent);
 
-      // Nu voeg categories en tags toe in één update call
-      const relationData = {};
-      
-      if (Array.isArray(form.categories) && form.categories.length > 0) {
-        const categoryIds = form.categories.map(cat => cat.id);
-        console.log('Adding categories:', categoryIds);
-        relationData.categories = categoryIds;
-      }
+      // Nu voeg relaties toe als er zijn
+      if ((Array.isArray(form.categories) && form.categories.length > 0) || 
+          (Array.isArray(form.tags) && form.tags.length > 0)) {
+        
+        const relationData = {};
+        
+        if (Array.isArray(form.categories) && form.categories.length > 0) {
+          relationData.categories = form.categories.map(cat => cat.id);
+        }
 
-      if (Array.isArray(form.tags) && form.tags.length > 0) {
-        const tagIds = form.tags.map(tag => tag.id);
-        console.log('Adding tags:', tagIds);
-        relationData.tags = tagIds;
-      }
+        if (Array.isArray(form.tags) && form.tags.length > 0) {
+          relationData.tags = form.tags.map(tag => tag.id);
+        }
 
-      // Update relations in one call if there are any
-      if (Object.keys(relationData).length > 0) {
+        console.log('Adding relations:', relationData);
+
         try {
-          console.log('Updating talent with relations:', relationData);
-          const relationResponse = await axios.put(
+          await axios.put(
             `${API_BASE_URL}/api/talents/${talentId}`,
-            { 
-              data: relationData
-            },
+            { data: relationData },
             {
               headers: { 
                 Authorization: `Bearer ${token}`,
@@ -989,21 +957,37 @@ function Talents() {
               },
             }
           );
-          console.log('Relations added successfully:', relationResponse.data);
+          console.log('Relations added successfully');
         } catch (relationError) {
-          console.error('Error adding relations:', relationError.response?.data || relationError.message);
+          console.error('Error adding relations:', relationError.response?.data || relationError);
           // Don't fail the whole process if relations fail
         }
       }
 
       setShowAddModal(false);
       setMessage('Talent succesvol toegevoegd!');
-      console.log('Refreshing talents list...');
       await fetchTalents();
-      console.log('Talents list refreshed, new count:', talents.length);
     } catch (err) {
       console.error('Add talent error:', err.response?.data || err.message);
-      setMessage(`Fout bij toevoegen talent: ${err.response?.data?.error?.message || err.message}`);
+      
+      // Specifieke error handling voor unique constraint violations
+      if (err.response?.data?.error?.message === "This attribute must be unique") {
+        const errorDetails = err.response?.data?.error?.details;
+        if (errorDetails && errorDetails.errors && errorDetails.errors.length > 0) {
+          const fieldError = errorDetails.errors[0];
+          if (fieldError.path && fieldError.path.includes('email')) {
+            setMessage(`Dit email adres (${form.email}) is al in gebruik. Gebruik een ander email adres.`);
+          } else if (fieldError.path && fieldError.path.includes('slug')) {
+            setMessage(`Deze naam combinatie bestaat al. Pas de voor- of achternaam aan.`);
+          } else {
+            setMessage(`Een veld moet uniek zijn maar bestaat al: ${fieldError.path || 'onbekend veld'}`);
+          }
+        } else {
+          setMessage('Een veld moet uniek zijn maar bestaat al. Controleer email adres en naam.');
+        }
+      } else {
+        setMessage(`Fout bij toevoegen talent: ${err.response?.data?.error?.message || err.message}`);
+      }
     }
   };
 
