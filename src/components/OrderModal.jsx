@@ -280,13 +280,10 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                             <span className="text-3xl">📋</span>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                            Order bevestigen
+                            Confirm Order
                         </h2>
                         <p className="text-gray-600 mb-4">
-                            Video is succesvol geüpload voor {order.to}.
-                        </p>
-                        <p className="text-gray-600 mb-4">
-                            Wil je deze order als voltooid markeren? Dit zal het aantal voltooide orders voor dit talent verhogen.
+                            Confirm your order now.
                         </p>
                         
                         {/* Checkbox for profile display */}
@@ -296,10 +293,10 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                                 id="showOnProfile"
                                 checked={showOnProfile}
                                 onChange={(e) => setShowOnProfile(e.target.checked)}
-                                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-full"
                             />
                             <label htmlFor="showOnProfile" className="text-sm text-gray-700 font-medium">
-                                Video weergeven op profiel
+                                Show video on talents profile page
                             </label>
                         </div>
                     </div>
@@ -309,13 +306,13 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                             onClick={handleCancelConfirmation}
                             className="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-medium"
                         >
-                            Annuleren
+                            Cancel
                         </button>
                         <button
                             onClick={handleConfirmOrder}
                             className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium"
                         >
-                            Bevestigen
+                            Send to {order.to}
                         </button>
                     </div>
                 </div>
@@ -336,7 +333,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                             Thank you for your submission!
                         </h2>
                         <p className="text-gray-600">
-                            Your video has been successfully uploaded for {order.to}.
+                            Your video has been successfully sent to {order.to}.
                         </p>
                     </div>
                     
@@ -377,8 +374,6 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                     <p><strong>Van:</strong> {order.from}</p>
                     <p><strong>Voor:</strong> {order.to}</p>
                     <p><strong>Gelegenheid:</strong> {order.gelegenheid}</p>
-                    <p><strong>Email:</strong> {order.userEmail}</p>
-                    <p><strong>Telefoon:</strong> {order.phoneNumber}</p>
                     <p><strong>Aangemaakt:</strong> {new Date(order.createdAt).toLocaleString('nl-NL')}</p>
                 </div>
                 </div>

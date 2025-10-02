@@ -9,6 +9,8 @@ function Organize() {
   const [error, setError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editValue, setEditValue] = useState("");
   const [normalDeliveryDays, setNormalDeliveryDays] = useState(0);
   const [fastDeliveryDays, setFastDeliveryDays] = useState(0);
   const [deliveryLoading, setDeliveryLoading] = useState(false);
@@ -79,6 +81,36 @@ function Organize() {
       closeDeleteModal();
     } catch (err) {
       setError("Categorie verwijderen mislukt.");
+    }
+  };
+
+  const handleEdit = (category) => {
+    setEditingCategory(category.documentId || category.id);
+    setEditValue(category.attributes?.name || category.name);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCategory(null);
+    setEditValue("");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editValue.trim() || !editingCategory) return;
+    
+    try {
+      const slug = generateSlug(editValue);
+      await axios.put(`${API_BASE_URL}/api/categories/${editingCategory}`, {
+        data: { 
+          name: editValue,
+          slug: slug
+        }
+      });
+      setEditingCategory(null);
+      setEditValue("");
+      fetchCategories();
+    } catch (err) {
+      console.error("Edit error:", err.response?.data || err);
+      setError("Categorie updaten mislukt.");
     }
   };
 
@@ -194,14 +226,48 @@ function Organize() {
           <div className="flex flex-col gap-8">
             <ul className="space-y-2 w-full h-62 mt-4 overflow-y-auto">
               {categories.map(cat => (
-                <li key={cat.id} className="border-b border-gray py-2 flex justify-between items-center">
-                  <span>{cat.attributes?.name || cat.name}</span>
-                  <button 
-                    onClick={() => openDeleteModal(cat)}
-                    className="text-green text-sm underline hover:no-underline cursor-pointer"
-                  >
-                    Delete
-                  </button>
+                <li key={cat.documentId || cat.id} className="border-b border-gray py-2 flex justify-between items-center">
+                  {editingCategory === (cat.documentId || cat.id) ? (
+                    <div className="flex gap-2 items-center flex-1">
+                      <input
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="border px-2 py-1 rounded flex-1"
+                        autoFocus
+                      />
+                      <button 
+                        onClick={handleSaveEdit}
+                        className="bg-green text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                      >
+                        Save
+                      </button>
+                      <button 
+                        onClick={handleCancelEdit}
+                        className="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span>{cat.attributes?.name || cat.name}</span>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleEdit(cat)}
+                          className="text-blue-600 text-sm underline hover:no-underline cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => openDeleteModal(cat)}
+                          className="text-red-600 text-sm underline hover:no-underline cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
