@@ -20,21 +20,19 @@ jobs:
       - name: Install dependencies
         run: yarn install
         
-      - name: Create environment file
+      - name: Build
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-            echo "REACT_APP_API_BASE_URL=https://api-dev.fanflix.be" > .env
-            echo "REACT_APP_TALENT_BASE_URL=https://studio-dev.fanflix.be" >> .env
+            export REACT_APP_API_BASE_URL=https://api-dev.fanflix.be
+            export REACT_APP_TALENT_BASE_URL=https://studio-dev.fanflix.be
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            echo "REACT_APP_API_BASE_URL=https://api-staging.fanflix.be" > .env
-            echo "REACT_APP_TALENT_BASE_URL=https://studio-staging.fanflix.be" >> .env
+            export REACT_APP_API_BASE_URL=https://api-staging.fanflix.be
+            export REACT_APP_TALENT_BASE_URL=https://studio-staging.fanflix.be
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "REACT_APP_API_BASE_URL=https://api.fanflix.be" > .env
-            echo "REACT_APP_TALENT_BASE_URL=https://studio.fanflix.be" >> .env
+            export REACT_APP_API_BASE_URL=https://api.fanflix.be
+            export REACT_APP_TALENT_BASE_URL=https://studio.fanflix.be
           fi
-        
-      - name: Build
-        run: yarn build
+          yarn build
 
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
