@@ -84,43 +84,43 @@ function Dashboard() {
         
         let talentsRes;
         try {
-          // Gebruik dezelfde parameters als in Header.jsx
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
-            params: {
-              'filters[spotlighted][$eq]': true,
-              'populate[Image]': '*',
-              'populate[banner]': '*', 
-              'populate[categories]': '*',
-              'pagination[limit]': 10
-            },
+          // Gebruik dezelfde URL format als in Header.jsx die wel werkt
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=10`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authError) {
           console.log("Auth failed for talents, trying without auth:", authError.message);
-          // Try without auth met dezelfde parameters
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
-            params: {
-              'filters[spotlighted][$eq]': true,
-              'populate[Image]': '*',
-              'populate[banner]': '*', 
-              'populate[categories]': '*',
-              'pagination[limit]': 10
-            }
-          });
+          // Try without auth
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=10`);
         }
         
         console.log("Spotlighted talents response:", talentsRes.data);
         
-        // Handle response data - check if it's in data property or direct array
-        let spotlighted = [];
-        if (talentsRes.data.data && Array.isArray(talentsRes.data.data)) {
-          spotlighted = talentsRes.data.data;
-        } else if (Array.isArray(talentsRes.data)) {
-          spotlighted = talentsRes.data;
+        // Handle response data zoals in Header.jsx
+        const talents = talentsRes.data.data || talentsRes.data;
+        if (!talents || talents.length === 0) {
+          // Als direct niet werkt, probeer via categories zoals in Header.jsx
+          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`);
+          
+          let foundTalents = [];
+          if (categoryRes.data.data) {
+            categoryRes.data.data.forEach((category) => {
+              if (category.talents) {
+                category.talents.forEach((talent) => {
+                  if (talent.spotlighted === true) {
+                    foundTalents.push(talent);
+                  }
+                });
+              }
+            });
+          }
+          
+          console.log("Spotlighted talents found via categories:", foundTalents.length);
+          setSpotlightedTalents(foundTalents);
+        } else {
+          console.log("Spotlighted talents found directly:", talents.length);
+          setSpotlightedTalents(Array.isArray(talents) ? talents : [talents]);
         }
-        
-        console.log("Spotlighted talents found:", spotlighted.length);
-        setSpotlightedTalents(spotlighted);
         
       } catch (error) {
         console.error('Fout bij ophalen spotlighted talents:', error);
@@ -133,38 +133,34 @@ function Dashboard() {
         
         let talentsRes;
         try {
-          // Haal alle talents op met completedOrders data
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
-            params: {
-              'populate[Image]': '*',
-              'populate[banner]': '*', 
-              'populate[categories]': '*',
-              'pagination[limit]': 100 // Haal meer talents op om de beste te vinden
-            },
+          // Haal alle talents op via categories zoals de werkende aanpak
+          talentsRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authError) {
           console.log("Auth failed for talents, trying without auth:", authError.message);
           // Try without auth
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
-            params: {
-              'populate[Image]': '*',
-              'populate[banner]': '*', 
-              'populate[categories]': '*',
-              'pagination[limit]': 100
+          talentsRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`);
+        }
+        
+        console.log("Categories response for top performer:", talentsRes.data);
+        
+        // Verzamel alle talents uit alle categorieën
+        let allTalents = [];
+        if (talentsRes.data.data) {
+          talentsRes.data.data.forEach((category) => {
+            if (category.talents) {
+              category.talents.forEach((talent) => {
+                // Controleer of talent al bestaat (vermijd duplicaten)
+                if (!allTalents.find(t => t.id === talent.id)) {
+                  allTalents.push(talent);
+                }
+              });
             }
           });
         }
         
-        console.log("All talents response:", talentsRes.data);
-        
-        // Handle response data
-        let allTalents = [];
-        if (talentsRes.data.data && Array.isArray(talentsRes.data.data)) {
-          allTalents = talentsRes.data.data;
-        } else if (Array.isArray(talentsRes.data)) {
-          allTalents = talentsRes.data;
-        }
+        console.log("All talents collected:", allTalents.length);
         
         // Vind het talent met de hoogste completedOrders
         let topPerformer = null;
@@ -365,7 +361,7 @@ function Dashboard() {
                     </div>
                   </div>
                   <hr className='h-[70%] my-auto w-[1px] bg-white'/>
-                  <div class="flex mt-8 gap-8">
+                  <div className="flex mt-8 gap-8">
                     <div className='flex flex-col gap-3 items-center'>
                       <h2 className='font-bold'>451</h2>
                       <p className='font-light'>Delivered orders</p>
