@@ -1,0 +1,96 @@
+name: Deploy Sub-Admin Frontend to Plesk/Combell
+
+on:
+  push:
+    branches: [combell]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build React application
+        run: yarn build
+        env:
+          NODE_ENV: production
+          REACT_APP_API_BASE_URL: ${{ secrets.PLESK_API_BASE_URL || 'https://api.fanflix.be' }}
+          REACT_APP_TALENT_BASE_URL: ${{ secrets.PLESK_TALENT_BASE_URL || 'https://studio.fanflix.be' }}
+
+      - name: Create deployment package
+        run: |
+          cd build
+          tar -czf ../build.tar.gz .
+          cd ..
+
+      - name: Deploy to Plesk Server via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PLESK_HOST }}
+          username: ${{ secrets.PLESK_SSH_USER }}
+          key: ${{ secrets.PLESK_SSH_KEY }}
+          port: ${{ secrets.PLESK_SSH_PORT || 22 }}
+          source: "build.tar.gz"
+          target: "/tmp/"
+
+      - name: Extract and deploy static files
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PLESK_HOST }}
+          username: ${{ secrets.PLESK_SSH_USER }}
+          key: ${{ secrets.PLESK_SSH_KEY }}
+          port: ${{ secrets.PLESK_SSH_PORT || 22 }}
+          script: |
+            # Set variables
+            WEB_DIR="${{ secrets.PLESK_SUBADMIN_WEB_DIR || '/var/www/vhosts/subadmin.fanflix.be/httpdocs' }}"
+
+            # Create backup
+            if [ -d "$WEB_DIR" ]; then
+              echo "Creating backup..."
+              tar -czf "$WEB_DIR-backup-$(date +%Y%m%d-%H%M%S).tar.gz" -C "$(dirname $WEB_DIR)" "$(basename $WEB_DIR)" --exclude='*.tar.gz'
+            fi
+
+            # Clear and deploy
+            if [ -f "$WEB_DIR/.htaccess" ]; then
+              cp "$WEB_DIR/.htaccess" /tmp/.htaccess.backup
+            fi
+
+            rm -rf "$WEB_DIR"/*
+
+            if [ -f "/tmp/.htaccess.backup" ]; then
+              mv /tmp/.htaccess.backup "$WEB_DIR/.htaccess"
+            fi
+
+            echo "Deploying new build..."
+            tar -xzf /tmp/build.tar.gz -C "$WEB_DIR"
+            rm /tmp/build.tar.gz
+
+            # Set permissions
+            chown -R ${{ secrets.PLESK_SSH_USER }}:${{ secrets.PLESK_SSH_USER }} "$WEB_DIR"
+            chmod -R 755 "$WEB_DIR"
+
+            echo "Sub-admin frontend deployment completed!"
+
+      - name: Health check
+        run: |
+          sleep 5
+          HEALTH_URL="${{ secrets.PLESK_SUBADMIN_HEALTH_CHECK_URL || 'https://subadmin.fanflix.be' }}"
+          if curl -f -s "$HEALTH_URL" > /dev/null; then
+            echo "✅ Sub-admin frontend is accessible!"
+          else
+            echo "❌ Sub-admin frontend health check failed!"
+            exit 1
+          fi
