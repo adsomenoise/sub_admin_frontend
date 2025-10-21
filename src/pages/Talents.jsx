@@ -645,13 +645,48 @@ function Talents() {
       setError(null);
       setMessage('');
       const token = localStorage.getItem('jwt');
-      // Populate both Image and banner, ensure completedOrders is included
-      const response = await axios.get(
-        `${API_BASE_URL}/api/talents?populate=Image,banner&filters[enrollAccepted][$eq]=true`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+      
+      // Probeer eerst de directe aanpak zoals in andere werkende componenten
+      let response;
+      try {
+        response = await axios.get(
+          `${API_BASE_URL}/api/talents?filters[enrollAccepted][$eq]=true&populate=Image&populate=banner&populate=categories&populate=tags`,
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }
+        );
+      } catch (directError) {
+        console.log("Direct API failed, trying categories approach:", directError.message);
+        // Als direct niet werkt, probeer via categories zoals in andere werkende componenten
+        response = await axios.get(
+          `${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories&populate[talents][populate][3]=tags`,
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }
+        );
+        
+        // Transformeer de response om alle talents uit alle categorieën te halen
+        let allTalents = [];
+        if (response.data.data) {
+          response.data.data.forEach((category) => {
+            if (category.talents) {
+              category.talents.forEach((talent) => {
+                // Controleer of talent al bestaat (vermijd duplicaten) en of het goedgekeurd is
+                if (!allTalents.find(t => t.id === talent.id) && talent.enrollAccepted === true) {
+                  allTalents.push(talent);
+                }
+              });
+            }
+          });
         }
-      );
+        
+        // Maak een fake response object met de verzamelde talents
+        response = {
+          data: {
+            data: allTalents
+          }
+        };
+      }
 
       // Handle both Strapi v4 and v5 response formats
       let talentsData = [];
