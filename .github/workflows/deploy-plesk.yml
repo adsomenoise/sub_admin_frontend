@@ -24,7 +24,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Build React application
-        run: yarn build
+        run: yarn build --base=/subadmin/
         env:
           NODE_ENV: production
           REACT_APP_API_BASE_URL: https://combell.fanflix.be
