@@ -27,8 +27,8 @@ jobs:
         run: yarn build
         env:
           NODE_ENV: production
-          REACT_APP_API_BASE_URL: ${{ secrets.PLESK_API_BASE_URL || 'https://api.fanflix.be' }}
-          REACT_APP_TALENT_BASE_URL: ${{ secrets.PLESK_TALENT_BASE_URL || 'https://studio.fanflix.be' }}
+          REACT_APP_API_BASE_URL: https://combell.fanflix.be
+          REACT_APP_TALENT_BASE_URL: https://combell.fanflix.be
 
       - name: Create deployment package
         run: |
@@ -55,10 +55,13 @@ jobs:
           port: ${{ secrets.PLESK_SSH_PORT || 22 }}
           script: |
             # Set variables
-            WEB_DIR="${{ secrets.PLESK_SUBADMIN_WEB_DIR || '/var/www/vhosts/subadmin.fanflix.be/httpdocs' }}"
+            WEB_DIR="/var/www/vhosts/combell.fanflix.be/subadmin"
+
+            # Create directory if it doesn't exist
+            mkdir -p "$WEB_DIR"
 
             # Create backup
-            if [ -d "$WEB_DIR" ]; then
+            if [ "$(ls -A $WEB_DIR 2>/dev/null)" ]; then
               echo "Creating backup..."
               tar -czf "$WEB_DIR-backup-$(date +%Y%m%d-%H%M%S).tar.gz" -C "$(dirname $WEB_DIR)" "$(basename $WEB_DIR)" --exclude='*.tar.gz'
             fi
@@ -87,10 +90,18 @@ jobs:
       - name: Health check
         run: |
           sleep 5
-          HEALTH_URL="${{ secrets.PLESK_SUBADMIN_HEALTH_CHECK_URL || 'https://subadmin.fanflix.be' }}"
-          if curl -f -s "$HEALTH_URL" > /dev/null; then
+          if curl -f -s "https://combell.fanflix.be/subadmin" > /dev/null; then
             echo "✅ Sub-admin frontend is accessible!"
           else
             echo "❌ Sub-admin frontend health check failed!"
             exit 1
           fi
+
+# =============================================================================
+# REQUIRED GITHUB SECRETS (same as backend)
+# =============================================================================
+# PLESK_HOST        - combell.fanflix.be
+# PLESK_SSH_USER    - combell.fanflix.be_u1ngc1xttk
+# PLESK_SSH_KEY     - SSH private key (from ~/.ssh/fanflix_plesk)
+# PLESK_SSH_PORT    - 22 (default)
+# =============================================================================
