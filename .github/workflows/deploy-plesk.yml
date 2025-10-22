@@ -90,7 +90,7 @@ jobs:
       - name: Health check
         run: |
           sleep 5
-          if curl -f -s "https://dev.fanflix.be/subadmin" > /dev/null; then
+          if curl -f -s -k "https://dev.fanflix.be/subadmin" > /dev/null; then
             echo "✅ Sub-admin frontend is accessible!"
           else
             echo "❌ Sub-admin frontend health check failed!"
