@@ -30,12 +30,6 @@ jobs:
           REACT_APP_API_BASE_URL: https://dev.fanflix.be
           REACT_APP_TALENT_BASE_URL: https://dev.fanflix.be
 
-      - name: Create deployment package
-        run: |
-          cd build
-          tar -czf ../build.tar.gz .
-          cd ..
-
       - name: Deploy to Plesk Server via SSH
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -43,8 +37,9 @@ jobs:
           username: ${{ secrets.PLESK_SSH_USER }}
           key: ${{ secrets.PLESK_SSH_KEY }}
           port: ${{ secrets.PLESK_SSH_PORT || 22 }}
-          source: "build.tar.gz"
-          target: "/tmp/"
+          source: "build/*"
+          target: "/tmp/subadmin-deploy/"
+          strip_components: 1
 
       - name: Extract and deploy static files
         uses: appleboy/ssh-action@v1.0.3
@@ -78,11 +73,11 @@ jobs:
             fi
 
             echo "Deploying new build..."
-            tar -xzf /tmp/build.tar.gz -C "$WEB_DIR"
-            rm /tmp/build.tar.gz
+            cp -r /tmp/subadmin-deploy/* "$WEB_DIR/"
+            rm -rf /tmp/subadmin-deploy
 
             # Set permissions
-            chown -R ${{ secrets.PLESK_SSH_USER }}:${{ secrets.PLESK_SSH_USER }} "$WEB_DIR"
+            chown -R $(whoami):psacln "$WEB_DIR"
             chmod -R 755 "$WEB_DIR"
 
             echo "Sub-admin frontend deployment completed!"
