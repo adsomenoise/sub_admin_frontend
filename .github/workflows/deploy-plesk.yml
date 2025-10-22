@@ -27,8 +27,8 @@ jobs:
         run: yarn build --base=/subadmin/
         env:
           NODE_ENV: production
-          REACT_APP_API_BASE_URL: https://combell.fanflix.be
-          REACT_APP_TALENT_BASE_URL: https://combell.fanflix.be
+          REACT_APP_API_BASE_URL: https://dev.fanflix.be
+          REACT_APP_TALENT_BASE_URL: https://dev.fanflix.be
 
       - name: Create deployment package
         run: |
@@ -55,7 +55,7 @@ jobs:
           port: ${{ secrets.PLESK_SSH_PORT || 22 }}
           script: |
             # Set variables
-            WEB_DIR="/var/www/vhosts/combell.fanflix.be/subadmin"
+            WEB_DIR="/var/www/vhosts/fanflix.be/subadmin"
 
             # Create directory if it doesn't exist
             mkdir -p "$WEB_DIR"
@@ -90,7 +90,7 @@ jobs:
       - name: Health check
         run: |
           sleep 5
-          if curl -f -s "https://combell.fanflix.be/subadmin" > /dev/null; then
+          if curl -f -s "https://dev.fanflix.be/subadmin" > /dev/null; then
             echo "✅ Sub-admin frontend is accessible!"
           else
             echo "❌ Sub-admin frontend health check failed!"
@@ -100,8 +100,8 @@ jobs:
 # =============================================================================
 # REQUIRED GITHUB SECRETS (same as backend)
 # =============================================================================
-# PLESK_HOST        - combell.fanflix.be
-# PLESK_SSH_USER    - combell.fanflix.be_u1ngc1xttk
+# PLESK_HOST        - dev.fanflix.be
+# PLESK_SSH_USER    - combell.fanflix.be_u1ngc1xttk (user unchanged)
 # PLESK_SSH_KEY     - SSH private key (from ~/.ssh/fanflix_plesk)
 # PLESK_SSH_PORT    - 22 (default)
 # =============================================================================
