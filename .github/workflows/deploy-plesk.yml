@@ -55,7 +55,7 @@ jobs:
           port: ${{ secrets.PLESK_SSH_PORT || 22 }}
           script: |
             # Set variables
-            WEB_DIR="/var/www/vhosts/fanflix.be/subadmin"
+            WEB_DIR="/var/www/vhosts/fanflix.be/dev.fanflix.be/httpdocs/subadmin"
 
             # Create directory if it doesn't exist
             mkdir -p "$WEB_DIR"
