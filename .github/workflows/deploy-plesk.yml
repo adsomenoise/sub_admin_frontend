@@ -2,7 +2,7 @@ name: Deploy Sub-Admin Frontend to Plesk/Combell
 
 on:
   push:
-    branches: [combell, dev, staging, main]  # Multi-environment support
+    branches: [dev, staging, main]  # Multi-environment support
 
 jobs:
   deploy:
@@ -17,11 +17,6 @@ jobs:
         run: |
           # Detect environment based on branch
           BRANCH="${{ github.ref_name }}"
-
-          # Map combell branch to dev for backward compatibility
-          if [ "$BRANCH" = "combell" ]; then
-            BRANCH="dev"
-          fi
 
           case "$BRANCH" in
             dev)
