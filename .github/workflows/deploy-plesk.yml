@@ -22,12 +22,12 @@ jobs:
             dev)
               echo "ENVIRONMENT=dev" >> $GITHUB_OUTPUT
               echo "DOMAIN=dev.fanflix.be" >> $GITHUB_OUTPUT
-              echo "WEB_DIR=/var/www/vhosts/fanflix.be/dev.fanflix.be/subadmin" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/dev.fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
               ;;
             staging)
               echo "ENVIRONMENT=staging" >> $GITHUB_OUTPUT
               echo "DOMAIN=staging.fanflix.be" >> $GITHUB_OUTPUT
-              echo "WEB_DIR=/var/www/vhosts/fanflix.be/staging.fanflix.be/subadmin" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/staging.fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
               ;;
             main)
               echo "ENVIRONMENT=production" >> $GITHUB_OUTPUT
@@ -80,7 +80,6 @@ jobs:
           port: ${{ secrets.PLESK_SSH_PORT || 22 }}
           source: "build/*"
           target: "/tmp/subadmin-deploy/"
-          strip_components: 1
 
       - name: Extract and deploy static files
         uses: appleboy/ssh-action@v1.0.3
@@ -118,7 +117,7 @@ jobs:
             fi
 
             echo "Deploying new build..."
-            cp -r /tmp/subadmin-deploy/* "$WEB_DIR/"
+            cp -r /tmp/subadmin-deploy/build/* "$WEB_DIR/"
             rm -rf /tmp/subadmin-deploy
 
             # Set permissions
