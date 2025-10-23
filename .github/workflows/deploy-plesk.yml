@@ -32,7 +32,7 @@ jobs:
             main)
               echo "ENVIRONMENT=production" >> $GITHUB_OUTPUT
               echo "DOMAIN=fanflix.be" >> $GITHUB_OUTPUT
-              echo "WEB_DIR=/var/www/vhosts/fanflix.be/subadmin" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
               ;;
             *)
               echo "Unknown branch: $BRANCH"
