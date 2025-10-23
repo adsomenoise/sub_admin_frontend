@@ -60,6 +60,17 @@ jobs:
           REACT_APP_API_BASE_URL: https://${{ steps.set-env.outputs.DOMAIN }}
           REACT_APP_TALENT_BASE_URL: https://${{ steps.set-env.outputs.DOMAIN }}
 
+      - name: Create deployment directory on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PLESK_HOST }}
+          username: ${{ secrets.PLESK_SSH_USER }}
+          key: ${{ secrets.PLESK_SSH_KEY }}
+          port: ${{ secrets.PLESK_SSH_PORT || 22 }}
+          script: |
+            mkdir -p /tmp/subadmin-deploy
+            rm -rf /tmp/subadmin-deploy/*
+
       - name: Deploy to Plesk Server via SSH
         uses: appleboy/scp-action@v0.1.7
         with:
