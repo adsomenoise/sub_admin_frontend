@@ -22,17 +22,17 @@ jobs:
             dev)
               echo "ENVIRONMENT=dev" >> $GITHUB_OUTPUT
               echo "DOMAIN=dev.fanflix.be" >> $GITHUB_OUTPUT
-              echo "WEB_DIR=/var/www/vhosts/fanflix.be/dev.fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/dev.fanflix.be/subadmin" >> $GITHUB_OUTPUT
               ;;
             staging)
               echo "ENVIRONMENT=staging" >> $GITHUB_OUTPUT
               echo "DOMAIN=staging.fanflix.be" >> $GITHUB_OUTPUT
-              echo "WEB_DIR=/var/www/vhosts/fanflix.be/staging.fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/staging.fanflix.be/subadmin" >> $GITHUB_OUTPUT
               ;;
             main)
               echo "ENVIRONMENT=production" >> $GITHUB_OUTPUT
               echo "DOMAIN=fanflix.be" >> $GITHUB_OUTPUT
-              echo "WEB_DIR=/var/www/vhosts/fanflix.be/fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
               ;;
             *)
               echo "Unknown branch: $BRANCH"
