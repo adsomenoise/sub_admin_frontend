@@ -13,7 +13,7 @@ import Financials from './pages/Financials.jsx';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/subadmin">
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
