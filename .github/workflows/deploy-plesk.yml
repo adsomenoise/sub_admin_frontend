@@ -2,7 +2,7 @@ name: Deploy Sub-Admin Frontend to Plesk/Combell
 
 on:
   push:
-    branches: [combell]
+    branches: [combell, dev, staging, main]  # Multi-environment support
 
 jobs:
   deploy:
@@ -11,6 +11,41 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set environment variables
+        id: set-env
+        run: |
+          # Detect environment based on branch
+          BRANCH="${{ github.ref_name }}"
+
+          # Map combell branch to dev for backward compatibility
+          if [ "$BRANCH" = "combell" ]; then
+            BRANCH="dev"
+          fi
+
+          case "$BRANCH" in
+            dev)
+              echo "ENVIRONMENT=dev" >> $GITHUB_OUTPUT
+              echo "DOMAIN=dev.fanflix.be" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/dev.fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "ENVIRONMENT=staging" >> $GITHUB_OUTPUT
+              echo "DOMAIN=staging.fanflix.be" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/staging.fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              ;;
+            main)
+              echo "ENVIRONMENT=production" >> $GITHUB_OUTPUT
+              echo "DOMAIN=fanflix.be" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "Unknown branch: $BRANCH"
+              exit 1
+              ;;
+          esac
+
+          echo "Deploying to: ${{ steps.set-env.outputs.ENVIRONMENT }}"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,8 +62,8 @@ jobs:
         run: yarn build --base=/subadmin/
         env:
           NODE_ENV: production
-          REACT_APP_API_BASE_URL: https://dev.fanflix.be
-          REACT_APP_TALENT_BASE_URL: https://dev.fanflix.be
+          REACT_APP_API_BASE_URL: https://${{ steps.set-env.outputs.DOMAIN }}
+          REACT_APP_TALENT_BASE_URL: https://${{ steps.set-env.outputs.DOMAIN }}
 
       - name: Deploy to Plesk Server via SSH
         uses: appleboy/scp-action@v0.1.7
@@ -43,14 +78,18 @@ jobs:
 
       - name: Extract and deploy static files
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          WEB_DIR: ${{ steps.set-env.outputs.WEB_DIR }}
+          ENVIRONMENT: ${{ steps.set-env.outputs.ENVIRONMENT }}
         with:
           host: ${{ secrets.PLESK_HOST }}
           username: ${{ secrets.PLESK_SSH_USER }}
           key: ${{ secrets.PLESK_SSH_KEY }}
           port: ${{ secrets.PLESK_SSH_PORT || 22 }}
+          envs: WEB_DIR,ENVIRONMENT
           script: |
-            # Set variables
-            WEB_DIR="/var/www/vhosts/fanflix.be/dev.fanflix.be/httpdocs/subadmin"
+            echo "🌍 Deploying to: $ENVIRONMENT"
+            echo "📁 Web directory: $WEB_DIR"
 
             # Create directory if it doesn't exist
             mkdir -p "$WEB_DIR"
@@ -80,13 +119,14 @@ jobs:
             chown -R $(whoami):psacln "$WEB_DIR"
             chmod -R 755 "$WEB_DIR"
 
-            echo "Sub-admin frontend deployment completed!"
+            echo "✅ Sub-admin frontend deployment completed!"
 
       - name: Health check
         run: |
           sleep 5
-          if curl -f -s -k "https://dev.fanflix.be/subadmin" > /dev/null; then
-            echo "✅ Sub-admin frontend is accessible!"
+          DOMAIN="${{ steps.set-env.outputs.DOMAIN }}"
+          if curl -f -s -k "https://$DOMAIN/subadmin" > /dev/null; then
+            echo "✅ Sub-admin frontend is accessible at https://$DOMAIN/subadmin!"
           else
             echo "❌ Sub-admin frontend health check failed!"
             exit 1
