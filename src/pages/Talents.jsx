@@ -5,23 +5,13 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
   const [form, setForm] = useState({
     voornaam: '',
     achternaam: '',
-    email: '',
-    wachtwoord: '',
     slug: '',
     description: '',
     rugnummer: 0,
     price: '',
-    gsm_nummer: '',
-    socialLinks: '',
     fastDelivery: false,
     enrollAccepted: true,
     active: true,
-    videoURL: '',
-    deliveryDays: '',
-    fastDeliveryDays: '',
-    viewCount: 0,
-    completeOrderCount: 0,
-    social_channel: '',
     categories: [],
     tags: [],
     Image: null,
@@ -36,23 +26,13 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
       setForm({
         voornaam: '',
         achternaam: '',
-        email: '',
-        wachtwoord: '',
         slug: '',
         description: '',
         rugnummer: 0,
         price: '',
-        gsm_nummer: '',
-        socialLinks: '',
         fastDelivery: false,
         enrollAccepted: true,
         active: true,
-        videoURL: '',
-        deliveryDays: '',
-        fastDeliveryDays: '',
-        viewCount: 0,
-        completeOrderCount: 0,
-        social_channel: '',
         categories: [],
         tags: [],
         Image: null,
@@ -103,76 +83,31 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
       <div className="bg-white rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[70%] relative">
         <button onClick={onClose} className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <h2 className="text-xl font-bold mb-2">Nieuw Talent Toevoegen</h2>
+          <h2 className="text-xl font-bold mb-2">Add a new talent</h2>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-semibold">Voornaam</label>
+              <label className="block text-sm font-semibold">First name</label>
               <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded" required />
             </div>
             <div>
-              <label className="block text-sm font-semibold">Achternaam</label>
+              <label className="block text-sm font-semibold">Last name</label>
               <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded" required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Email</label>
-              <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-1 w-full rounded" required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Wachtwoord</label>
-              <input type="password" name="wachtwoord" value={form.wachtwoord} onChange={handleChange} className="border p-1 w-full rounded" required />
             </div>
             <div>
               <label className="block text-sm font-semibold">Slug</label>
               <input type="text" name="slug" value={form.slug} onChange={handleChange} className="border p-1 w-full rounded" />
             </div>
             <div>
-              <label className="block text-sm font-semibold">Beschrijving</label>
+              <label className="block text-sm font-semibold">Description</label>
               <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
             </div>
             <div>
-              <label className="block text-sm font-semibold">Rugnummer</label>
+              <label className="block text-sm font-semibold">Jersey number</label>
               <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
             </div>
             <div>
-              <label className="block text-sm font-semibold">Prijs</label>
+              <label className="block text-sm font-semibold">Price</label>
               <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">GSM nummer</label>
-              <input type="tel" name="gsm_nummer" value={form.gsm_nummer} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Social Links</label>
-              <input type="text" name="socialLinks" value={form.socialLinks} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Video URL</label>
-              <input type="text" name="videoURL" value={form.videoURL} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Levering (dagen)</label>
-              <input type="number" name="deliveryDays" value={form.deliveryDays} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Spoedlevering (dagen)</label>
-              <input type="number" name="fastDeliveryDays" value={form.fastDeliveryDays} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">View Count</label>
-              <input type="number" name="viewCount" value={form.viewCount} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Complete Order Count</label>
-              <input type="number" name="completeOrderCount" value={form.completeOrderCount} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Social kanaal</label>
-              <select name="social_channel" value={form.social_channel} onChange={handleChange} className="border p-1 w-full rounded">
-                <option value="">Selecteer kanaal</option>
-                {allSocialOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-semibold">Categorieën</label>
@@ -431,7 +366,7 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
                   </div>
                 </div>
               </div>
-              <div className='h-[60%] w-full bg-green-600 rounded-[1rem]'>
+              <div className='h-[60%] w-full bg-white rounded-[1rem]'>
                 Profile video
               </div>
             </div>
@@ -459,7 +394,7 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
                   </div>
                 </div>
               </div>
-              <div className='h-[70%] w-full bg-blue-500 rounded-[1rem] p-4'>
+              <div className='h-[70%] w-full bg-white rounded-[1rem] p-4'>
                 {/* Voornaam */}
                 <div>
                   <label className="block text-sm font-semibold">Voornaam</label>
@@ -469,11 +404,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
                 <div>
                   <label className="block text-sm font-semibold">Achternaam</label>
                   <input type="text" name="achternaam" value={form.achternaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-                </div>
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-semibold">Email</label>
-                  <input type="email" name="email" value={form.email || ''} onChange={handleChange} className="border p-1 w-full rounded" />
                 </div>
                 {/* Beschrijving */}
                 <div>
