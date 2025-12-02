@@ -5,7 +5,7 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
   const [form, setForm] = useState({
     voornaam: '',
     achternaam: '',
-    slug: '',
+    slug: '', // wordt automatisch gezet
     description: '',
     rugnummer: 0,
     price: '',
@@ -45,6 +45,8 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
 
   if (!open) return null;
 
+  // Geen modal, gewoon een blok op de pagina
+
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === 'checkbox') {
@@ -58,7 +60,17 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
         setBannerPreview(URL.createObjectURL(files[0]));
       }
     } else {
-      setForm(f => ({ ...f, [name]: value }));
+      // Automatisch slug genereren bij wijziging voornaam of achternaam
+      if (name === 'voornaam' || name === 'achternaam') {
+        setForm(f => {
+          const newVoornaam = name === 'voornaam' ? value : f.voornaam;
+          const newAchternaam = name === 'achternaam' ? value : f.achternaam;
+          const slug = `${newVoornaam}-${newAchternaam}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+          return { ...f, [name]: value, slug };
+        });
+      } else {
+        setForm(f => ({ ...f, [name]: value }));
+      }
     }
   };
 
@@ -79,96 +91,111 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[70%] relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <h2 className="text-xl font-bold mb-2">Add a new talent</h2>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-sm font-semibold">First name</label>
-              <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded" required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Last name</label>
-              <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded" required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Slug</label>
-              <input type="text" name="slug" value={form.slug} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Description</label>
-              <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Jersey number</label>
-              <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Price</label>
-              <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-semibold">Categorieën</label>
-              <div className="flex flex-wrap gap-2">
-                {allCategories.map(cat => (
-                  <label key={cat.id} className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={form.categories.some(c => c.id === cat.id)}
-                      onChange={() => handleCheckboxChange('categories', cat.id)}
-                    />
-                    {cat.name}
-                  </label>
-                ))}
+    <div className="rounded-xl p-8 overflow-y-auto w-full mx-auto relative">
+      <button onClick={onClose} className="absolute top-2 right-4 text-3xl text-black hover:text-gray-700 cursor-pointer">&times;</button>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <h2 className="text-xl font-bold mb-2">New talent</h2>
+        <div className="grid grid-cols-[35%_65%] gap-2">
+          <div className='w-full grid grid-rows-[45%_55%] gap-2'>
+            <div className='bg-gray rounded-2xl p-4 w-full h-full'>
+              <div>
+                <label className="block text-sm font-semibold">Afbeelding</label>
+                {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
+                <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
               </div>
             </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-semibold">Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {allTags.map(tag => (
-                  <label key={tag.id} className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={form.tags.some(t => t.id === tag.id)}
-                      onChange={() => handleCheckboxChange('tags', tag.id)}
-                    />
-                    {tag.name}
-                  </label>
-                ))}
+            <div className='bg-gray rounded-2xl p-4 w-full h-full'>
+              <div>
+                <label className="block text-sm font-semibold">Videos</label>
+                {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
+                <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold">Afbeelding</label>
-              {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
-              <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
+          </div>
+          <div className='w-full grid grid-rows-[30%_70%] gap-2'>
+            <div className='bg-gray rounded-2xl p-4'>
+              <div>
+                <label className="block text-sm font-semibold">Banner</label>
+                {bannerPreview && (
+                  <img src={bannerPreview} alt="Banner" className="w-16 h-16 object-cover rounded mb-1" />
+                )}
+                <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="block" />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold">Banner</label>
-              {bannerPreview && (
-                <img src={bannerPreview} alt="Banner" className="w-16 h-16 object-cover rounded mb-1" />
-              )}
-              <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="block" />
-            </div>
-            <div className="col-span-2 flex gap-4 mt-2">
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} /> Actief
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} /> Spoedlevering
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="enrollAccepted" checked={!!form.enrollAccepted} onChange={handleChange} /> Goedgekeurd
-              </label>
+            <div className='bg-gray rounded-2xl p-4'>
+              <div className="flex gap-4">
+                <div>
+                  <label className="block text-sm font-semibold">First name</label>
+                  <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold">Jersey number</label>
+                  <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div>
+                  <label className="block text-sm font-semibold">Last name</label>
+                  <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold">Price</label>
+                  <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
+                </div>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-semibold">Categorieën</label>
+                <div className="flex flex-wrap gap-2">
+                  {allCategories.map(cat => (
+                    <label key={cat.id} className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={form.categories.some(c => c.id === cat.id)}
+                        onChange={() => handleCheckboxChange('categories', cat.id)}
+                      />
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold">Description</label>
+                <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-semibold">Tags</label>
+                <div className="flex flex-wrap gap-2">
+                  {allTags.map(tag => (
+                    <label key={tag.id} className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={form.tags.some(t => t.id === tag.id)}
+                        onChange={() => handleCheckboxChange('tags', tag.id)}
+                      />
+                      {tag.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="col-span-2 flex gap-4 mt-2">
+                <label className="flex items-center gap-1">
+                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} /> Actief
+                </label>
+                <label className="flex items-center gap-1">
+                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} /> Spoedlevering
+                </label>
+                <label className="flex items-center gap-1">
+                  <input type="checkbox" name="enrollAccepted" checked={!!form.enrollAccepted} onChange={handleChange} /> Goedgekeurd
+                </label>
+              </div>
             </div>
           </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Toevoegen</button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Toevoegen</button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -866,45 +893,23 @@ function Talents() {
         bannerId = uploadRes.data[0].id;
       }
 
-      // Prepareer de talent data - MET relaties vanaf het begin
+
+      // Alleen de velden uit het formulier die nodig zijn
       const talentData = {
         voornaam: form.voornaam,
         achternaam: form.achternaam,
-        email: form.email,
-        wachtwoord: form.wachtwoord,
         slug: form.slug,
         description: form.description,
         rugnummer: form.rugnummer ? Number(form.rugnummer) : 0,
         price: form.price ? Number(form.price) : null,
-        gsm_nummer: form.gsm_nummer || '',
-        socialLinks: form.socialLinks || '',
-        videoURL: form.videoURL || '',
-        deliveryDays: form.deliveryDays ? Number(form.deliveryDays) : null,
-        fastDeliveryDays: form.fastDeliveryDays ? Number(form.fastDeliveryDays) : null,
-        viewCount: form.viewCount ? Number(form.viewCount) : 0,
-        completeOrderCount: form.completeOrderCount ? Number(form.completeOrderCount) : 0,
-        completedOrders: form.completedOrders ? Number(form.completedOrders) : 0,
-        social_channel: form.social_channel || '',
         fastDelivery: !!form.fastDelivery,
-        // Forceer active en enrollAccepted op true
-        active: true,
-        enrollAccepted: true,
+        enrollAccepted: !!form.enrollAccepted,
+        active: !!form.active,
+        categories: Array.isArray(form.categories) ? form.categories.map(cat => cat.id) : [],
+        tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.id) : [],
         Image: imageId,
         banner: bannerId,
       };
-
-      // Voeg relaties toe aan de initial data
-      if (Array.isArray(form.categories) && form.categories.length > 0) {
-        const categoryIds = form.categories.map(cat => cat.id);
-        console.log('Adding categories to initial data:', categoryIds);
-        talentData.categories = categoryIds;
-      }
-
-      if (Array.isArray(form.tags) && form.tags.length > 0) {
-        const tagIds = form.tags.map(tag => tag.id);
-        console.log('Adding tags to initial data:', tagIds);
-        talentData.tags = tagIds;
-      }
 
       console.log('Creating talent with data (including relations):', talentData);
 
@@ -923,30 +928,24 @@ function Talents() {
       const createdTalent = response.data.data;
       console.log('Talent created successfully with relations:', createdTalent);
 
-      // Nu voeg categories en tags toe in één update call
+
+      // Nu voeg categories en tags toe in één update call (gebruik het juiste talentId)
       const relationData = {};
-      
       if (Array.isArray(form.categories) && form.categories.length > 0) {
         const categoryIds = form.categories.map(cat => cat.id);
-        console.log('Adding categories:', categoryIds);
         relationData.categories = categoryIds;
       }
-
       if (Array.isArray(form.tags) && form.tags.length > 0) {
         const tagIds = form.tags.map(tag => tag.id);
-        console.log('Adding tags:', tagIds);
         relationData.tags = tagIds;
       }
-
-      // Update relations in one call if there are any
-      if (Object.keys(relationData).length > 0) {
+      // Gebruik het ID van het nieuw aangemaakte talent
+      const talentId = createdTalent?.id;
+      if (talentId && Object.keys(relationData).length > 0) {
         try {
-          console.log('Updating talent with relations:', relationData);
           const relationResponse = await axios.put(
             `${API_BASE_URL}/api/talents/${talentId}`,
-            { 
-              data: relationData
-            },
+            { data: relationData },
             {
               headers: { 
                 Authorization: `Bearer ${token}`,
@@ -957,7 +956,6 @@ function Talents() {
           console.log('Relations added successfully:', relationResponse.data);
         } catch (relationError) {
           console.error('Error adding relations:', relationError.response?.data || relationError.message);
-          // Don't fail the whole process if relations fail
         }
       }
 
@@ -967,7 +965,14 @@ function Talents() {
       await fetchTalents();
       console.log('Talents list refreshed, new count:', talents.length);
     } catch (err) {
-      console.error('Add talent error:', err.response?.data || err.message);
+      if (err.response) {
+        console.error('Add talent error:', err.response.data);
+        if (err.response.data && err.response.data.error) {
+          console.error('Strapi error details:', JSON.stringify(err.response.data.error, null, 2));
+        }
+      } else {
+        console.error('Add talent error:', err.message);
+      }
       setMessage(`Fout bij toevoegen talent: ${err.response?.data?.error?.message || err.message}`);
     }
   };
@@ -987,134 +992,141 @@ function Talents() {
   return (
     <>
     <div className='bg-gray w-[74%] p-8 mx-auto rounded-blocks'>
-        <div className="bg-white rounded-blocks p-8 min-h-screen">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-secondary-800">Manage Talents</h1>
-            <div className='flex gap-4 items-center'>
-              <div className="text-sm text-secondary-600">
-                In total: {talents.length} talents
-              </div>
-              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
-              <div className="relative">
-                <select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none rounded-blocks pr-10 min-w-[140px] bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer"
-                >
-                  <option value="naam">A-Z</option>
-                  <option value="rugnummer">Back number</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+      <div className="bg-white rounded-blocks p-8 min-h-screen">
+        {showAddModal ? (
+          <div className="mx-auto">
+            <AddTalentModal
+              open={true}
+              onClose={() => setShowAddModal(false)}
+              onSave={handleAddTalent}
+              allCategories={allCategories}
+              allTags={allTags}
+              allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold text-secondary-800">Manage Talents</h1>
+              <div className='flex gap-4 items-center'>
+                <div className="text-sm text-secondary-600">
+                  In total: {talents.length} talents
+                </div>
+                <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
+                <div className="relative">
+                  <select 
+                    value={sortBy} 
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="appearance-none rounded-blocks pr-10 min-w-[140px] bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer"
+                  >
+                    <option value="naam">A-Z</option>
+                    <option value="rugnummer">Back number</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {message && (
-            <div className="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
-              {message}
-            </div>
-          )}
+            {message && (
+              <div className="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
+                {message}
+              </div>
+            )}
 
-          {talents.length === 0 ? (
-            <div className="text-center text-secondary-500 mt-10">
-              <p className="text-xl">Geen talenten gevonden.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-10 gap-y-4">
-              {talents.map((talent) => {
-                const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
-                const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
-                const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
-                const talentId = talent.documentId || talent.id;
+            {talents.length === 0 ? (
+              <div className="text-center text-secondary-500 mt-10">
+                <p className="text-xl">Geen talenten gevonden.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-10 gap-y-4">
+                {talents.map((talent) => {
+                  const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
+                  const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
+                  const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
+                  const talentId = talent.documentId || talent.id;
 
-                return (
-                  <div key={talentId} className="relative overflow-hidden transition-shadow">
-                    {/* Status badges */}
-                    <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-                      {!enrollAccepted && (
-                        <span className="bg-red text-xs px-2 py-1 rounded">
-                          Pending
-                        </span>
-                      )}
-                      {/* Status cirkel - groen voor actief, rood voor niet actief */}
-                      <div 
-                        className={`w-5 h-5 rounded-full border-3 ${
-                          active ? 'border-green-500' : 'border-red-500'
-                        } bg-transparent`}
-                        title={active ? 'Actief' : 'Gearchiveerd'}
-                      ></div>
-                    </div>
+                  return (
+                    <div key={talentId} className="relative overflow-hidden transition-shadow">
+                      {/* Status badges */}
+                      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                        {!enrollAccepted && (
+                          <span className="bg-red text-xs px-2 py-1 rounded">
+                            Pending
+                          </span>
+                        )}
+                        {/* Status cirkel - groen voor actief, rood voor niet actief */}
+                        <div 
+                          className={`w-5 h-5 rounded-full border-3 ${
+                            active ? 'border-green-500' : 'border-red-500'
+                          } bg-transparent`}
+                          title={active ? 'Actief' : 'Gearchiveerd'}
+                        ></div>
+                      </div>
 
-                    {/* Afbeelding */}
-                    <div className="relative">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={fullName}
-                          className="w-full h-60 rounded-[1rem] object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-48 bg-secondary-200 flex items-center justify-center">
-                          <div className="text-6xl text-secondary-400">👤</div>
+                      {/* Afbeelding */}
+                      <div className="relative">
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={fullName}
+                            className="w-full h-60 rounded-[1rem] object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-48 bg-secondary-200 flex items-center justify-center">
+                            <div className="text-6xl text-secondary-400">👤</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold text-secondary-800 mb-2 truncate">
+                          {fullName}
+                        </h3>
+
+                        {/* Action buttons */}
+                        <div className="flex justify-between items-center pt-0">
+                          {/* Edit button */}
+                          <button
+                            onClick={() => handleEdit(talent)}
+                            className="text-green rounded-full transition-colors cursor-pointer"
+                            title="Bewerken"
+                          >
+                            Edit
+                          </button>
+
+                          {/* Archive/Activate button */}
+                          <button
+                            onClick={() => handleArchive(talent)}
+                            className={`rounded-full transition-colors cursor-pointer underline hover:no-underline`}
+                            title={active ? "Archiveren" : "Activeren"}
+                          >
+                            {active ? 'Archiveer' : 'Activeer'}
+                          </button>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-secondary-800 mb-2 truncate">
-                        {fullName}
-                      </h3>
-
-                      {/* Action buttons */}
-                      <div className="flex justify-between items-center pt-0">
-                        {/* Edit button */}
-                        <button
-                          onClick={() => handleEdit(talent)}
-                          className="text-green rounded-full transition-colors cursor-pointer"
-                          title="Bewerken"
-                        >
-                          Edit
-                        </button>
-
-                        {/* Archive/Activate button */}
-                        <button
-                          onClick={() => handleArchive(talent)}
-                          className={`rounded-full transition-colors cursor-pointer underline hover:no-underline`}
-                          title={active ? "Archiveren" : "Activeren"}
-                        >
-                          {active ? 'Archiveer' : 'Activeer'}
-                        </button>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-              {/* Modal buiten de map-loop */}
-              <EditTalentModal
-                open={showModal}
-                onClose={handleCloseModal}
-                talent={editTalent}
-                onSave={handleSaveEdit}
-                onDelete={handleDelete}
-                allCategories={allCategories}
-                allTags={allTags}
-                allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
-              />
-          <AddTalentModal
-            open={showAddModal}
-            onClose={() => setShowAddModal(false)}
-            onSave={handleAddTalent}
-            allCategories={allCategories}
-            allTags={allTags}
-            allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
-          />
-            </div>
-          )}
+                  );
+                })}
+                {/* Modal buiten de map-loop */}
+                <EditTalentModal
+                  open={showModal}
+                  onClose={handleCloseModal}
+                  talent={editTalent}
+                  onSave={handleSaveEdit}
+                  onDelete={handleDelete}
+                  allCategories={allCategories}
+                  allTags={allTags}
+                  allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+                />
+              </div>
+            )}
+          </>
+        )}
         </div>
     </div>
     </>
