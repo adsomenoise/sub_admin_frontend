@@ -218,7 +218,7 @@ function Dashboard() {
       <div className="w-blocks mx-auto rounded-blocks bg-gray text-white p-8 h-[88vh]">
           <div className="flex gap-4 justify-between h-full">
             <div
-              className="w-[48%] rounded-4xl relative p-4 3xl:w-[90%] text-black"
+              className="w-[50%] 3xl:w-[52%] rounded-4xl relative p-4 text-black"
               style={{ 
                 backgroundImage: "url('/images/orders-shape.svg')",
                 backgroundSize: '100% 100%',
@@ -227,7 +227,7 @@ function Dashboard() {
                 aspectRatio: '1/1' // Pas dit aan naar de werkelijke aspect ratio van je SVG
               }}
             >
-              <div className='px-8 mt-4'>
+  <div className='px-8 mt-4'>
                 <p>Orders</p>
                 <h2 className="font-bold text-2xl mb-6">View all your latest orders</h2>
                 <hr className='border-gray' />
@@ -236,7 +236,7 @@ function Dashboard() {
                 <div className='h-[90%] flex items-center justify-center'><h4>No orders found.</h4></div>
               ) : (
                 <ul className="space-y-2 px-4">
-                  {[...newOrders, ...inProgressOrders].slice(0, 15).map(order => (
+                  {[...newOrders, ...inProgressOrders].slice(0, 10).map(order => (
                     <li 
                       key={order.documentId || order.id} 
                       onClick={() => handleOrderClick(order)}

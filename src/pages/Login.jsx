@@ -6,11 +6,13 @@ function Login() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
  const handleLogin = async (e) => {
   e.preventDefault();
   setMessage('');
+  setLoading(true);
 
   try {
     console.log('🚀 Starting login process...');
@@ -33,6 +35,7 @@ function Login() {
     if (!user) {
       console.error('❌ No user in response');
       setMessage('Geen gebruiker gegevens ontvangen!');
+      setLoading(false);
       return;
     }
 
@@ -72,6 +75,7 @@ function Login() {
       if (!userRole) {
         console.error('❌ No role found for user');
         setMessage('Gebruiker heeft geen rol toegewezen!');
+        setLoading(false);
         return;
       }
 
@@ -81,6 +85,7 @@ function Login() {
       if (roleName !== 'Subadmin') {
         console.error(`❌ Wrong role. Expected: Subadmin, Got: ${roleName}`);
         setMessage(`Alleen gebruikers met Subadmin rol mogen inloggen! Jouw rol: ${roleName}`);
+        setLoading(false);
         return;
       }
 
@@ -94,7 +99,7 @@ function Login() {
 
       localStorage.setItem('jwt', jwt);
       localStorage.setItem('user', JSON.stringify(completeUser));
-      setMessage('Login succesvol! Doorsturen...');
+      setMessage('Login succesvol! Je wordt doorgestuurd...');
       
       console.log('✅ Login successful, navigating to dashboard...');
       
@@ -109,6 +114,7 @@ function Login() {
       } else {
         setMessage('Kon gebruiker rol niet verifiëren. Probeer opnieuw.');
       }
+      setLoading(false);
     }
 
   } catch (err) {
@@ -120,40 +126,55 @@ function Login() {
     } else {
       setMessage('Fout bij inloggen. Controleer je gegevens.');
     }
+    setLoading(false);
   }
 };
 
 
 
   return (
-    <div className="max-w-md mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-6">Login</h1>
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input
-          type="email"
-          placeholder="E-mail"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-          className="border p-2 w-full"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Wachtwoord"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border p-2 w-full"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700"
-        >
-          Inloggen
-        </button>
-      </form>
-      {message && <p className="mt-4 text-center text-red-600">{message}</p>}
-
+    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-8 shadow-lg">
+          <h1 className="text-3xl font-bold mb-8 text-white text-center">Subadmin Login</h1>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">E-mail</label>
+              <input
+                type="email"
+                placeholder="jouw@email.com"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green focus:ring-1 focus:ring-green transition"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Wachtwoord</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green focus:ring-1 focus:ring-green transition"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green cursor-pointer hover:bg-green-dark text-black font-semibold py-3 rounded-lg transition duration-200 mt-8 disabled:opacity-75"
+            >
+              {loading ? message || 'Bezig met inloggen...' : 'Inloggen'}
+            </button>
+          </form>
+          {message && !loading && (
+            <div className="mt-3 p-4">
+              <p className="text-red-500">{message}</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
