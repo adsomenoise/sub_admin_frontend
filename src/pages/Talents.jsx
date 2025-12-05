@@ -1,51 +1,27 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-// Modal component voor talent toevoegen
-function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [], allSocialOptions = [] }) {
+
+// Inline component voor talent toevoegen
+function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], allSocialOptions = [] }) {
   const [form, setForm] = useState({
     voornaam: '',
     achternaam: '',
-    slug: '', // wordt automatisch gezet
+    slug: '',
     description: '',
     rugnummer: 0,
     price: '',
-    fastDelivery: false,
-    enrollAccepted: true,
+    featured: false,
     active: true,
+    fastDelivery: false,
     categories: [],
     tags: [],
     Image: null,
+    video: null,
     banner: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
-
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!open) {
-      setForm({
-        voornaam: '',
-        achternaam: '',
-        slug: '',
-        description: '',
-        rugnummer: 0,
-        price: '',
-        fastDelivery: false,
-        enrollAccepted: true,
-        active: true,
-        categories: [],
-        tags: [],
-        Image: null,
-        banner: null,
-      });
-      setImagePreview(null);
-      setBannerPreview(null);
-    }
-  }, [open]);
-
-  if (!open) return null;
-
-  // Geen modal, gewoon een blok op de pagina
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -55,12 +31,14 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
       if (name === 'newImage') {
         setForm(f => ({ ...f, Image: files[0] }));
         setImagePreview(URL.createObjectURL(files[0]));
+      } else if (name === 'newVideo') {
+        setForm(f => ({ ...f, video: files[0] }));
+        setVideoPreview(URL.createObjectURL(files[0]));
       } else if (name === 'newBanner') {
         setForm(f => ({ ...f, banner: files[0] }));
         setBannerPreview(URL.createObjectURL(files[0]));
       }
     } else {
-      // Automatisch slug genereren bij wijziging voornaam of achternaam
       if (name === 'voornaam' || name === 'achternaam') {
         setForm(f => {
           const newVoornaam = name === 'voornaam' ? value : f.voornaam;
@@ -91,59 +69,93 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
   };
 
   return (
-    <div className="rounded-xl p-8 overflow-y-auto w-full mx-auto relative">
-      <button onClick={onClose} className="absolute top-2 right-4 text-3xl text-black hover:text-gray-700 cursor-pointer">&times;</button>
+    <div className="w-full px-8 py-2 relative">
+      <button onClick={onClose} className="text-4xl absolute right-0 top-0 cursor-pointer">&times;</button>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <h2 className="text-xl font-bold mb-2">New talent</h2>
-        <div className="grid grid-cols-[35%_65%] gap-2">
-          <div className='w-full grid grid-rows-[45%_55%] gap-2'>
-            <div className='bg-gray rounded-2xl p-4 w-full h-full'>
-              <div>
-                <label className="block text-sm font-semibold">Afbeelding</label>
-                {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
-                <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
+        <h2 className="text-2xl font-bold mb-4">Add a new Talent</h2>
+        <div className='flex gap-4 h-[80vh]'>
+          <div className='w-[30%] h-full flex gap-4 flex-col'>
+            <div 
+              className='h-[40%] w-full rounded-[1rem]'
+              style={{
+                backgroundImage: imagePreview ? `url(${imagePreview})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: imagePreview ? 'transparent' : 'white',
+              }}
+            >
+              <div className="p-3 flex flex-col h-full justify-between">
+                <label className={`block text-sm font-semibold ${imagePreview ? 'text-white' : 'text-black'}`} style={imagePreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Profile picture</label>
+                <div className='flex flex-col'>
+                  <label className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer">
+                    Upload file
+                    <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="hidden" />
+                  </label>
+                </div>
               </div>
             </div>
-            <div className='bg-gray rounded-2xl p-4 w-full h-full'>
-              <div>
-                <label className="block text-sm font-semibold">Videos</label>
-                {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
-                <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
+            <div className='h-[60%] w-full bg-white rounded-[1rem] p-3'>
+              <div className="flex flex-col h-full justify-between">
+                <label className={`block text-sm font-semibold ${videoPreview ? 'text-white' : 'text-black'}`} style={videoPreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Profile video</label>
+                <div className='flex flex-col'>
+                  {videoPreview && <video src={videoPreview} className="w-16 h-16 object-cover rounded mb-1" />}
+                  <label className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer">
+                    Upload file
+                    <input type="file" name="newVideo" accept="video/*" onChange={handleChange} className="hidden" />
+                  </label>
+                </div>
               </div>
             </div>
           </div>
-          <div className='w-full grid grid-rows-[30%_70%] gap-2'>
-            <div className='bg-gray rounded-2xl p-4'>
-              <div>
-                <label className="block text-sm font-semibold">Banner</label>
-                {bannerPreview && (
-                  <img src={bannerPreview} alt="Banner" className="w-16 h-16 object-cover rounded mb-1" />
-                )}
-                <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="block" />
+          <div className='w-[70%] h-full flex gap-4 flex-col'>
+            <div 
+              className='h-[30%] w-full p-4 rounded-[1rem]'
+              style={{
+                backgroundImage: bannerPreview ? `url(${bannerPreview})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: bannerPreview ? 'transparent' : 'white'
+              }}
+            >
+              <div className="flex flex-col h-full">
+                <label className={`block text-sm font-semibold mb-2 ${bannerPreview ? 'text-white' : 'text-black'}`} style={bannerPreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Banner picture</label>
+                <div className="flex-grow"></div>
+                <div className="flex gap-2">
+                  <label className="bg-white/60 text-black text-sm rounded-full border-1 border-black px-3 py-1 cursor-pointer inline-block">
+                    Upload file
+                    <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="hidden" />
+                  </label>
+                </div>
               </div>
             </div>
-            <div className='bg-gray rounded-2xl p-4'>
-              <div className="flex gap-4">
-                <div>
-                  <label className="block text-sm font-semibold">First name</label>
-                  <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded" required />
+            <div className='h-[70%] w-full bg-white rounded-[1rem] p-6 px-8 pr-20 overflow-y-auto'>
+              <div className='flex gap-24 items-center'>
+                <div className='w-[80%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Voornaam</label>
+                  <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded-full" required />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold">Jersey number</label>
-                  <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div>
-                  <label className="block text-sm font-semibold">Last name</label>
-                  <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold">Price</label>
-                  <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
+
+                  <div className='w-[15%]'>
+                    <label className="block text-sm font-semibold ml-2 mb-2">Rugnummer</label>
+                    <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded-full" min="0" max="99" />
                 </div>
               </div>
-              <div className="col-span-2">
+              <div className='flex gap-24 items-center mt-5'>
+                <div className='w-[80%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Achternaam</label>
+                  <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded-full" required />
+                </div>
+
+                <div className='w-[15%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Prijs</label>
+                  <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded-full" step="0.01" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold ml-2 mb-2 mt-5">Beschrijving</label>
+                <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
+              </div>
+              <div className="mt-2">
                 <label className="block text-sm font-semibold">Categorieën</label>
                 <div className="flex flex-wrap gap-2">
                   {allCategories.map(cat => (
@@ -158,42 +170,26 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
                   ))}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-semibold">Description</label>
-                <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-semibold">Tags</label>
-                <div className="flex flex-wrap gap-2">
-                  {allTags.map(tag => (
-                    <label key={tag.id} className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        checked={form.tags.some(t => t.id === tag.id)}
-                        onChange={() => handleCheckboxChange('tags', tag.id)}
-                      />
-                      {tag.name}
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="col-span-2 flex gap-4 mt-2">
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} /> Actief
+      
+              <div className="grid grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Featured</span>
                 </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} /> Spoedlevering
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Actief</span>
                 </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" name="enrollAccepted" checked={!!form.enrollAccepted} onChange={handleChange} /> Goedgekeurd
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Spoedlevering</span>
                 </label>
               </div>
-            </div>
+            </div>  
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Toevoegen</button>
+        <div className="flex justify-center gap-2 mt-4">
+          <button type="submit" className="bg-green hover:bg-green/60 transition-all text-base rounded-full w-fit px-6 py-3 cursor-pointer">Toevoegen</button>
         </div>
       </form>
     </div>
@@ -240,8 +236,8 @@ function DeleteConfirmationModal({ open, onClose, onConfirm, talentName }) {
   );
 }
 
-// Modal component voor talent bewerken
-function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategories = [], allTags = [], allSocialOptions = [] }) {
+// Inline component voor talent bewerken
+function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [], allTags = [], allSocialOptions = [] }) {
   const [form, setForm] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
@@ -249,7 +245,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
 
   useEffect(() => {
     if (talent) {
-      // Normaliseer categories/tags naar array van {id}
       const normalizeRelation = (rel) => {
         if (!rel) return [];
         if (Array.isArray(rel)) {
@@ -268,10 +263,9 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
       };
       setForm({
         ...talent,
-        categories: normalizeRelation(talent.categories),
-        tags: normalizeRelation(talent.tags),
+        categories: normalizeRelation(talent.categories) || [],
+        tags: normalizeRelation(talent.tags) || [],
       });
-      // Image preview logic (works for object or array)
       let imageUrl = null;
       if (talent.Image) {
         if (Array.isArray(talent.Image) && talent.Image.length > 0 && talent.Image[0].url) {
@@ -282,7 +276,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
       }
       setImagePreview(imageUrl);
 
-      // Banner preview logic (works for object or array, and only if url is present)
       let bannerUrl = null;
       if (talent.banner) {
         if (Array.isArray(talent.banner) && talent.banner.length > 0 && talent.banner[0].url) {
@@ -298,7 +291,7 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
     }
   }, [talent]);
 
-  if (!open || !talent) return null;
+  if (!talent) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -318,7 +311,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
     }
   };
 
-  // For checkboxes: add/remove id from array, always store as array of {id}
   const handleCheckboxChange = (field, id) => {
     setForm((prev) => {
       let arr = Array.isArray(prev[field]) ? prev[field].map(x => (x.id ? x.id : x)) : [];
@@ -354,7 +346,7 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
     if (onDelete) {
       onDelete(talent);
       setShowDeleteConfirmation(false);
-      onClose(); // Sluit de edit modal na bevestiging
+      onClose();
     }
   };
 
@@ -363,206 +355,145 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-gray-dark rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[65%] relative">
-        <button onClick={onClose} className="absolute top-2 right-4 text-4xl text-white cursor-pointer">&times;</button>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <h2 className="text-xl font-bold mb-2">{form.voornaam || ''} {form.achternaam || ''}</h2>
-          <div className='flex gap-4 h-[80vh]'>
-            <div className='w-[30%] h-full flex gap-4 flex-col'>
-              <div 
-                className='h-[40%] w-full rounded-[1rem]'
-                style={{
-                  backgroundImage: imagePreview ? `url(${imagePreview})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundColor: imagePreview ? 'transparent' : 'black',
-                }}
-              >
-                {/* Afbeelding */}
-                <div className="p-3 flex flex-col h-full justify-between">
-                  <label className="block text-sm text-white font-semibold">Profile picture</label>
-                  <div className='flex flex-col'>
-                    <label className="bg-white/60 text-sm rounded-full w-fit border-2 border-black px-3 py-1 cursor-pointer">
-                      Upload file
-                      <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="hidden" />
-                    </label>
-                    {form.Image?.url && (
-                      <button type="button" onClick={handleRemoveImage} className="bg-white/60 w-fit text-sm rounded-full border-2 border-black px-3 py-1">Delete picture</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className='h-[60%] w-full bg-white rounded-[1rem]'>
-                Profile video
-              </div>
-            </div>
-            <div className='w-[70%] h-full flex gap-4 flex-col'>
-              <div 
-                className='h-[30%] w-full p-4 rounded-[1rem]'
-                style={{
-                  backgroundImage: bannerPreview ? `url(${bannerPreview})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundColor: bannerPreview ? 'transparent' : '#dc2626'
-                }}
-              >
-                <div className="flex flex-col h-full">
-                  <label className="block text-sm text-white font-semibold mb-2">Banner picture</label>
-                  <div className="flex-grow"></div>
-                  <div className="flex gap-2">
-                    <label className="bg-white/60 text-black text-sm rounded-full border-2 border-black px-3 py-1 cursor-pointer inline-block">
-                      Upload file
-                      <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="hidden" />
-                    </label>
-                    {(form.banner?.url || (Array.isArray(form.banner) && form.banner.length > 0) || bannerPreview) && (
-                      <button type="button" onClick={handleRemoveBanner} className="text-xs text-red-300">Verwijder banner</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className='h-[70%] w-full bg-white rounded-[1rem] p-4'>
-                {/* Voornaam */}
-                <div>
-                  <label className="block text-sm font-semibold">Voornaam</label>
-                  <input type="text" name="voornaam" value={form.voornaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-                </div>
-                {/* Achternaam */}
-                <div>
-                  <label className="block text-sm font-semibold">Achternaam</label>
-                  <input type="text" name="achternaam" value={form.achternaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-                </div>
-                {/* Beschrijving */}
-                <div>
-                  <label className="block text-sm font-semibold">Beschrijving</label>
-                  <textarea name="description" value={form.description || ''} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
-                </div>
-                {/* Rugnummer */}
-                <div>
-                  <label className="block text-sm font-semibold">Rugnummer</label>
-                  <input type="number" name="rugnummer" value={form.rugnummer || 0} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
-                </div>
-                {/* Prijs */}
-                <div>
-                  <label className="block text-sm font-semibold">Prijs</label>
-                  <input type="number" name="price" value={form.price || ''} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
-                </div>
-              </div>  
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            
-            {/* GSM nummer */}
-            <div>
-              <label className="block text-sm font-semibold">GSM nummer</label>
-              <input type="tel" name="gsm_nummer" value={form.gsm_nummer || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Social Links */}
-            <div>
-              <label className="block text-sm font-semibold">Social Links</label>
-              <input type="text" name="socialLinks" value={form.socialLinks || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Levering (dagen) */}
-            <div>
-              <label className="block text-sm font-semibold">Levering (dagen)</label>
-              <input type="number" name="deliveryDays" value={form.deliveryDays || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Spoedlevering (dagen) */}
-            <div>
-              <label className="block text-sm font-semibold">Spoedlevering (dagen)</label>
-              <input type="number" name="fastDeliveryDays" value={form.fastDeliveryDays || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Social kanaal (enum) */}
-            <div>
-              <label className="block text-sm font-semibold">Social kanaal</label>
-              <select name="social_channel" value={form.social_channel || ''} onChange={handleChange} className="border p-1 w-full rounded">
-                <option value="">Selecteer kanaal</option>
-                {allSocialOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-            {/* categories as checkboxes */}
-            <div className="col-span-2">
-              <label className="block text-sm font-semibold">Categorieën</label>
-              <div className="flex flex-wrap gap-2">
-                {allCategories.map(cat => {
-                  const catId = cat.id;
-                  const catName = cat.name || cat.attributes?.name;
-                  // form.categories is altijd array van {id}
-                  const selected = Array.isArray(form.categories) ? form.categories.map(c => c.id) : [];
-                  const checked = selected.includes(catId);
-                  return (
-                    <label key={catId} className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => handleCheckboxChange('categories', catId)}
-                      />
-                      {catName}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-            {/* tags as checkboxes */}
-            <div className="col-span-2">
-              <label className="block text-sm font-semibold">Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {allTags.map(tag => {
-                  const tagId = tag.id;
-                  const tagName = tag.name || tag.attributes?.name;
-                  const selected = Array.isArray(form.tags) ? form.tags.map(t => t.id) : [];
-                  const checked = selected.includes(tagId);
-                  return (
-                    <label key={tagId} className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => handleCheckboxChange('tags', tagId)}
-                      />
-                      {tagName}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-            {/* Booleans */}
-            <div className="col-span-2 flex gap-4 mt-2">
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} /> Actief
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} /> Spoedlevering
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="enrollAccepted" checked={!!form.enrollAccepted} onChange={handleChange} /> Goedgekeurd
-              </label>
-            </div>
-          </div>
-          <div className="flex justify-between gap-2 mt-4">
-            <button 
-              type="button" 
-              onClick={handleDeleteClick}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+    <div className="w-full px-8 py-2 relative">
+      <button onClick={onClose} className="text-4xl absolute right-0 top-0 cursor-pointer">&times;</button>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <h2 className="text-2xl font-bold mb-6">{form.voornaam || ''} {form.achternaam || ''}</h2>
+        <div className='flex gap-4 h-[80vh]'>
+          <div className='w-[30%] h-full flex gap-4 flex-col'>
+            <div 
+              className='h-[40%] w-full rounded-[1rem]'
+              style={{
+                backgroundImage: imagePreview ? `url(${imagePreview})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: imagePreview ? 'transparent' : 'white',
+              }}
             >
-              Talent Verwijderen
-            </button>
-            <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Opslaan</button>
+              <div className="p-3 flex flex-col h-full justify-between">
+                <label className={`block text-sm font-semibold ${imagePreview ? 'text-white' : 'text-black'}`} style={imagePreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Profile picture</label>
+                <div className='flex flex-col'>
+                  <label className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer">
+                    Upload file
+                    <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="hidden" />
+                  </label>
+                  {form.Image?.url && (
+                    <button type="button" onClick={handleRemoveImage} className="bg-white/60 w-fit text-sm rounded-full border-1 border-black px-3 py-1">Delete picture</button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className='h-[60%] w-full bg-white rounded-[1rem] p-3 '>
+              <label className={`block text-sm font-semibold ${imagePreview ? 'text-white' : 'text-black'}`} style={imagePreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Profile video</label>
             </div>
           </div>
-        </form>
+          <div className='w-[70%] h-full flex gap-4 flex-col'>
+            <div 
+              className='h-[30%] w-full p-4 rounded-[1rem]'
+              style={{
+                backgroundImage: bannerPreview ? `url(${bannerPreview})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: bannerPreview ? 'transparent' : 'white'
+              }}
+            >
+              <div className="flex flex-col h-full">
+                <label className={`block text-sm font-semibold mb-2 ${bannerPreview ? 'text-white' : 'text-black'}`} style={bannerPreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Banner picture</label>
+                <div className="flex-grow"></div>
+                <div className="flex gap-1">
+                  <label className="bg-white/60 text-black text-sm rounded-full border-1 border-black px-3 py-1 cursor-pointer inline-block">
+                    Upload file
+                    <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="hidden" />
+                  </label>
+                  {(form.banner?.url || (Array.isArray(form.banner) && form.banner.length > 0) || bannerPreview) && (
+                    <button type="button" onClick={handleRemoveBanner} className="bg-white/60 w-fit text-sm rounded-full border-1 border-black px-3 py-1">Delete banner</button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className='h-[70%] w-full bg-white rounded-[1rem] p-6 px-8 pr-20 overflow-y-auto'>
+              <div className="flex gap-12 2xl:gap-24 items-center">
+                <div className='w-[80%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Voornaam</label>
+                  <input type="text" name="voornaam" value={form.voornaam || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" />
+                </div>
+                
+                <div className='w-[20%] 2xl:w-[15%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Rugnummer</label>
+                  <input type="number" name="rugnummer" value={form.rugnummer || 0} onChange={handleChange} className="border p-1 w-full rounded-full px-4" min="0" max="99" />
+                </div>
+              </div>
+
+              <div className='flex gap-12 2xl:gap-24 items-center mt-3 2xl:mt-5'>
+                <div className='w-[80%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Achternaam</label>
+                  <input type="text" name="achternaam" value={form.achternaam || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" />
+                </div>
+                
+                <div className='w-[20%] 2xl:w-[15%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Prijs</label>
+                  <input type="number" name="price" value={form.price || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" step="0.01" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2 mt-3 2xl:mt-5">Beschrijving</label>
+                <textarea name="description" value={form.description || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
+              </div>
+
+              <div className="mt-2">
+                <label className="block text-sm font-semibold">Categorieën</label>
+                <div className="flex flex-wrap gap-2">
+                  {allCategories.map(cat => (
+                    <label key={cat.id} className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={form.categories && Array.isArray(form.categories) ? form.categories.some(c => c.id === cat.id) : false}
+                        onChange={() => handleCheckboxChange('categories', cat.id)}
+                      />
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Featured</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Actief</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Spoedlevering</span>
+                </label>
+              </div>
+            </div>  
+          </div>
+        </div>
         
-        {/* Delete Confirmation Modal */}
-        <DeleteConfirmationModal
-          open={showDeleteConfirmation}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-          talentName={`${form.voornaam || ''} ${form.achternaam || ''}`.trim()}
-        />
-      </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <button 
+            type="button" 
+            onClick={handleDeleteClick}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
+          >
+            Talent Verwijderen
+          </button>
+          <div className="flex gap-2">
+            <button type="submit" className="px-4 py-2 bg-green rounded hover:bg-green/70 cursor-pointer">Save</button>
+          </div>
+        </div>
+      </form>
+      
+      <DeleteConfirmationModal
+        open={showDeleteConfirmation}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        talentName={`${form.voornaam || ''} ${form.achternaam || ''}`.trim()}
+      />
     </div>
   );
 }
@@ -607,7 +538,7 @@ function Talents() {
       let response;
       try {
         response = await axios.get(
-          `${API_BASE_URL}/api/talents?filters[enrollAccepted][$eq]=true&populate=Image&populate=banner&populate=categories&populate=tags`,
+          `${API_BASE_URL}/api/talents?filters[enrollAccepted][$eq]=true&populate=Image&populate=banner&populate=categories`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }
@@ -616,7 +547,7 @@ function Talents() {
         console.log("Direct API failed, trying categories approach:", directError.message);
         // Als direct niet werkt, probeer via categories zoals in andere werkende componenten
         response = await axios.get(
-          `${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories&populate[talents][populate][3]=tags`,
+          `${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }
@@ -687,19 +618,7 @@ function Talents() {
         setAllCategories([]);
       }
     };
-    const fetchTags = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/tags`);
-        const tags = res.data.data || [];
-        console.log('Loaded tags:', tags);
-        setAllTags(tags);
-      } catch (err) {
-        console.error('Error loading tags:', err);
-        setAllTags([]);
-      }
-    };
     fetchCategories();
-    fetchTags();
   }, [API_BASE_URL]);
 
   // Modal state
@@ -760,14 +679,10 @@ function Talents() {
         gsm_nummer: form.gsm_nummer ? form.gsm_nummer : '',
         socialLinks: form.socialLinks,
         videoURL: form.videoURL,
-        deliveryDays: form.deliveryDays ? Number(form.deliveryDays) : null,
-        fastDeliveryDays: form.fastDeliveryDays ? Number(form.fastDeliveryDays) : null,
-        viewCount: form.viewCount ? Number(form.viewCount) : 0,
-        completeOrderCount: form.completeOrderCount ? Number(form.completeOrderCount) : 0,
-        completedOrders: form.completedOrders ? Number(form.completedOrders) : 0,
+        featured: !!form.featured,
         active: !!form.active,
         fastDelivery: !!form.fastDelivery,
-        enrollAccepted: !!form.enrollAccepted,
+        enrollAccepted: true,
         Image: imageId,
         banner: bannerId,
       };
@@ -776,12 +691,29 @@ function Talents() {
         { data: updateData },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      // Nu update de categories relatie apart als deze zijn veranderd
+      const categoryIds = Array.isArray(form.categories) ? form.categories.map(cat => (typeof cat.id === 'number' ? cat.id : cat)) : [];
+      if (categoryIds.length > 0) {
+        try {
+          await axios.put(
+            `${API_BASE_URL}/api/talents/${form.documentId || form.id}`,
+            { data: { categories: categoryIds } },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } catch (relationError) {
+          console.error('Error updating categories:', relationError.response?.data || relationError.message);
+        }
+      }
+      
       setMessage('Talent succesvol bijgewerkt!');
       handleCloseModal();
       fetchTalents();
     } catch (error) {
-      setMessage('Fout bij opslaan van talent.');
       console.error('Edit error:', error);
+      console.error('Error response data:', error.response?.data);
+      const errorMsg = error.response?.data?.error?.message || error.message || 'Onbekende fout';
+      setMessage(`Fout bij opslaan van talent: ${errorMsg}`);
     }
   };
 
@@ -902,11 +834,11 @@ function Talents() {
         description: form.description,
         rugnummer: form.rugnummer ? Number(form.rugnummer) : 0,
         price: form.price ? Number(form.price) : null,
-        fastDelivery: !!form.fastDelivery,
-        enrollAccepted: !!form.enrollAccepted,
+        featured: !!form.featured,
         active: !!form.active,
+        fastDelivery: !!form.fastDelivery,
+        enrollAccepted: true,
         categories: Array.isArray(form.categories) ? form.categories.map(cat => cat.id) : [],
-        tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.id) : [],
         Image: imageId,
         banner: bannerId,
       };
@@ -929,15 +861,11 @@ function Talents() {
       console.log('Talent created successfully with relations:', createdTalent);
 
 
-      // Nu voeg categories en tags toe in één update call (gebruik het juiste talentId)
+      // Nu voeg categories toe in één update call (gebruik het juiste talentId)
       const relationData = {};
       if (Array.isArray(form.categories) && form.categories.length > 0) {
         const categoryIds = form.categories.map(cat => cat.id);
         relationData.categories = categoryIds;
-      }
-      if (Array.isArray(form.tags) && form.tags.length > 0) {
-        const tagIds = form.tags.map(tag => tag.id);
-        relationData.tags = tagIds;
       }
       // Gebruik het ID van het nieuw aangemaakte talent
       const talentId = createdTalent?.id;
@@ -991,143 +919,144 @@ function Talents() {
   
   return (
     <>
-    <div className='bg-gray w-[74%] p-8 mx-auto rounded-blocks'>
-      <div className="bg-white rounded-blocks p-8 min-h-screen">
-        {showAddModal ? (
-          <div className="mx-auto">
-            <AddTalentModal
-              open={true}
-              onClose={() => setShowAddModal(false)}
-              onSave={handleAddTalent}
-              allCategories={allCategories}
-              allTags={allTags}
-              allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
-            />
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-3xl font-bold text-secondary-800">Manage Talents</h1>
-              <div className='flex gap-4 items-center'>
-                <div className="text-sm text-secondary-600">
-                  In total: {talents.length} talents
-                </div>
-                <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
-                <div className="relative">
-                  <select 
-                    value={sortBy} 
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none rounded-blocks pr-10 min-w-[140px] bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer"
-                  >
-                    <option value="naam">A-Z</option>
-                    <option value="rugnummer">Back number</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
+    <div className='bg-gray w-[74%] p-8 mx-auto rounded-blocks min-h-screen'>
+      {showModal && editTalent ? (
+        <EditTalentInline
+          talent={editTalent}
+          onClose={handleCloseModal}
+          onSave={handleSaveEdit}
+          onDelete={handleDelete}
+          allCategories={allCategories}
+          allTags={allTags}
+          allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+        />
+      ) : showAddModal ? (
+        <AddTalentInline
+          onClose={() => setShowAddModal(false)}
+          onSave={handleAddTalent}
+          allCategories={allCategories}
+          allTags={allTags}
+          allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+        />
+      ) : (
+        <div className="bg-white rounded-blocks p-8 min-h-screen">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-secondary-800">Manage Talents</h1>
+            <div className='flex gap-4 items-center'>
+              <div className="text-sm text-secondary-600">
+                In total: {talents.length} talents
+              </div>
+              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
+              <div className="relative">
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="appearance-none rounded-blocks pr-10 min-w-[140px] bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer"
+                >
+                  <option value="naam">A-Z</option>
+                  <option value="rugnummer">Back number</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               </div>
             </div>
+          </div>
 
-            {message && (
-              <div className="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
-                {message}
-              </div>
-            )}
+          {message && (
+            <div className="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
+              {message}
+            </div>
+          )}
 
-            {talents.length === 0 ? (
-              <div className="text-center text-secondary-500 mt-10">
-                <p className="text-xl">Geen talenten gevonden.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-10 gap-y-4">
-                {talents.map((talent) => {
-                  const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
-                  const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
-                  const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
-                  const talentId = talent.documentId || talent.id;
+          {talents.length === 0 ? (
+            <div className="text-center text-secondary-500 mt-10">
+              <p className="text-xl">Geen talenten gevonden.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-8 gap-y-4">
+              {talents.map((talent) => {
+                const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
+                const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
+                const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
+                const talentId = talent.documentId || talent.id;
 
-                  return (
-                    <div key={talentId} className="relative overflow-hidden transition-shadow">
-                      {/* Status badges */}
-                      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-                        {!enrollAccepted && (
-                          <span className="bg-red text-xs px-2 py-1 rounded">
-                            Pending
-                          </span>
-                        )}
-                        {/* Status cirkel - groen voor actief, rood voor niet actief */}
-                        <div 
-                          className={`w-5 h-5 rounded-full border-3 ${
-                            active ? 'border-green-500' : 'border-red-500'
-                          } bg-transparent`}
-                          title={active ? 'Actief' : 'Gearchiveerd'}
-                        ></div>
+                return (
+                  <div key={talentId} className="relative overflow-hidden transition-shadow">
+                    {/* Status badges */}
+                    <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                      {!enrollAccepted && (
+                        <span className="bg-red text-xs px-2 py-1 rounded">
+                          Pending
+                        </span>
+                      )}
+                      {/* Status cirkel - groen voor actief, rood voor niet actief */}
+                      <div 
+                        className={`w-5 h-5 rounded-full border-3 ${
+                          active ? 'border-green-500' : 'border-red-500'
+                        } bg-transparent`}
+                        title={active ? 'Actief' : 'Gearchiveerd'}
+                      ></div>
+                    </div>
+
+                    {/* Rugnummer */}
+                    {talent.rugnummer !== null && talent.rugnummer !== 0 && (
+                      <div className="absolute top-2 left-2 z-10 bg-black/50 text-white px-2 py-1 rounded text-sm font-semibold">
+                        {talent.rugnummer}
                       </div>
+                    )}
 
-                      {/* Afbeelding */}
-                      <div className="relative">
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={fullName}
-                            className="w-full h-60 rounded-[1rem] object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-48 bg-secondary-200 flex items-center justify-center">
-                            <div className="text-6xl text-secondary-400">👤</div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-4">
-                        <h3 className="text-lg font-semibold text-secondary-800 mb-2 truncate">
-                          {fullName}
-                        </h3>
-
-                        {/* Action buttons */}
-                        <div className="flex justify-between items-center pt-0">
-                          {/* Edit button */}
-                          <button
-                            onClick={() => handleEdit(talent)}
-                            className="text-green rounded-full transition-colors cursor-pointer"
-                            title="Bewerken"
-                          >
-                            Edit
-                          </button>
-
-                          {/* Archive/Activate button */}
-                          <button
-                            onClick={() => handleArchive(talent)}
-                            className={`rounded-full transition-colors cursor-pointer underline hover:no-underline`}
-                            title={active ? "Archiveren" : "Activeren"}
-                          >
-                            {active ? 'Archiveer' : 'Activeer'}
-                          </button>
+                    {/* Afbeelding */}
+                    <div className="relative">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={fullName}
+                          className="w-full h-60 rounded-[1rem] object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-48 bg-secondary-200 flex items-center justify-center">
+                          <div className="text-6xl text-secondary-400">👤</div>
                         </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-secondary-800 mb-2 truncate">
+                        {fullName}
+                      </h3>
+
+                      {/* Action buttons */}
+                      <div className="flex justify-between items-center pt-0">
+                        {/* Edit button */}
+                        <button
+                          onClick={() => handleEdit(talent)}
+                          className="text-green rounded-full transition-colors cursor-pointer"
+                          title="Bewerken"
+                        >
+                          Edit
+                        </button>
+
+                        {/* Archive/Activate button */}
+                        <button
+                          onClick={() => handleArchive(talent)}
+                          className={`rounded-full transition-colors cursor-pointer underline hover:no-underline`}
+                          title={active ? "Archiveren" : "Activeren"}
+                        >
+                          {active ? 'Archiveer' : 'Activeer'}
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
-                {/* Modal buiten de map-loop */}
-                <EditTalentModal
-                  open={showModal}
-                  onClose={handleCloseModal}
-                  talent={editTalent}
-                  onSave={handleSaveEdit}
-                  onDelete={handleDelete}
-                  allCategories={allCategories}
-                  allTags={allTags}
-                  allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
-                />
-              </div>
-            )}
-          </>
-        )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
+      )}
     </div>
     </>
   );
