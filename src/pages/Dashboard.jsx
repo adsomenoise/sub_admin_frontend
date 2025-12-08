@@ -8,6 +8,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [newOrders, setNewOrders] = useState([]);
   const [inProgressOrders, setInProgressOrders] = useState([]);
+  const [deliveredOrders, setDeliveredOrders] = useState([]);
   const [talent, setTalent] = useState(null);
   const [spotlightedTalents, setSpotlightedTalents] = useState([]);
   const [topPerformerTalent, setTopPerformerTalent] = useState(null);
@@ -68,10 +69,22 @@ function Dashboard() {
           return !hasVideo; // Alleen orders zonder video
         });
 
+        // Filter orders die wel video hebben (completed orders)
+        const ordersWithVideo = allOrders.filter(order => {
+          // Controleer of er wel video is geüpload
+          const hasVideo = order.orderVideo && 
+            ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
+             (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
+          
+          return hasVideo; // Alleen orders met video
+        });
+
         console.log("Orders zonder video (moeten nog gedaan worden):", ordersWithoutVideo.length);
+        console.log("Orders met video (completed):", ordersWithVideo.length);
 
         setNewOrders(ordersWithoutVideo.filter(o => o.statusorder === 'nieuw'));
         setInProgressOrders(ordersWithoutVideo.filter(o => o.statusorder === 'behandeling'));
+        setDeliveredOrders(ordersWithVideo);
         
       } catch (error) {
         console.error('Fout bij ophalen orders:', error);
@@ -354,22 +367,22 @@ function Dashboard() {
                 <div className='flex flex-1 justify-evenly'>
                   <div className='flex mt-4 2xl:mt-8 gap-8'>
                     <div className='flex flex-col gap-1 2xl:gap-3 items-center'>
-                      <h2 className='font-bold text-3xl 2xl:text-4xl'>4</h2>
+                      <h2 className='font-bold text-3xl 2xl:text-4xl'>{newOrders.length + inProgressOrders.length}</h2>
                       <p className='font-light'>Open Orders</p>
                     </div>
                     <div className="flex flex-col gap-1 2xl:gap-3 items-center">
-                      <h2 className='font-bold text-3xl 2xl:text-4xl'>€242</h2>
+                      <h2 className='font-bold text-2xl 2xl:text-3xl'>€{([...newOrders, ...inProgressOrders].reduce((sum, order) => sum + (parseFloat(order.totalPrice) || 0), 0)).toFixed(2)}</h2>
                       <p className='font-light'>Open revenue</p>
                     </div>
                   </div>
                   <hr className='h-[70%] my-auto w-[1px] bg-white'/>
                   <div className="flex mt-4 2xl:mt-8 gap-8">
                     <div className='flex flex-col gap-1 2xl:gap-3 items-center'>
-                      <h2 className='font-bold text-3xl 2xl:text-4xl'>451</h2>
+                      <h2 className='font-bold text-3xl 2xl:text-4xl'>{deliveredOrders.length}</h2>
                       <p className='font-light'>Delivered orders</p>
                     </div>
                     <div className='flex flex-col gap-1 2xl:gap-3 items-center'>
-                      <h2 className='font-bold text-3xl 2xl:text-4xl'>€9539</h2>
+                      <h2 className='font-bold text-2xl 2xl:text-3xl'>€{(deliveredOrders.reduce((sum, order) => sum + (parseFloat(order.totalPrice) || 0), 0)).toFixed(2)}</h2>
                       <p className='font-light'>Total revenue</p>
                     </div>
                   </div>
