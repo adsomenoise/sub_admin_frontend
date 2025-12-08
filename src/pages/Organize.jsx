@@ -170,7 +170,7 @@ function Organize() {
   };
 
   return (
-    <div className="bg-gray w-[60%] rounded-blocks mx-auto p-8 h-[80vh] mt-8 flex flex-col">
+    <div className="bg-gray w-[60%] rounded-blocks mx-auto p-8 2xl:h-[80vh] 2xl:mt-8 flex flex-col">
       <h1 className="text-2xl font-bold mb-6 ml-8">Setup</h1>
       <div className='bg-white rounded-blocks w-full p-8 mb-4 flex-shrink-0'>
         <form onSubmit={handleAddCategory} className="mb-6 flex gap-4 justify-between items-center">

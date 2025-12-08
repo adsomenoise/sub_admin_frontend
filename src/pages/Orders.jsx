@@ -125,11 +125,6 @@ function Orders() {
     setSelectedOrder(null);
   };
 
-  console.log('Orders:', orders);
-  console.log('Talents:', talents);
-  console.log('Filtered orders:', filteredOrders);
-  console.log('Tab filtered orders:', tabFilteredOrders);
-
   // Count orders for tabs
   const newOrdersCount = filteredOrders.filter(order => {
     const hasVideo = order.orderVideo && 
@@ -144,15 +139,6 @@ function Orders() {
        (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
     return hasVideo;
   }).length;
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'nieuw': return 'bg-blue-100 text-blue-800';
-      case 'behandeling': return 'bg-yellow-100 text-yellow-800';
-      case 'gearchiveerd': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <>
@@ -262,7 +248,6 @@ function Orders() {
                       <th className="border border-gray-300 px-4 py-2 text-left">Gelegenheid</th>
                       <th className="border border-gray-300 px-4 py-2 text-left">Type</th>
                       <th className="border border-gray-300 px-4 py-2 text-left">Prijs</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
                       <th className="border border-gray-300 px-4 py-2 text-left">Datum</th>
                     </tr>
                   </thead>
@@ -293,11 +278,6 @@ function Orders() {
                           </td>
                           <td className="border border-gray-300 px-4 py-2">
                             €{order.totalPrice || 'N/A'}
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.statusorder)}`}>
-                              {order.statusorder}
-                            </span>
                           </td>
                           <td className="border border-gray-300 px-4 py-2">
                             {new Date(order.createdAt).toLocaleDateString('nl-NL', {
