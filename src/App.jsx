@@ -12,8 +12,10 @@ import Organize from './pages/Organize.jsx';
 import Financials from './pages/Financials.jsx';
 
 function App() {
+  const basename = import.meta.env.MODE === 'production' ? '/subadmin' : '';
+
   return (
-    <Router basename="/subadmin">
+    <Router basename={basename}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
