@@ -215,7 +215,7 @@ function Dashboard() {
 
   return (
     <>
-      <div className="w-blocks mx-auto rounded-blocks bg-gray text-white p-8 h-[88vh]">
+      <div className="w-blocks mx-auto rounded-blocks bg-gray text-white p-8 h-[90vh] 2xl:h-[88vh]">
           <div className="flex gap-4 justify-between h-full">
             <div
               className="w-[50%] 3xl:w-[52%] rounded-4xl relative p-4 text-black"
@@ -229,7 +229,7 @@ function Dashboard() {
             >
   <div className='px-8 mt-4'>
                 <p>Orders</p>
-                <h2 className="font-bold text-2xl mb-6">View all your latest orders</h2>
+                <h2 className="font-bold text-2xl mb-4 2xl:mb-6">View all your latest orders</h2>
                 <hr className='border-gray' />
               </div>
               {(newOrders.length === 0 && inProgressOrders.length === 0) ? (
@@ -283,12 +283,12 @@ function Dashboard() {
             </div>
 
             <div className="w-full flex gap-4 flex-col">
-              <div className='bg-white rounded-4xl h-[60%] w-full p-6 overflow-y-hidden'>
-                <h3 className="text-black text-2xl font-bold ml-4 mb-4">Your talents</h3>
+              <div className='bg-white rounded-4xl h-[60%] w-full py-3 px-5 2xl:px-6 2xl:py-6 overflow-y-hidden'>
+                <h3 className="text-black text-2xl font-bold ml-4 mb-2 2xl:mb-4">Your talents</h3>
                 {spotlightedTalents.length === 0 ? (
                   <p className="text-black text-center">No spotlighted talent found</p>
                 ) : (
-                  <div className="h-[90%] flex gap-4">
+                  <div className="h-[85%] 2xl:h-[90%] flex gap-4">
                     {spotlightedTalents.map((talent) => {
                       const imageUrl = talent.Image?.url ? `${API_BASE_URL}${talent.Image.url}` : null;
                       
@@ -296,25 +296,26 @@ function Dashboard() {
                         <>
                           <div 
                             key={talent.documentId || talent.id} 
-                            className="flex h-full gap-4 rounded-3xl w-1/2"
+                            className="flex h-full gap-4 rounded-3xl w-1/2 flex-col"
                           > 
                             <div 
-                              className="talentbackground h-full w-full rounded-3xl"
+                              className="talentbackground h-full w-full rounded-3xl relative flex flex-col justify-between"
                               style={{
                                 backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
                                 backgroundSize: "cover",
-                                backgroundPosition: "center",
+                                backgroundPosition: "top",
                               }}
                             >
                               <p className='text-white text-lg font-bold ml-4 mt-4'>Talent in the spotlight</p>
                               {!imageUrl && (
                                 <span className="text-gray-400 text-2xl">👤</span>
                               )}
+                              <p className='text-white text-sm ml-4 mb-4 font-bold uppercase'>{talent.voornaam} {talent.achternaam}</p>
                             </div>
                           </div>
                           <div className='flex flex-col w-1/2 h-full gap-4'>
                             <div 
-                              className='w-full h-[85%] rounded-3xl'
+                              className='w-full h-[85%] rounded-3xl relative flex flex-col justify-between'
                               style={{
                                 backgroundImage: topPerformerTalent?.Image?.url ? `url(${API_BASE_URL}${topPerformerTalent.Image.url})` : "none",
                                 backgroundSize: "cover",
@@ -324,7 +325,8 @@ function Dashboard() {
                             >
                               {topPerformerTalent ? (
                                 <>
-                                  <p className='text-white text-lg font-bold ml-4 mt-4'>Talent with most completed orders</p>
+                                  <p className='text-white text-lg font-bold ml-4 mt-4'>Talent with most orders</p>
+                                  <p className='text-white text-sm ml-4 mb-4 font-bold uppercase'>{topPerformerTalent.voornaam} {topPerformerTalent.achternaam}</p>
                                 </>
                               ) : (
                                 <p className='text-white'>No top performer found</p>
@@ -332,7 +334,7 @@ function Dashboard() {
                             </div>
                             <button
                               onClick={() => navigate('/talents')}
-                              className="bg-transparent cursor-pointer border-2 text-black text-lg px-12 py-3 w-full h-[15%] rounded-3xl"
+                              className="bg-transparent cursor-pointer border-2 text-black text-lg px-12 2xl:py-3 w-full h-[15%] rounded-3xl"
                             >
                               Manage Talents
                             </button>
@@ -343,36 +345,38 @@ function Dashboard() {
                   </div>
                 )}
               </div>
-              <div id='financials' className='bg-black rounded-4xl h-[40%] flex flex-col justify-between w-full p-8 py-6'>
+              <div id='financials' className='bg-black rounded-4xl h-[40%] flex flex-col justify-between w-full p-5 2xl:p-8 py-4 2xl:py-6'>
                 <div>
                   <p>Financials</p>
-                  <h4 className='font-bold'>Explore our financials and data here.</h4>
-                  <hr className='mt-4' />
+                  <h4 className='font-bold text-xl 2xl:text-2xl'>Explore our financials and data here.</h4>
+                  <hr className='mt-2 2xl:mt-4' />
                 </div>
                 <div className='flex flex-1 justify-evenly'>
-                  <div className='flex mt-8 gap-8'>
-                    <div className='flex flex-col gap-3 items-center'>
-                      <h2 className='font-bold'>4</h2>
+                  <div className='flex mt-4 2xl:mt-8 gap-8'>
+                    <div className='flex flex-col gap-1 2xl:gap-3 items-center'>
+                      <h2 className='font-bold text-3xl 2xl:text-4xl'>4</h2>
                       <p className='font-light'>Open Orders</p>
                     </div>
-                    <div className="flex flex-col gap-3 items-center">
-                      <h2 className='font-bold'>€242</h2>
+                    <div className="flex flex-col gap-1 2xl:gap-3 items-center">
+                      <h2 className='font-bold text-3xl 2xl:text-4xl'>€242</h2>
                       <p className='font-light'>Open revenue</p>
                     </div>
                   </div>
                   <hr className='h-[70%] my-auto w-[1px] bg-white'/>
-                  <div className="flex mt-8 gap-8">
-                    <div className='flex flex-col gap-3 items-center'>
-                      <h2 className='font-bold'>451</h2>
+                  <div className="flex mt-4 2xl:mt-8 gap-8">
+                    <div className='flex flex-col gap-1 2xl:gap-3 items-center'>
+                      <h2 className='font-bold text-3xl 2xl:text-4xl'>451</h2>
                       <p className='font-light'>Delivered orders</p>
                     </div>
-                    <div className='flex flex-col gap-3 items-center'>
-                      <h2 className='font-bold'>€9539</h2>
+                    <div className='flex flex-col gap-1 2xl:gap-3 items-center'>
+                      <h2 className='font-bold text-3xl 2xl:text-4xl'>€9539</h2>
                       <p className='font-light'>Total revenue</p>
                     </div>
                   </div>
                 </div>
-                <button className='bg-white text-black w-max text-xl font-bold rounded-full px-4 py-2 self-end'>See more</button>
+                <button
+                  onClick={() => navigate('/financials')}
+                  className='bg-white text-black w-max text-lg 2xl:text-xl 2xl:font-bold rounded-full px-3 py-1 2xl:px-4 2xl:py-2 self-end cursor-pointer'>See more</button>
               </div>
             </div>
           </div>

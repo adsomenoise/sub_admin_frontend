@@ -562,6 +562,8 @@ function Talents() {
   const [allCategories, setAllCategories] = useState([]);
   const [allTags, setAllTags] = useState([]);
   const [sortBy, setSortBy] = useState('naam'); // Default to alphabetical sorting
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'active', 'archived'
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
 
@@ -1023,16 +1025,58 @@ function Talents() {
         <div className="bg-white rounded-blocks p-8 min-h-screen">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-secondary-800">Manage Talents</h1>
-            <div className='flex gap-4 items-center'>
+            <div className='flex gap-2 2xl:gap-4 items-center'>
               <div className="text-sm text-secondary-600">
                 In total: {talents.length} talents
               </div>
               <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
               <div className="relative">
+                <button 
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer flex items-center gap-2'
+                >
+                  Filter: {activeFilter === 'all' ? 'All' : activeFilter === 'active' ? 'Active' : 'Archived'}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showFilterDropdown && (
+                  <div className="absolute top-full mt-2 bg-white border rounded-xl shadow-lg z-999 min-w-[100px]">
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('all');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 transition-colors cursor-pointer"
+                    >
+                      All
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('active');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 transition-colors border-t cursor-pointer"
+                    >
+                      Active
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('archived');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 transition-colors border-t cursor-pointer"
+                    >
+                      Archived
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="relative">
                 <select 
                   value={sortBy} 
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none rounded-blocks pr-10 min-w-[140px] bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer"
+                  className="appearance-none rounded-blocks pr-10 min-w-[100px] bg-transparent text-black border px-3 py-2 rounded-blocks cursor-pointer"
                 >
                   <option value="naam">A-Z</option>
                   <option value="rugnummer">Back number</option>
@@ -1058,7 +1102,11 @@ function Talents() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-8 gap-y-4">
-              {talents.map((talent) => {
+              {talents.filter(talent => {
+                if (activeFilter === 'active') return talent.active === true;
+                if (activeFilter === 'archived') return talent.active === false;
+                return true; // 'all'
+              }).map((talent) => {
                 const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
                 const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
                 const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
