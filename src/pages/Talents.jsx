@@ -16,7 +16,7 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
     categories: [],
     tags: [],
     Image: null,
-    video: null,
+    videos: [],
     banner: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -32,7 +32,7 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
         setForm(f => ({ ...f, Image: files[0] }));
         setImagePreview(URL.createObjectURL(files[0]));
       } else if (name === 'newVideo') {
-        setForm(f => ({ ...f, video: files[0] }));
+        setForm(f => ({ ...f, videos: [...(Array.isArray(f.videos) ? f.videos : []), files[0]] }));
         setVideoPreview(URL.createObjectURL(files[0]));
       } else if (name === 'newBanner') {
         setForm(f => ({ ...f, banner: files[0] }));
@@ -241,7 +241,9 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
   const [form, setForm] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
 
   useEffect(() => {
     if (talent) {
@@ -265,6 +267,7 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
         ...talent,
         categories: normalizeRelation(talent.categories) || [],
         tags: normalizeRelation(talent.tags) || [],
+        Introduction: talent.Introduction || null,
       });
       let imageUrl = null;
       if (talent.Image) {
@@ -285,9 +288,26 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
         }
       }
       setBannerPreview(bannerUrl);
+
+      // Set video preview to Introduction field if available
+      let videoUrl = null;
+      if (talent.Introduction) {
+        // Handle array format (if it's an array)
+        if (Array.isArray(talent.Introduction) && talent.Introduction.length > 0) {
+          if (talent.Introduction[0].url) {
+            videoUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}${talent.Introduction[0].url}`;
+          }
+        } 
+        // Handle object format with url property
+        else if (talent.Introduction.url) {
+          videoUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}${talent.Introduction.url}`;
+        }
+      }
+      setVideoPreview(videoUrl);
     } else {
       setBannerPreview(null);
       setImagePreview(null);
+      setVideoPreview(null);
     }
   }, [talent]);
 
@@ -299,6 +319,9 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
       if (name === 'newImage') {
         setForm((prev) => ({ ...prev, newImage: files[0] }));
         setImagePreview(files[0] ? URL.createObjectURL(files[0]) : null);
+      } else if (name === 'newVideo') {
+        setForm((prev) => ({ ...prev, newIntroduction: files[0] }));
+        setVideoPreview(URL.createObjectURL(files[0]));
       } else if (name === 'newBanner') {
         setForm((prev) => ({ ...prev, newBanner: files[0] }));
         setBannerPreview(files[0] ? URL.createObjectURL(files[0]) : null);
@@ -378,13 +401,46 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
                     <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="hidden" />
                   </label>
                   {form.Image?.url && (
-                    <button type="button" onClick={handleRemoveImage} className="bg-white/60 w-fit text-sm rounded-full border-1 border-black px-3 py-1">Delete picture</button>
+                    <button type="button" onClick={handleRemoveImage} className="bg-white/60 w-fit text-sm rounded-full border-1 border-black px-3 py-1 cursor-pointer">Delete picture</button>
                   )}
                 </div>
               </div>
             </div>
-            <div className='h-[60%] w-full bg-white rounded-[1rem] p-3 '>
-              <label className={`block text-sm font-semibold ${imagePreview ? 'text-white' : 'text-black'}`} style={imagePreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Profile video</label>
+            <div 
+              className='h-[60%] w-full rounded-[1rem] relative'
+              style={{
+                backgroundColor: videoPreview ? 'white' : 'white',
+              }}
+            >
+              {videoPreview ? (
+                <video 
+                  src={videoPreview} 
+                  className="w-full h-full object-cover rounded-[1rem]" 
+                  controls
+                />
+              ) : (
+                <div className="w-full h-full bg-white rounded-[1rem] flex items-center justify-center">
+                  <span className="text-gray-500">Geen video</span>
+                </div>
+              )}
+              <div className="absolute top-3 left-3 flex gap-1">
+                <label className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer inline-block">
+                  Upload file
+                  <input type="file" name="newVideo" accept="video/*" onChange={handleChange} className="hidden" />
+                </label>
+                {(form.Introduction || form.newIntroduction) && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setForm(prev => ({ ...prev, Introduction: null, newIntroduction: null }));
+                      setVideoPreview(null);
+                    }}
+                    className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer inline-block"
+                  >
+                    Delete video
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <div className='w-[70%] h-full flex gap-4 flex-col'>
@@ -406,7 +462,7 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
                     <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="hidden" />
                   </label>
                   {(form.banner?.url || (Array.isArray(form.banner) && form.banner.length > 0) || bannerPreview) && (
-                    <button type="button" onClick={handleRemoveBanner} className="bg-white/60 w-fit text-sm rounded-full border-1 border-black px-3 py-1">Delete banner</button>
+                    <button type="button" onClick={handleRemoveBanner} className="bg-white/60 w-fit text-sm rounded-full border-1 border-black px-3 py-1 cursor-pointer">Delete banner</button>
                   )}
                 </div>
               </div>
@@ -538,16 +594,15 @@ function Talents() {
       let response;
       try {
         response = await axios.get(
-          `${API_BASE_URL}/api/talents?filters[enrollAccepted][$eq]=true&populate=Image&populate=banner&populate=categories`,
+          `${API_BASE_URL}/api/talents?filters[enrollAccepted][$eq]=true&populate=Image&populate=banner&populate=Introduction&populate=categories`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }
         );
       } catch (directError) {
-        console.log("Direct API failed, trying categories approach:", directError.message);
         // Als direct niet werkt, probeer via categories zoals in andere werkende componenten
         response = await axios.get(
-          `${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`,
+          `${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=Introduction&populate[talents][populate][3]=categories`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }
@@ -667,6 +722,20 @@ function Talents() {
       } else if (form.banner === null) {
         bannerId = null;
       }
+
+      // Upload new videos if present and collect existing video IDs
+      let introductionId = form.Introduction?.id || form.Introduction;
+      if (form.newIntroduction) {
+        const videoData = new FormData();
+        videoData.append('files', form.newIntroduction);
+        const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, videoData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        introductionId = uploadRes.data[0].id;
+      } else if (form.Introduction === null) {
+        introductionId = null;
+      }
+
       // Alleen de relevante velden meesturen
       const updateData = {
         voornaam: form.voornaam,
@@ -685,6 +754,7 @@ function Talents() {
         enrollAccepted: true,
         Image: imageId,
         banner: bannerId,
+        Introduction: introductionId,
       };
       await axios.put(
         `${API_BASE_URL}/api/talents/${form.documentId || form.id}`,
@@ -825,6 +895,16 @@ function Talents() {
         bannerId = uploadRes.data[0].id;
       }
 
+      // Upload introduction video if present
+      let introductionId = null;
+      if (form.videos && form.videos.length > 0) {
+        const videoData = new FormData();
+        videoData.append('files', form.videos[0]);
+        const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, videoData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        introductionId = uploadRes.data[0].id;
+      }
 
       // Alleen de velden uit het formulier die nodig zijn
       const talentData = {
@@ -841,6 +921,7 @@ function Talents() {
         categories: Array.isArray(form.categories) ? form.categories.map(cat => cat.id) : [],
         Image: imageId,
         banner: bannerId,
+        Introduction: introductionId,
       };
 
       console.log('Creating talent with data (including relations):', talentData);
