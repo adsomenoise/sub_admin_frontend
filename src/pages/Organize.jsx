@@ -170,10 +170,10 @@ function Organize() {
   };
 
   return (
-    <div className="bg-gray w-[60%] rounded-blocks mx-auto p-8 2xl:h-[80vh] 2xl:mt-8 flex flex-col">
-      <h1 className="text-2xl font-bold mb-6 ml-8">Setup</h1>
-      <div className='bg-white rounded-blocks w-full p-8 mb-4 flex-shrink-0'>
-        <form onSubmit={handleAddCategory} className="mb-6 flex gap-4 justify-between items-center">
+    <div className="bg-gray w-[60%] rounded-blocks mx-auto p-6 2xl:p-8 2xl:h-[80vh] 2xl:mt-8 flex flex-col">
+      <h1 className="text-2xl font-bold mb-4 2xl:mb-6 ml-8">Setup</h1>
+      <div className='bg-white rounded-blocks w-full p-4 px-8 2xl:p-8 mb-4 flex-shrink-0'>
+        <form onSubmit={handleAddCategory} className="2xl:mb-6 flex gap-4 justify-between items-center">
           <h3>Categories</h3>
           <div className='flex gap-2 justify-between items-center'>
             <input
@@ -235,10 +235,10 @@ function Organize() {
         )}
 
       </div>
-      <div id='delivery-days' className="bg-white rounded-blocks w-full p-8 flex-1 flex flex-col">
-        <h3>Delivery days</h3>
+      <div id='delivery-days' className="bg-white rounded-blocks w-full p-4 px-8 2xl:p-8 flex-1 flex flex-col">
+        <h3 className='mb-4 2xl:mb-0'>Delivery days</h3>
         
-        <div className="space-y-6 flex-1 flex flex-col justify-center w-[40%]">
+        <div className="space-y-6 flex-1 flex flex-col justify-center w-[55%] 2xl:w-[40%]">
           {/* Normal delivery */}
           <div className="flex items-center justify-between">
             <span className="text-lg font-medium">Normal delivery</span>
