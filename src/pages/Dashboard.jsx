@@ -253,7 +253,7 @@ function Dashboard() {
                     <li 
                       key={order.documentId || order.id} 
                       onClick={() => handleOrderClick(order)}
-                      className="text-black p-3 rounded cursor-pointer hover:bg-gray-dark transition-colors"
+                      className="text-black p-3 rounded cursor-pointer hover:bg-gray-dark/30 transition-colors"
                     >
                       <div className="flex justify-between items-start">
                         <div className='w-[50%] flex gap-8'>
@@ -274,10 +274,10 @@ function Dashboard() {
                           </div>
 
                         <div className="text-left w-[15%]">
-                          <p className="font-semibold text-green-600">€{order.totalPrice}</p>
+                          <p className="font-semibold text-black">€{order.totalPrice}</p>
                         </div>
 
-                        <div className="mt-1 text-xs text-blue-600 w-[12%] 2xl:w-[8%] text-right">
+                        <div className="text-base text-green-500 w-[12%] 2xl:w-[8%] text-right">
                           More →
                         </div>
                       </div>
