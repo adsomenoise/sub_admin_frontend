@@ -171,7 +171,7 @@ function Orders() {
               className={`px-6 py-3 font-medium transition-colors cursor-pointer ${
                 activeTab === 'new' 
                   ? 'bg-white rounded-t-3xl' 
-                  : 'text-gray-600 hover:text-blue-600'
+                  : 'text-white bg-gray-dark rounded-t-3xl'
               }`}
             >
               New
@@ -181,7 +181,7 @@ function Orders() {
               className={`px-6 py-3 font-medium transition-colors cursor-pointer ${
                 activeTab === 'archived' 
                   ? 'bg-white rounded-t-3xl' 
-                  : 'text-gray-600 hover:text-blue-600'
+                  : 'text-white bg-gray-dark rounded-t-3xl'
               }`}
             >
               Archived
@@ -198,7 +198,7 @@ function Orders() {
             {activeTab === 'new' ? (
               // New Orders Layout - Single line per order
               <div className={`bg-white p-8 rounded-b-3xl rounded-tr-3xl`}>
-                <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b">
+                <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b items-center">
                   <div>From</div>
                   <div>To</div>
                   <div>Gelegenheid</div>
@@ -211,7 +211,7 @@ function Orders() {
                   </p>
                 ) : (
                   tabFilteredOrders.map(order => (
-                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50">
+                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
                       <div className="font-medium">{order.from}</div>
                       <div>{order.to}</div>
                       <div className="capitalize">{order.gelegenheid}</div>
@@ -226,7 +226,7 @@ function Orders() {
                       <div>
                         <button
                           onClick={() => handleOrderClick(order)}
-                          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
+                          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
                         >
                           Upload video
                         </button>
@@ -239,7 +239,7 @@ function Orders() {
               // Archived Orders Layout - Single line per order (same as New tab)
               <div className={`bg-white p-8 rounded-b-3xl rounded-tr-3xl ${
                 activeTab === 'archived' 
-                  ? 'rounded-tl-3xl' 
+                  ? '' 
                   : ''
               }`}>
                 <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b">
@@ -255,7 +255,7 @@ function Orders() {
                   </p>
                 ) : (
                   tabFilteredOrders.map(order => (
-                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50">
+                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
                       <div className="font-medium">{order.from}</div>
                       <div>{order.to}</div>
                       <div className="capitalize">{order.gelegenheid}</div>

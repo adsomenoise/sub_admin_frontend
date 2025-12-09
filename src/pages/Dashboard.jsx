@@ -98,13 +98,13 @@ function Dashboard() {
         let talentsRes;
         try {
           // Gebruik dezelfde URL format als in Header.jsx die wel werkt
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=10`, {
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=7`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authError) {
           console.log("Auth failed for talents, trying without auth:", authError.message);
           // Try without auth
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=10`);
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=7`);
         }
         
         console.log("Spotlighted talents response:", talentsRes.data);
@@ -249,7 +249,7 @@ function Dashboard() {
                 <div className='h-[90%] flex items-center justify-center'><h4>No orders found.</h4></div>
               ) : (
                 <ul className="space-y-2 px-4">
-                  {[...newOrders, ...inProgressOrders].slice(0, 10).map(order => (
+                  {[...newOrders, ...inProgressOrders].slice(0, 7).map(order => (
                     <li 
                       key={order.documentId || order.id} 
                       onClick={() => handleOrderClick(order)}
