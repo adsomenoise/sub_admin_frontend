@@ -1029,11 +1029,11 @@ function Talents() {
               <div className="text-sm text-secondary-600">
                 In total: {talents.length} talents
               </div>
-              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
+              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer text-sm 2xl:text-base' onClick={() => setShowAddModal(true)}>Add a talent</button>
               <div className="relative">
                 <button 
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer flex items-center gap-2'
+                  className='bg-transparent text-black border px-4 py-2 rounded-blocks text-sm 2xl:text-base cursor-pointer flex items-center gap-2'
                 >
                   Filter: {activeFilter === 'all' ? 'All' : activeFilter === 'active' ? 'Active' : 'Archived'}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1076,7 +1076,7 @@ function Talents() {
                 <select 
                   value={sortBy} 
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none rounded-blocks pr-10 min-w-[100px] bg-transparent text-black border px-3 py-2 rounded-blocks cursor-pointer"
+                  className="appearance-none rounded-blocks pr-10 min-w-[100px] bg-transparent text-black text-sm 2xl:text-base border px-3 py-2 rounded-blocks cursor-pointer"
                 >
                   <option value="naam">A-Z</option>
                   <option value="rugnummer">Back number</option>
