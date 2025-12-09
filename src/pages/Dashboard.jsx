@@ -277,7 +277,7 @@ function Dashboard() {
                           <p className="font-semibold text-green-600">€{order.totalPrice}</p>
                         </div>
 
-                        <div className="mt-2 text-xs text-blue-600 w-[12%] 2xl:w-[8%] text-right">
+                        <div className="mt-1 text-xs text-blue-600 w-[12%] 2xl:w-[8%] text-right">
                           More →
                         </div>
                       </div>
