@@ -19,6 +19,68 @@ function Dashboard() {
 
   const jwt = localStorage.getItem('jwt');
 
+  const fetchOrders = async (jwtToken = jwt) => {
+    try {
+      console.log("Fetching 15 most recent orders...");
+      
+      // Haal de 15 recentste orders op (net zoals in Orders.jsx maar beperkt)
+      let ordersRes;
+      try {
+        ordersRes = await axios.get(
+          `${API_BASE_URL}/api/orders?sort=createdAt:desc&pagination[limit]=15&populate=*`,
+          {
+            headers: { Authorization: `Bearer ${jwtToken}` },
+          }
+        );
+      } catch (authError) {
+        console.log("Auth failed, trying without auth:", authError.message);
+        // Try without auth
+        ordersRes = await axios.get(
+          `${API_BASE_URL}/api/orders?sort=createdAt:desc&pagination[limit]=15&populate=*`
+        );
+      }
+      
+      console.log("Orders response:", ordersRes.data);
+      console.log("Orders found:", ordersRes.data.data.length);
+
+      const allOrders = ordersRes.data.data || [];
+
+      if (allOrders.length > 0) {
+        console.log("Eerste order:", allOrders[0]);
+      }
+
+      // Filter orders die nog geen video hebben (moeten nog gedaan worden)
+      const ordersWithoutVideo = allOrders.filter(order => {
+        // Controleer of er geen video is geüpload
+        const hasVideo = order.orderVideo && 
+          ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
+           (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
+        
+        return !hasVideo; // Alleen orders zonder video
+      });
+
+      // Filter orders die wel video hebben (completed orders)
+      const ordersWithVideo = allOrders.filter(order => {
+        // Controleer of er wel video is geüpload
+        const hasVideo = order.orderVideo && 
+          ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
+           (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
+        
+        return hasVideo; // Alleen orders met video
+      });
+
+      console.log("Orders zonder video (moeten nog gedaan worden):", ordersWithoutVideo.length);
+      console.log("Orders met video (completed):", ordersWithVideo.length);
+
+      setNewOrders(ordersWithoutVideo.filter(o => o.statusorder === 'nieuw'));
+      setInProgressOrders(ordersWithoutVideo.filter(o => o.statusorder === 'behandeling'));
+      setDeliveredOrders(ordersWithVideo);
+      
+    } catch (error) {
+      console.error('Fout bij ophalen orders:', error);
+    }
+  };
+
   useEffect(() => {
     console.log("Dashboard useEffect started");
     console.log("JWT:", jwt);
@@ -28,68 +90,6 @@ function Dashboard() {
       setLoading(false);
       return;
     }
-
-    const fetchOrders = async () => {
-      try {
-        console.log("Fetching 15 most recent orders...");
-        
-        // Haal de 15 recentste orders op (net zoals in Orders.jsx maar beperkt)
-        let ordersRes;
-        try {
-          ordersRes = await axios.get(
-            `${API_BASE_URL}/api/orders?sort=createdAt:desc&pagination[limit]=15&populate=*`,
-            {
-              headers: { Authorization: `Bearer ${jwt}` },
-            }
-          );
-        } catch (authError) {
-          console.log("Auth failed, trying without auth:", authError.message);
-          // Try without auth
-          ordersRes = await axios.get(
-            `${API_BASE_URL}/api/orders?sort=createdAt:desc&pagination[limit]=15&populate=*`
-          );
-        }
-        
-        console.log("Orders response:", ordersRes.data);
-        console.log("Orders found:", ordersRes.data.data.length);
-
-        const allOrders = ordersRes.data.data || [];
-
-        if (allOrders.length > 0) {
-          console.log("Eerste order:", allOrders[0]);
-        }
-
-        // Filter orders die nog geen video hebben (moeten nog gedaan worden)
-        const ordersWithoutVideo = allOrders.filter(order => {
-          // Controleer of er geen video is geüpload
-          const hasVideo = order.orderVideo && 
-            ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
-             (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
-          
-          return !hasVideo; // Alleen orders zonder video
-        });
-
-        // Filter orders die wel video hebben (completed orders)
-        const ordersWithVideo = allOrders.filter(order => {
-          // Controleer of er wel video is geüpload
-          const hasVideo = order.orderVideo && 
-            ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
-             (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
-          
-          return hasVideo; // Alleen orders met video
-        });
-
-        console.log("Orders zonder video (moeten nog gedaan worden):", ordersWithoutVideo.length);
-        console.log("Orders met video (completed):", ordersWithVideo.length);
-
-        setNewOrders(ordersWithoutVideo.filter(o => o.statusorder === 'nieuw'));
-        setInProgressOrders(ordersWithoutVideo.filter(o => o.statusorder === 'behandeling'));
-        setDeliveredOrders(ordersWithVideo);
-        
-      } catch (error) {
-        console.error('Fout bij ophalen orders:', error);
-      }
-    };
 
     const fetchSpotlightedTalents = async () => {
       try {
@@ -211,12 +211,13 @@ function Dashboard() {
 
   const handleOrderUpdate = (updatedOrder) => {
     // Update the order in the appropriate list
-    setNewOrders(prev => prev.map(order => 
-      order.id === updatedOrder.id ? updatedOrder : order
-    ));
-    setInProgressOrders(prev => prev.map(order => 
-      order.id === updatedOrder.id ? updatedOrder : order
-    ));
+    setNewOrders(prev => prev.map(order => order.id === updatedOrder.id ? updatedOrder : order));
+    setInProgressOrders(prev => prev.map(order => order.id === updatedOrder.id ? updatedOrder : order));
+    
+    // Refresh orders after a short delay to ensure backend has updated
+    setTimeout(() => {
+      fetchOrders();
+    }, 500);
   };
 
   const handleCloseModal = () => {

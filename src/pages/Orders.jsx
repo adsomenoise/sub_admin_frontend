@@ -12,6 +12,7 @@ function Orders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
+  const jwt = localStorage.getItem('jwt');
 
   useEffect(() => {
     fetchData();
@@ -35,12 +36,21 @@ function Orders() {
       let ordersRes;
       try {
         // Probeer eerst met populate
-        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?populate=*`);
+        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?populate=*`, {
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
         console.log('Orders with populate=* response:', ordersRes.data);
       } catch (populateErr) {
         console.log('Populate * failed, trying without populate:', populateErr.message);
         // Fallback zonder populate
-        ordersRes = await axios.get(`${API_BASE_URL}/api/orders`);
+        try {
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders`, {
+            headers: { Authorization: `Bearer ${jwt}` }
+          });
+        } catch (authErr) {
+          // Try without auth as last resort
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders`);
+        }
         console.log('Orders without populate response:', ordersRes.data);
       }
       
@@ -59,7 +69,9 @@ function Orders() {
       console.log('Fetching talents...');
       let talentsRes;
       try {
-        talentsRes = await axios.get(`${API_BASE_URL}/api/talents`);
+        talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
         console.log('Talents response:', talentsRes.data);
       } catch (talentsErr) {
         console.error('Talents fetch failed:', talentsErr.message);
@@ -118,6 +130,11 @@ function Orders() {
         order.documentId === updatedOrder.documentId ? updatedOrder : order
       )
     );
+    
+    // Refresh orders after a short delay to ensure backend has updated
+    setTimeout(() => {
+      fetchData();
+    }, 500);
   };
 
   const handleCloseModal = () => {
