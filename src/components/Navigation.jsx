@@ -15,42 +15,42 @@ function Navigation() {
           <img src="/images/logo.svg" width={150} height={30} alt="logo-svg" />
         </Link>
           <ul className='flex gap-4'>
-            <li className={`${isActive('/dashboard') ? 'bg-green' : 'hover:underline bg-white'}  rounded-blocks`}>
+            <li className={`${isActive('/dashboard') ? 'bg-green' : 'bg-white hover:bg-white/80 transition-colors duration-300'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/dashboard')}
-                className={`cursor-pointer px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`cursor-pointer px-6 py-2 w-full text-left rounded active:scale-90 transition-transform`}
               >
                 Home
               </button>
             </li>
-            <li className={`${isActive('/talents') ? 'bg-green' : 'hover:underline bg-white'}  rounded-blocks`}>
+            <li className={`${isActive('/talents') ? 'bg-green' : 'bg-white hover:bg-white/80 transition-colors duration-300'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/talents')}
-                className={`cursor-pointer px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`cursor-pointer px-6 py-2 w-full text-left rounded active:scale-90 transition-transform`}
               >
                 Talents
               </button>
             </li>
-            <li className={`${isActive('/orders') ? 'bg-green' : 'hover:underline bg-white'}  rounded-blocks`}>
+            <li className={`${isActive('/orders') ? 'bg-green' : 'bg-white hover:bg-white/80 transition-colors duration-300'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/orders')}
-                className={`cursor-pointer px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`cursor-pointer px-6 py-2 w-full text-left rounded active:scale-90 transition-transform`}
               >
                 Orders
               </button>
             </li>
-            <li className={`${isActive('/financials') ? 'bg-green' : 'hover:underline bg-white'}  rounded-blocks`}>
+            <li className={`${isActive('/financials') ? 'bg-green' : ' bg-white hover:bg-white/80 transition-colors duration-300'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/financials')}
-                className={`cursor-pointer px-6 py-2 w-full text-left rounded hover:underline`}
+                className={`cursor-pointer px-6 py-2 w-full text-left rounded active:scale-90 transition-transform`}
               >
                 Financials
               </button>
             </li>
-            <li className={`${isActive('/organize') ? 'bg-green' : 'bg-white'}  rounded-blocks`}>
+            <li className={`${isActive('/organize') ? 'bg-green' : 'bg-white hover:bg-white/80 transition-colors duration-300'}  rounded-blocks`}>
               <button
                 onClick={() => navigate('/organize')}
-                className={`px-6 py-2 w-full text-left rounded hover:underline cursor-pointer`}
+                className={`px-6 py-2 w-full text-left rounded cursor-pointer active:scale-90 transition-transform`}
               >
                 Setup
               </button>
@@ -63,7 +63,7 @@ function Navigation() {
                   localStorage.removeItem('user');
                   navigate('/login');
                 }}
-                className="px-6 py-2 w-full text-left hover:underline bg-green rounded-blocks cursor-pointer"
+                className="px-6 py-2 w-full text-left bg-green rounded-blocks cursor-pointer"
               >
                 Sign out
               </button>

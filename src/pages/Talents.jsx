@@ -1,71 +1,27 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-// Modal component voor talent toevoegen
-function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [], allSocialOptions = [] }) {
+
+// Inline component voor talent toevoegen
+function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], allSocialOptions = [] }) {
   const [form, setForm] = useState({
     voornaam: '',
     achternaam: '',
-    email: '',
     slug: '',
     description: '',
     rugnummer: 0,
     price: '',
-    gsm_nummer: '',
-    socialLinks: '',
-    fastDelivery: false,
-    enrollAccepted: true,
+    featured: false,
     active: true,
-    videoURL: '',
-    social_channel: '',
+    fastDelivery: false,
     categories: [],
     tags: [],
     Image: null,
+    videos: [],
     banner: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
-
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!open) {
-      setForm({
-        voornaam: '',
-        achternaam: '',
-        email: '',
-        slug: '',
-        description: '',
-        rugnummer: 0,
-        price: '',
-        gsm_nummer: '',
-        socialLinks: '',
-        fastDelivery: false,
-        enrollAccepted: true,
-        active: true,
-        videoURL: '',
-        social_channel: '',
-        categories: [],
-        tags: [],
-        Image: null,
-        banner: null,
-      });
-      setImagePreview(null);
-      setBannerPreview(null);
-    }
-  }, [open]);
-
-  if (!open) return null;
-
-  // Function to generate slug from voornaam and achternaam
-  const generateSlug = (voornaam, achternaam) => {
-    const combined = `${voornaam || ''} ${achternaam || ''}`.trim();
-    return combined
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w\-]+/g, '')
-      .replace(/\-\-+/g, '-')
-      .replace(/^-+/, '')
-      .replace(/-+$/, '');
-  };
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -74,24 +30,25 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
     } else if (type === 'file') {
       if (name === 'newImage') {
         setForm(f => ({ ...f, Image: files[0] }));
-        if (files[0]) {
-          setImagePreview(URL.createObjectURL(files[0]));
-        }
+        setImagePreview(URL.createObjectURL(files[0]));
+      } else if (name === 'newVideo') {
+        setForm(f => ({ ...f, videos: [...(Array.isArray(f.videos) ? f.videos : []), files[0]] }));
+        setVideoPreview(URL.createObjectURL(files[0]));
       } else if (name === 'newBanner') {
         setForm(f => ({ ...f, banner: files[0] }));
-        if (files[0]) {
-          setBannerPreview(URL.createObjectURL(files[0]));
-        }
+        setBannerPreview(URL.createObjectURL(files[0]));
       }
     } else {
-      const newForm = { ...form, [name]: value };
-      // Auto-generate slug when voornaam or achternaam changes
       if (name === 'voornaam' || name === 'achternaam') {
-        const voornaam = name === 'voornaam' ? value : form.voornaam;
-        const achternaam = name === 'achternaam' ? value : form.achternaam;
-        newForm.slug = generateSlug(voornaam, achternaam);
+        setForm(f => {
+          const newVoornaam = name === 'voornaam' ? value : f.voornaam;
+          const newAchternaam = name === 'achternaam' ? value : f.achternaam;
+          const slug = `${newVoornaam}-${newAchternaam}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+          return { ...f, [name]: value, slug };
+        });
+      } else {
+        setForm(f => ({ ...f, [name]: value }));
       }
-      setForm(newForm);
     }
   };
 
@@ -112,109 +69,129 @@ function AddTalentModal({ open, onClose, onSave, allCategories = [], allTags = [
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[70%] relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <h2 className="text-xl font-bold mb-2">Add a new talent</h2>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-sm font-semibold">First Name</label>
-              <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded" required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Last Name</label>
-              <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded" required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Email</label>
-              <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Description</label>
-              <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Rugnummer</label>
-              <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Price</label>
-              <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Social Links</label>
-              <input type="text" name="socialLinks" value={form.socialLinks} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Social kanaal</label>
-              <select name="social_channel" value={form.social_channel} onChange={handleChange} className="border p-1 w-full rounded">
-                <option value="">Selecteer kanaal</option>
-                {allSocialOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-semibold">Categories</label>
-              <div className="flex flex-wrap gap-2">
-                {allCategories.map(cat => (
-                  <label key={cat.id} className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={form.categories.some(c => c.id === cat.id)}
-                      onChange={() => handleCheckboxChange('categories', cat.id)}
-                    />
-                    {cat.name}
+    <div className="w-full px-8 py-2 relative">
+      <button onClick={onClose} className="text-4xl absolute right-0 top-0 cursor-pointer">&times;</button>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <h2 className="text-2xl font-bold mb-4">Add a new Talent</h2>
+        <div className='flex gap-4 h-[85vh] 2xl:h-[80vh]'>
+          <div className='w-[30%] h-full flex gap-4 flex-col'>
+            <div 
+              className='h-[40%] w-full rounded-[1rem]'
+              style={{
+                backgroundImage: imagePreview ? `url(${imagePreview})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: imagePreview ? 'transparent' : 'white',
+              }}
+            >
+              <div className="p-3 flex flex-col h-full justify-between">
+                <label className={`block text-sm font-semibold ${imagePreview ? 'text-white' : 'text-black'}`} style={imagePreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Profile picture</label>
+                <div className='flex flex-col'>
+                  <label className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer">
+                    Upload file
+                    <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="hidden" />
                   </label>
-                ))}
+                </div>
               </div>
             </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-semibold">Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {allTags.map(tag => (
-                  <label key={tag.id} className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={form.tags.some(t => t.id === tag.id)}
-                      onChange={() => handleCheckboxChange('tags', tag.id)}
-                    />
-                    {tag.name}
+            <div className='h-[60%] w-full bg-white rounded-[1rem] p-3'>
+              <div className="flex flex-col h-full justify-between">
+                <label className={`block text-sm font-semibold ${videoPreview ? 'text-white' : 'text-black'}`} style={videoPreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Profile video</label>
+                <div className='flex flex-col'>
+                  {videoPreview && <video src={videoPreview} className="w-16 h-16 object-cover rounded mb-1" />}
+                  <label className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer">
+                    Upload file
+                    <input type="file" name="newVideo" accept="video/*" onChange={handleChange} className="hidden" />
                   </label>
-                ))}
+                </div>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold">Image</label>
-              {imagePreview && <img src={imagePreview} alt="Talent" className="w-16 h-16 object-cover rounded mb-1" />}
-              <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="block" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold">Banner</label>
-              {bannerPreview && (
-                <img src={bannerPreview} alt="Banner" className="w-16 h-16 object-cover rounded mb-1" />
-              )}
-              <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="block" />
-            </div>
-            <div className="col-span-2 flex gap-4 mt-2">
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} /> Actief
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} /> Spoedlevering
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="enrollAccepted" checked={!!form.enrollAccepted} onChange={handleChange} /> Goedgekeurd
-              </label>
-            </div>
           </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Add</button>
+          <div className='w-[70%] h-full flex gap-4 flex-col'>
+            <div 
+              className='h-[30%] w-full p-4 rounded-[1rem]'
+              style={{
+                backgroundImage: bannerPreview ? `url(${bannerPreview})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: bannerPreview ? 'transparent' : 'white'
+              }}
+            >
+              <div className="flex flex-col h-full">
+                <label className={`block text-sm font-semibold mb-2 ${bannerPreview ? 'text-white' : 'text-black'}`} style={bannerPreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Banner picture</label>
+                <div className="flex-grow"></div>
+                <div className="flex gap-2">
+                  <label className="bg-white/60 text-black text-sm rounded-full border-1 border-black px-3 py-1 cursor-pointer inline-block">
+                    Upload file
+                    <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="hidden" />
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className='h-[70%] w-full bg-white rounded-[1rem] p-6 px-8 pr-20 overflow-y-auto'>
+              <div className='flex gap-16 2xl:gap-24 items-center'>
+                <div className='w-[80%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Firstname</label>
+                  <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded-full" required />
+                </div>
+
+                  <div className='w-[25%] 2xl:w-[15%]'>
+                    <label className="block text-sm font-semibold ml-2 mb-2">Back number</label>
+                    <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded-full" min="0" max="99" />
+                </div>
+              </div>
+              <div className='flex gap-16 2xl:gap-24 items-center mt-5'>
+                <div className='w-[80%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Lastname</label>
+                  <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded-full" required />
+                </div>
+
+                <div className='w-[25%] 2xl:w-[15%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Price</label>
+                  <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded-full" step="0.01" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold ml-2 mb-2 mt-5">Description</label>
+                <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
+              </div>
+              <div className="mt-2">
+                <label className="block text-sm font-semibold">Categories</label>
+                <div className="flex flex-wrap gap-2">
+                  {allCategories.map(cat => (
+                    <label key={cat.id} className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={form.categories.some(c => c.id === cat.id)}
+                        onChange={() => handleCheckboxChange('categories', cat.id)}
+                      />
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+      
+              <div className="grid grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Featured</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Active</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Fast delivery</span>
+                </label>
+              </div>
+            </div>  
           </div>
-        </form>
-      </div>
+        </div>
+        <div className="flex justify-center gap-2 mt-4">
+          <button type="submit" className="bg-green hover:bg-green/60 transition-all text-base rounded-full w-fit px-6 py-3 cursor-pointer">Toevoegen</button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -259,16 +236,17 @@ function DeleteConfirmationModal({ open, onClose, onConfirm, talentName }) {
   );
 }
 
-// Modal component voor talent bewerken
-function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategories = [], allTags = [], allSocialOptions = [] }) {
+// Inline component voor talent bewerken
+function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [], allTags = [], allSocialOptions = [] }) {
   const [form, setForm] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
 
   useEffect(() => {
     if (talent) {
-      // Normaliseer categories/tags naar array van {id}
       const normalizeRelation = (rel) => {
         if (!rel) return [];
         if (Array.isArray(rel)) {
@@ -287,10 +265,10 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
       };
       setForm({
         ...talent,
-        categories: normalizeRelation(talent.categories),
-        tags: normalizeRelation(talent.tags),
+        categories: normalizeRelation(talent.categories) || [],
+        tags: normalizeRelation(talent.tags) || [],
+        Introduction: talent.Introduction || null,
       });
-      // Image preview logic (works for object or array)
       let imageUrl = null;
       if (talent.Image) {
         if (Array.isArray(talent.Image) && talent.Image.length > 0 && talent.Image[0].url) {
@@ -301,7 +279,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
       }
       setImagePreview(imageUrl);
 
-      // Banner preview logic (works for object or array, and only if url is present)
       let bannerUrl = null;
       if (talent.banner) {
         if (Array.isArray(talent.banner) && talent.banner.length > 0 && talent.banner[0].url) {
@@ -311,13 +288,30 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
         }
       }
       setBannerPreview(bannerUrl);
+
+      // Set video preview to Introduction field if available
+      let videoUrl = null;
+      if (talent.Introduction) {
+        // Handle array format (if it's an array)
+        if (Array.isArray(talent.Introduction) && talent.Introduction.length > 0) {
+          if (talent.Introduction[0].url) {
+            videoUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}${talent.Introduction[0].url}`;
+          }
+        } 
+        // Handle object format with url property
+        else if (talent.Introduction.url) {
+          videoUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}${talent.Introduction.url}`;
+        }
+      }
+      setVideoPreview(videoUrl);
     } else {
       setBannerPreview(null);
       setImagePreview(null);
+      setVideoPreview(null);
     }
   }, [talent]);
 
-  if (!open || !talent) return null;
+  if (!talent) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -325,6 +319,9 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
       if (name === 'newImage') {
         setForm((prev) => ({ ...prev, newImage: files[0] }));
         setImagePreview(files[0] ? URL.createObjectURL(files[0]) : null);
+      } else if (name === 'newVideo') {
+        setForm((prev) => ({ ...prev, newIntroduction: files[0] }));
+        setVideoPreview(URL.createObjectURL(files[0]));
       } else if (name === 'newBanner') {
         setForm((prev) => ({ ...prev, newBanner: files[0] }));
         setBannerPreview(files[0] ? URL.createObjectURL(files[0]) : null);
@@ -337,7 +334,6 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
     }
   };
 
-  // For checkboxes: add/remove id from array, always store as array of {id}
   const handleCheckboxChange = (field, id) => {
     setForm((prev) => {
       let arr = Array.isArray(prev[field]) ? prev[field].map(x => (x.id ? x.id : x)) : [];
@@ -373,7 +369,7 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
     if (onDelete) {
       onDelete(talent);
       setShowDeleteConfirmation(false);
-      onClose(); // Sluit de edit modal na bevestiging
+      onClose();
     }
   };
 
@@ -382,211 +378,178 @@ function EditTalentModal({ open, onClose, talent, onSave, onDelete, allCategorie
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-gray-dark rounded-lg shadow-lg p-8 xl:max-h-[90vh] overflow-y-auto min-w-[350px] w-[65%] relative">
-        <button onClick={onClose} className="absolute top-2 right-4 text-4xl text-white cursor-pointer">&times;</button>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <h2 className="text-xl font-bold mb-2">{form.voornaam || ''} {form.achternaam || ''}</h2>
-          <div className='flex gap-4 h-[80vh]'>
-            <div className='w-[30%] h-full flex gap-4 flex-col'>
-              <div 
-                className='h-[40%] w-full rounded-[1rem]'
-                style={{
-                  backgroundImage: imagePreview ? `url(${imagePreview})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundColor: imagePreview ? 'transparent' : 'black',
-                }}
-              >
-                {/* Afbeelding */}
-                <div className="p-3 flex flex-col h-full justify-between">
-                  <label className="block text-sm text-white font-semibold">Profile picture</label>
-                  <div className='flex flex-col'>
-                    <label className="bg-white/60 text-sm rounded-full w-fit border-2 border-black px-3 py-1 cursor-pointer">
-                      Upload file
-                      <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="hidden" />
-                    </label>
-                    {form.Image?.url && (
-                      <button type="button" onClick={handleRemoveImage} className="bg-white/60 w-fit text-sm rounded-full border-2 border-black px-3 py-1">Delete picture</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className='h-[60%] w-full bg-green-600 rounded-[1rem]'>
-                Profile video
-              </div>
-            </div>
-            <div className='w-[70%] h-full flex gap-4 flex-col'>
-              <div 
-                className='h-[30%] w-full p-4 rounded-[1rem]'
-                style={{
-                  backgroundImage: bannerPreview ? `url(${bannerPreview})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundColor: bannerPreview ? 'transparent' : '#dc2626'
-                }}
-              >
-                <div className="flex flex-col h-full">
-                  <label className="block text-sm text-white font-semibold mb-2">Banner picture</label>
-                  <div className="flex-grow"></div>
-                  <div className="flex gap-2">
-                    <label className="bg-white/60 text-black text-sm rounded-full border-2 border-black px-3 py-1 cursor-pointer inline-block">
-                      Upload file
-                      <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="hidden" />
-                    </label>
-                    {(form.banner?.url || (Array.isArray(form.banner) && form.banner.length > 0) || bannerPreview) && (
-                      <button type="button" onClick={handleRemoveBanner} className="text-xs text-red-300">Verwijder banner</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className='h-[70%] w-full bg-blue-500 rounded-[1rem] p-4'>
-                {/* Voornaam */}
-                <div>
-                  <label className="block text-sm font-semibold">Voornaam</label>
-                  <input type="text" name="voornaam" value={form.voornaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-                </div>
-                {/* Achternaam */}
-                <div>
-                  <label className="block text-sm font-semibold">Achternaam</label>
-                  <input type="text" name="achternaam" value={form.achternaam || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-                </div>
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-semibold">Email</label>
-                  <input type="email" name="email" value={form.email || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-                </div>
-                {/* Beschrijving */}
-                <div>
-                  <label className="block text-sm font-semibold">Beschrijving</label>
-                  <textarea name="description" value={form.description || ''} onChange={handleChange} className="border p-1 w-full rounded" rows={2} />
-                </div>
-                {/* Rugnummer */}
-                <div>
-                  <label className="block text-sm font-semibold">Rugnummer</label>
-                  <input type="number" name="rugnummer" value={form.rugnummer || 0} onChange={handleChange} className="border p-1 w-full rounded" min="0" max="99" />
-                </div>
-                {/* Prijs */}
-                <div>
-                  <label className="block text-sm font-semibold">Prijs</label>
-                  <input type="number" name="price" value={form.price || ''} onChange={handleChange} className="border p-1 w-full rounded" step="0.01" />
-                </div>
-              </div>  
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            
-            {/* GSM nummer */}
-            <div>
-              <label className="block text-sm font-semibold">GSM nummer</label>
-              <input type="tel" name="gsm_nummer" value={form.gsm_nummer || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Social Links */}
-            <div>
-              <label className="block text-sm font-semibold">Social Links</label>
-              <input type="text" name="socialLinks" value={form.socialLinks || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Levering (dagen) */}
-            <div>
-              <label className="block text-sm font-semibold">Levering (dagen)</label>
-              <input type="number" name="deliveryDays" value={form.deliveryDays || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Spoedlevering (dagen) */}
-            <div>
-              <label className="block text-sm font-semibold">Spoedlevering (dagen)</label>
-              <input type="number" name="fastDeliveryDays" value={form.fastDeliveryDays || ''} onChange={handleChange} className="border p-1 w-full rounded" />
-            </div>
-            {/* Social kanaal (enum) */}
-            <div>
-              <label className="block text-sm font-semibold">Social kanaal</label>
-              <select name="social_channel" value={form.social_channel || ''} onChange={handleChange} className="border p-1 w-full rounded">
-                <option value="">Selecteer kanaal</option>
-                {allSocialOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-            {/* categories as checkboxes */}
-            <div className="col-span-2">
-              <label className="block text-sm font-semibold">Categorieën</label>
-              <div className="flex flex-wrap gap-2">
-                {allCategories.map(cat => {
-                  const catId = cat.id;
-                  const catName = cat.name || cat.attributes?.name;
-                  // form.categories is altijd array van {id}
-                  const selected = Array.isArray(form.categories) ? form.categories.map(c => c.id) : [];
-                  const checked = selected.includes(catId);
-                  return (
-                    <label key={catId} className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => handleCheckboxChange('categories', catId)}
-                      />
-                      {catName}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-            {/* tags as checkboxes */}
-            <div className="col-span-2">
-              <label className="block text-sm font-semibold">Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {allTags.map(tag => {
-                  const tagId = tag.id;
-                  const tagName = tag.name || tag.attributes?.name;
-                  const selected = Array.isArray(form.tags) ? form.tags.map(t => t.id) : [];
-                  const checked = selected.includes(tagId);
-                  return (
-                    <label key={tagId} className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => handleCheckboxChange('tags', tagId)}
-                      />
-                      {tagName}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-            {/* Booleans */}
-            <div className="col-span-2 flex gap-4 mt-2">
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} /> Actief
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} /> Spoedlevering
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" name="enrollAccepted" checked={!!form.enrollAccepted} onChange={handleChange} /> Goedgekeurd
-              </label>
-            </div>
-          </div>
-          <div className="flex justify-between gap-2 mt-4">
-            <button 
-              type="button" 
-              onClick={handleDeleteClick}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+    <div className="w-full px-8 py-2 relative">
+      <button onClick={onClose} className="text-4xl absolute right-0 top-0 cursor-pointer">&times;</button>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <h2 className="text-2xl font-bold mb-6">{form.voornaam || ''} {form.achternaam || ''}</h2>
+        <div className='flex gap-4 h-[80vh]'>
+          <div className='w-[30%] h-full flex gap-4 flex-col'>
+            <div 
+              className='h-[40%] w-full rounded-[1rem]'
+              style={{
+                backgroundImage: imagePreview ? `url(${imagePreview})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: imagePreview ? 'transparent' : 'white',
+              }}
             >
-              Talent Verwijderen
-            </button>
-            <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Annuleren</button>
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Opslaan</button>
+              <div className="p-3 flex flex-col h-full justify-between">
+                <label className={`block text-sm font-semibold ${imagePreview ? 'text-white' : 'text-black'}`} style={imagePreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Profile picture</label>
+                <div className='flex flex-col'>
+                  <label className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer">
+                    Upload file
+                    <input type="file" name="newImage" accept="image/*" onChange={handleChange} className="hidden" />
+                  </label>
+                  {form.Image?.url && (
+                    <button type="button" onClick={handleRemoveImage} className="bg-white/60 w-fit text-sm rounded-full border-1 border-black px-3 py-1 cursor-pointer">Delete picture</button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div 
+              className='h-[60%] w-full rounded-[1rem] relative'
+              style={{
+                backgroundColor: videoPreview ? 'white' : 'white',
+              }}
+            >
+              {videoPreview ? (
+                <video 
+                  src={videoPreview} 
+                  className="w-full h-full object-cover rounded-[1rem]" 
+                  controls
+                />
+              ) : (
+                <div className="w-full h-full bg-white rounded-[1rem] flex items-center justify-center">
+                  <span className="text-gray-500">Geen video</span>
+                </div>
+              )}
+              <div className="absolute top-3 left-3 flex gap-1">
+                <label className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer inline-block">
+                  Upload file
+                  <input type="file" name="newVideo" accept="video/*" onChange={handleChange} className="hidden" />
+                </label>
+                {(form.Introduction || form.newIntroduction) && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setForm(prev => ({ ...prev, Introduction: null, newIntroduction: null }));
+                      setVideoPreview(null);
+                    }}
+                    className="bg-white/60 text-sm rounded-full w-fit border-1 border-black px-3 py-1 cursor-pointer inline-block"
+                  >
+                    Delete video
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </form>
+          <div className='w-[70%] h-full flex gap-4 flex-col'>
+            <div 
+              className='h-[30%] w-full p-4 rounded-[1rem]'
+              style={{
+                backgroundImage: bannerPreview ? `url(${bannerPreview})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: bannerPreview ? 'transparent' : 'white'
+              }}
+            >
+              <div className="flex flex-col h-full">
+                <label className={`block text-sm font-semibold mb-2 ${bannerPreview ? 'text-white' : 'text-black'}`} style={bannerPreview ? { textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' } : {}}>Banner picture</label>
+                <div className="flex-grow"></div>
+                <div className="flex gap-1">
+                  <label className="bg-white/60 text-black text-sm rounded-full border-1 border-black px-3 py-1 cursor-pointer inline-block">
+                    Upload file
+                    <input type="file" name="newBanner" accept="image/*" onChange={handleChange} className="hidden" />
+                  </label>
+                  {(form.banner?.url || (Array.isArray(form.banner) && form.banner.length > 0) || bannerPreview) && (
+                    <button type="button" onClick={handleRemoveBanner} className="bg-white/60 w-fit text-sm rounded-full border-1 border-black px-3 py-1 cursor-pointer">Delete banner</button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className='h-[70%] w-full bg-white rounded-[1rem] p-6 px-8 pr-20 overflow-y-auto'>
+              <div className="flex gap-12 2xl:gap-24 items-center">
+                <div className='w-[80%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Firstname</label>
+                  <input type="text" name="voornaam" value={form.voornaam || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" />
+                </div>
+                
+                <div className='w-[20%] 2xl:w-[15%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Backnumber</label>
+                  <input type="number" name="rugnummer" value={form.rugnummer || 0} onChange={handleChange} className="border p-1 w-full rounded-full px-4" min="0" max="99" />
+                </div>
+              </div>
+
+              <div className='flex gap-12 2xl:gap-24 items-center mt-3 2xl:mt-5'>
+                <div className='w-[80%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Lastname</label>
+                  <input type="text" name="achternaam" value={form.achternaam || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" />
+                </div>
+                
+                <div className='w-[20%] 2xl:w-[15%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Price</label>
+                  <input type="number" name="price" value={form.price || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" step="0.01" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2 mt-3 2xl:mt-5">Description</label>
+                <textarea name="description" value={form.description || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
+              </div>
+
+              <div className="mt-2">
+                <label className="block text-sm font-semibold">Categories</label>
+                <div className="flex flex-wrap gap-2">
+                  {allCategories.map(cat => (
+                    <label key={cat.id} className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={form.categories && Array.isArray(form.categories) ? form.categories.some(c => c.id === cat.id) : false}
+                        onChange={() => handleCheckboxChange('categories', cat.id)}
+                      />
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Featured</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Active</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Fast Delivery</span>
+                </label>
+              </div>
+            </div>  
+          </div>
+        </div>
         
-        {/* Delete Confirmation Modal */}
-        <DeleteConfirmationModal
-          open={showDeleteConfirmation}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-          talentName={`${form.voornaam || ''} ${form.achternaam || ''}`.trim()}
-        />
-      </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <button 
+            type="button" 
+            onClick={handleDeleteClick}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
+          >
+            Delete talent
+          </button>
+          <div className="flex gap-2">
+            <button type="submit" className="px-4 py-2 bg-green rounded hover:bg-green/70 cursor-pointer">Save edits</button>
+          </div>
+        </div>
+      </form>
+      
+      <DeleteConfirmationModal
+        open={showDeleteConfirmation}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        talentName={`${form.voornaam || ''} ${form.achternaam || ''}`.trim()}
+      />
     </div>
   );
 }
@@ -599,6 +562,8 @@ function Talents() {
   const [allCategories, setAllCategories] = useState([]);
   const [allTags, setAllTags] = useState([]);
   const [sortBy, setSortBy] = useState('naam'); // Default to alphabetical sorting
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'active', 'archived'
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
 
@@ -626,13 +591,47 @@ function Talents() {
       setError(null);
       setMessage('');
       const token = localStorage.getItem('jwt');
-      // Populate both Image and banner, ensure completedOrders is included
-      const response = await axios.get(
-        `${API_BASE_URL}/api/talents?populate=Image,banner&filters[enrollAccepted][$eq]=true`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+      
+      // Probeer eerst de directe aanpak zoals in andere werkende componenten
+      let response;
+      try {
+        response = await axios.get(
+          `${API_BASE_URL}/api/talents?filters[enrollAccepted][$eq]=true&populate=Image&populate=banner&populate=Introduction&populate=categories`,
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }
+        );
+      } catch (directError) {
+        // Als direct niet werkt, probeer via categories zoals in andere werkende componenten
+        response = await axios.get(
+          `${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=Introduction&populate[talents][populate][3]=categories`,
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }
+        );
+        
+        // Transformeer de response om alle talents uit alle categorieën te halen
+        let allTalents = [];
+        if (response.data.data) {
+          response.data.data.forEach((category) => {
+            if (category.talents) {
+              category.talents.forEach((talent) => {
+                // Controleer of talent al bestaat (vermijd duplicaten) en of het goedgekeurd is
+                if (!allTalents.find(t => t.id === talent.id) && talent.enrollAccepted === true) {
+                  allTalents.push(talent);
+                }
+              });
+            }
+          });
         }
-      );
+        
+        // Maak een fake response object met de verzamelde talents
+        response = {
+          data: {
+            data: allTalents
+          }
+        };
+      }
 
       // Handle both Strapi v4 and v5 response formats
       let talentsData = [];
@@ -676,19 +675,7 @@ function Talents() {
         setAllCategories([]);
       }
     };
-    const fetchTags = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/tags`);
-        const tags = res.data.data || [];
-        console.log('Loaded tags:', tags);
-        setAllTags(tags);
-      } catch (err) {
-        console.error('Error loading tags:', err);
-        setAllTags([]);
-      }
-    };
     fetchCategories();
-    fetchTags();
   }, [API_BASE_URL]);
 
   // Modal state
@@ -737,6 +724,20 @@ function Talents() {
       } else if (form.banner === null) {
         bannerId = null;
       }
+
+      // Upload new videos if present and collect existing video IDs
+      let introductionId = form.Introduction?.id || form.Introduction;
+      if (form.newIntroduction) {
+        const videoData = new FormData();
+        videoData.append('files', form.newIntroduction);
+        const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, videoData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        introductionId = uploadRes.data[0].id;
+      } else if (form.Introduction === null) {
+        introductionId = null;
+      }
+
       // Alleen de relevante velden meesturen
       const updateData = {
         voornaam: form.voornaam,
@@ -749,28 +750,42 @@ function Talents() {
         gsm_nummer: form.gsm_nummer ? form.gsm_nummer : '',
         socialLinks: form.socialLinks,
         videoURL: form.videoURL,
-        deliveryDays: form.deliveryDays ? Number(form.deliveryDays) : null,
-        fastDeliveryDays: form.fastDeliveryDays ? Number(form.fastDeliveryDays) : null,
-        viewCount: form.viewCount ? Number(form.viewCount) : 0,
-        completeOrderCount: form.completeOrderCount ? Number(form.completeOrderCount) : 0,
-        completedOrders: form.completedOrders ? Number(form.completedOrders) : 0,
+        featured: !!form.featured,
         active: !!form.active,
         fastDelivery: !!form.fastDelivery,
-        enrollAccepted: !!form.enrollAccepted,
+        enrollAccepted: true,
         Image: imageId,
         banner: bannerId,
+        Introduction: introductionId,
       };
       await axios.put(
         `${API_BASE_URL}/api/talents/${form.documentId || form.id}`,
         { data: updateData },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      // Nu update de categories relatie apart als deze zijn veranderd
+      const categoryIds = Array.isArray(form.categories) ? form.categories.map(cat => (typeof cat.id === 'number' ? cat.id : cat)) : [];
+      if (categoryIds.length > 0) {
+        try {
+          await axios.put(
+            `${API_BASE_URL}/api/talents/${form.documentId || form.id}`,
+            { data: { categories: categoryIds } },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } catch (relationError) {
+          console.error('Error updating categories:', relationError.response?.data || relationError.message);
+        }
+      }
+      
       setMessage('Talent succesvol bijgewerkt!');
       handleCloseModal();
       fetchTalents();
     } catch (error) {
-      setMessage('Fout bij opslaan van talent.');
       console.error('Edit error:', error);
+      console.error('Error response data:', error.response?.data);
+      const errorMsg = error.response?.data?.error?.message || error.message || 'Onbekende fout';
+      setMessage(`Fout bij opslaan van talent: ${errorMsg}`);
     }
   };
 
@@ -783,7 +798,7 @@ function Talents() {
     }
     if (talent.active) {
       // Archiveer: zet altijd op false
-      const confirmArchive = window.confirm(`Ben je zeker dat je ${talent.voornaam} ${talent.achternaam} wilt archiveren?`);
+      const confirmArchive = window.confirm(`Are you sure you want to archive ${talent.voornaam} ${talent.achternaam}?`);
       if (!confirmArchive) return;
       try {
         await axios.put(
@@ -803,7 +818,7 @@ function Talents() {
       }
     } else {
       // Activeer: zet altijd op true
-      const confirmActivate = window.confirm(`Wil je ${talent.voornaam} ${talent.achternaam} opnieuw activeren?`);
+      const confirmActivate = window.confirm(`Activate ${talent.voornaam} ${talent.achternaam} again?`);
       if (!confirmActivate) return;
       try {
         await axios.put(
@@ -857,64 +872,63 @@ function Talents() {
 
     try {
       console.log('Form data received:', form);
-      
-      // Validatie
-      if (!form.voornaam || !form.achternaam) {
-        setMessage('Voornaam en achternaam zijn verplicht.');
-        return;
-      }
+      console.log('Categories in form:', form.categories);
+      console.log('Tags in form:', form.tags);
       
       // Eerst afbeeldingen uploaden indien aanwezig
       let imageId = null;
       let bannerId = null;
 
       if (form.Image) {
-        console.log('Uploading image:', form.Image.name);
         const imgData = new FormData();
         imgData.append('files', form.Image);
         const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, imgData, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
         });
         imageId = uploadRes.data[0].id;
-        console.log('Image uploaded with ID:', imageId);
       }
 
       if (form.banner) {
-        console.log('Uploading banner:', form.banner.name);
         const bannerData = new FormData();
         bannerData.append('files', form.banner);
         const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, bannerData, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
         });
         bannerId = uploadRes.data[0].id;
-        console.log('Banner uploaded with ID:', bannerId);
       }
 
-      // Prepareer de talent data - alleen bestaande velden
+      // Upload introduction video if present
+      let introductionId = null;
+      if (form.videos && form.videos.length > 0) {
+        const videoData = new FormData();
+        videoData.append('files', form.videos[0]);
+        const uploadRes = await axios.post(`${API_BASE_URL}/api/upload`, videoData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        introductionId = uploadRes.data[0].id;
+      }
+
+      // Alleen de velden uit het formulier die nodig zijn
       const talentData = {
-        voornaam: form.voornaam.trim(),
-        achternaam: form.achternaam.trim(),
-        email: form.email || '',
-        slug: form.slug || `${form.voornaam}-${form.achternaam}`.toLowerCase().replace(/\s+/g, '-'),
-        description: form.description || '',
+        voornaam: form.voornaam,
+        achternaam: form.achternaam,
+        slug: form.slug,
+        description: form.description,
         rugnummer: form.rugnummer ? Number(form.rugnummer) : 0,
-        price: form.price ? Number(form.price) : 0,
-        gsm_nummer: form.gsm_nummer || '',
-        socialLinks: form.socialLinks || '',
-        videoURL: form.videoURL || '',
-        social_channel: form.social_channel || '',
-        fastDelivery: !!form.fastDelivery,
+        price: form.price ? Number(form.price) : null,
+        featured: !!form.featured,
         active: !!form.active,
-        enrollAccepted: !!form.enrollAccepted,
+        fastDelivery: !!form.fastDelivery,
+        enrollAccepted: true,
+        categories: Array.isArray(form.categories) ? form.categories.map(cat => cat.id) : [],
+        Image: imageId,
+        banner: bannerId,
+        Introduction: introductionId,
       };
 
-      // Voeg afbeeldingen toe als ze bestaan
-      if (imageId) talentData.Image = imageId;
-      if (bannerId) talentData.banner = bannerId;
+      console.log('Creating talent with data (including relations):', talentData);
 
-      console.log('Creating talent with data (without relations):', talentData);
-
-      // Maak eerst het talent aan zonder relaties
+      // Maak het talent aan met alle data inclusief relaties
       const response = await axios.post(
         `${API_BASE_URL}/api/talents`,
         { data: talentData },
@@ -927,27 +941,20 @@ function Talents() {
       );
 
       const createdTalent = response.data.data;
-      const talentId = createdTalent.documentId || createdTalent.id;
-      console.log('Talent created successfully:', createdTalent);
+      console.log('Talent created successfully with relations:', createdTalent);
 
-      // Nu voeg relaties toe als er zijn
-      if ((Array.isArray(form.categories) && form.categories.length > 0) || 
-          (Array.isArray(form.tags) && form.tags.length > 0)) {
-        
-        const relationData = {};
-        
-        if (Array.isArray(form.categories) && form.categories.length > 0) {
-          relationData.categories = form.categories.map(cat => cat.id);
-        }
 
-        if (Array.isArray(form.tags) && form.tags.length > 0) {
-          relationData.tags = form.tags.map(tag => tag.id);
-        }
-
-        console.log('Adding relations:', relationData);
-
+      // Nu voeg categories toe in één update call (gebruik het juiste talentId)
+      const relationData = {};
+      if (Array.isArray(form.categories) && form.categories.length > 0) {
+        const categoryIds = form.categories.map(cat => cat.id);
+        relationData.categories = categoryIds;
+      }
+      // Gebruik het ID van het nieuw aangemaakte talent
+      const talentId = createdTalent?.id;
+      if (talentId && Object.keys(relationData).length > 0) {
         try {
-          await axios.put(
+          const relationResponse = await axios.put(
             `${API_BASE_URL}/api/talents/${talentId}`,
             { data: relationData },
             {
@@ -957,37 +964,27 @@ function Talents() {
               },
             }
           );
-          console.log('Relations added successfully');
+          console.log('Relations added successfully:', relationResponse.data);
         } catch (relationError) {
-          console.error('Error adding relations:', relationError.response?.data || relationError);
-          // Don't fail the whole process if relations fail
+          console.error('Error adding relations:', relationError.response?.data || relationError.message);
         }
       }
 
       setShowAddModal(false);
       setMessage('Talent succesvol toegevoegd!');
+      console.log('Refreshing talents list...');
       await fetchTalents();
+      console.log('Talents list refreshed, new count:', talents.length);
     } catch (err) {
-      console.error('Add talent error:', err.response?.data || err.message);
-      
-      // Specifieke error handling voor unique constraint violations
-      if (err.response?.data?.error?.message === "This attribute must be unique") {
-        const errorDetails = err.response?.data?.error?.details;
-        if (errorDetails && errorDetails.errors && errorDetails.errors.length > 0) {
-          const fieldError = errorDetails.errors[0];
-          if (fieldError.path && fieldError.path.includes('email')) {
-            setMessage(`Dit email adres (${form.email}) is al in gebruik. Gebruik een ander email adres.`);
-          } else if (fieldError.path && fieldError.path.includes('slug')) {
-            setMessage(`Deze naam combinatie bestaat al. Pas de voor- of achternaam aan.`);
-          } else {
-            setMessage(`Een veld moet uniek zijn maar bestaat al: ${fieldError.path || 'onbekend veld'}`);
-          }
-        } else {
-          setMessage('Een veld moet uniek zijn maar bestaat al. Controleer email adres en naam.');
+      if (err.response) {
+        console.error('Add talent error:', err.response.data);
+        if (err.response.data && err.response.data.error) {
+          console.error('Strapi error details:', JSON.stringify(err.response.data.error, null, 2));
         }
       } else {
-        setMessage(`Fout bij toevoegen talent: ${err.response?.data?.error?.message || err.message}`);
+        console.error('Add talent error:', err.message);
       }
+      setMessage(`Fout bij toevoegen talent: ${err.response?.data?.error?.message || err.message}`);
     }
   };
 
@@ -1005,20 +1002,81 @@ function Talents() {
   
   return (
     <>
-    <div className='bg-gray w-[74%] p-8 mx-auto rounded-blocks'>
+    <div className='bg-gray w-[74%] p-8 mx-auto rounded-blocks min-h-screen'>
+      {showModal && editTalent ? (
+        <EditTalentInline
+          talent={editTalent}
+          onClose={handleCloseModal}
+          onSave={handleSaveEdit}
+          onDelete={handleDelete}
+          allCategories={allCategories}
+          allTags={allTags}
+          allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+        />
+      ) : showAddModal ? (
+        <AddTalentInline
+          onClose={() => setShowAddModal(false)}
+          onSave={handleAddTalent}
+          allCategories={allCategories}
+          allTags={allTags}
+          allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
+        />
+      ) : (
         <div className="bg-white rounded-blocks p-8 min-h-screen">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-secondary-800">Manage Talents</h1>
-            <div className='flex gap-4 items-center'>
+            <div className='flex gap-2 2xl:gap-4 items-center'>
               <div className="text-sm text-secondary-600">
                 In total: {talents.length} talents
               </div>
-              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
+              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer text-sm 2xl:text-base' onClick={() => setShowAddModal(true)}>Add a talent</button>
+              <div className="relative">
+                <button 
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className='bg-transparent text-black border px-4 py-2 rounded-blocks text-sm 2xl:text-base cursor-pointer flex items-center gap-2'
+                >
+                  Filter: {activeFilter === 'all' ? 'All' : activeFilter === 'active' ? 'Active' : 'Archived'}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showFilterDropdown && (
+                  <div className="absolute top-full mt-2 bg-white border rounded-xl shadow-lg z-999 min-w-[100px]">
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('all');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 transition-colors cursor-pointer"
+                    >
+                      All
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('active');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 transition-colors border-t cursor-pointer"
+                    >
+                      Active
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('archived');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 transition-colors border-t cursor-pointer"
+                    >
+                      Archived
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="relative">
                 <select 
                   value={sortBy} 
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none rounded-blocks pr-10 min-w-[140px] bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer"
+                  className="appearance-none rounded-blocks pr-10 min-w-[100px] bg-transparent text-black text-sm 2xl:text-base border px-3 py-2 rounded-blocks cursor-pointer"
                 >
                   <option value="naam">A-Z</option>
                   <option value="rugnummer">Back number</option>
@@ -1043,8 +1101,12 @@ function Talents() {
               <p className="text-xl">Geen talenten gevonden.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-10 gap-y-4">
-              {talents.map((talent) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-8 gap-y-4">
+              {talents.filter(talent => {
+                if (activeFilter === 'active') return talent.active === true;
+                if (activeFilter === 'archived') return talent.active === false;
+                return true; // 'all'
+              }).map((talent) => {
                 const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
                 const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
                 const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
@@ -1067,6 +1129,13 @@ function Talents() {
                         title={active ? 'Actief' : 'Gearchiveerd'}
                       ></div>
                     </div>
+
+                    {/* Rugnummer */}
+                    {talent.rugnummer !== null && talent.rugnummer !== 0 && (
+                      <div className="absolute top-2 left-2 z-10 bg-black/50 text-white px-2 py-1 rounded text-sm font-semibold">
+                        {talent.rugnummer}
+                      </div>
+                    )}
 
                     {/* Afbeelding */}
                     <div className="relative">
@@ -1106,35 +1175,17 @@ function Talents() {
                           className={`rounded-full transition-colors cursor-pointer underline hover:no-underline`}
                           title={active ? "Archiveren" : "Activeren"}
                         >
-                          {active ? 'Archiveer' : 'Activeer'}
+                          {active ? 'Archive' : 'Activate'}
                         </button>
                       </div>
                     </div>
                   </div>
                 );
               })}
-              {/* Modal buiten de map-loop */}
-              <EditTalentModal
-                open={showModal}
-                onClose={handleCloseModal}
-                talent={editTalent}
-                onSave={handleSaveEdit}
-                onDelete={handleDelete}
-                allCategories={allCategories}
-                allTags={allTags}
-                allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
-              />
-          <AddTalentModal
-            open={showAddModal}
-            onClose={() => setShowAddModal(false)}
-            onSave={handleAddTalent}
-            allCategories={allCategories}
-            allTags={allTags}
-            allSocialOptions={["Youtube", "Tiktok", "Instagram", "Facebook"]}
-          />
             </div>
           )}
         </div>
+      )}
     </div>
     </>
   );

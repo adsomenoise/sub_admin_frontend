@@ -1,0 +1,147 @@
+name: Deploy Sub-Admin Frontend to Plesk/Combell
+
+on:
+  push:
+    branches: [dev, staging, main]  # Multi-environment support
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        id: set-env
+        run: |
+          # Detect environment based on branch
+          BRANCH="${{ github.ref_name }}"
+
+          case "$BRANCH" in
+            dev)
+              echo "ENVIRONMENT=dev" >> $GITHUB_OUTPUT
+              echo "DOMAIN=dev.fanflix.be" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/dev.fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "ENVIRONMENT=staging" >> $GITHUB_OUTPUT
+              echo "DOMAIN=staging.fanflix.be" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/staging.fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              ;;
+            main)
+              echo "ENVIRONMENT=production" >> $GITHUB_OUTPUT
+              echo "DOMAIN=fanflix.be" >> $GITHUB_OUTPUT
+              echo "WEB_DIR=/var/www/vhosts/fanflix.be/httpdocs/subadmin" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "Unknown branch: $BRANCH"
+              exit 1
+              ;;
+          esac
+
+          echo "Deploying to: ${{ steps.set-env.outputs.ENVIRONMENT }}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build React application
+        run: yarn build --base=/subadmin/
+        env:
+          NODE_ENV: production
+          REACT_APP_API_BASE_URL: https://${{ steps.set-env.outputs.DOMAIN }}
+          REACT_APP_TALENT_BASE_URL: https://${{ steps.set-env.outputs.DOMAIN }}
+
+      - name: Create deployment directory on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PLESK_HOST }}
+          username: ${{ secrets.PLESK_SSH_USER }}
+          key: ${{ secrets.PLESK_SSH_KEY }}
+          port: ${{ secrets.PLESK_SSH_PORT || 22 }}
+          script: |
+            mkdir -p /tmp/subadmin-deploy
+            rm -rf /tmp/subadmin-deploy/*
+
+      - name: Deploy to Plesk Server via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PLESK_HOST }}
+          username: ${{ secrets.PLESK_SSH_USER }}
+          key: ${{ secrets.PLESK_SSH_KEY }}
+          port: ${{ secrets.PLESK_SSH_PORT || 22 }}
+          source: "build/*"
+          target: "/tmp/subadmin-deploy/"
+
+      - name: Extract and deploy static files
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          WEB_DIR: ${{ steps.set-env.outputs.WEB_DIR }}
+          ENVIRONMENT: ${{ steps.set-env.outputs.ENVIRONMENT }}
+        with:
+          host: ${{ secrets.PLESK_HOST }}
+          username: ${{ secrets.PLESK_SSH_USER }}
+          key: ${{ secrets.PLESK_SSH_KEY }}
+          port: ${{ secrets.PLESK_SSH_PORT || 22 }}
+          envs: WEB_DIR,ENVIRONMENT
+          script: |
+            echo "🌍 Deploying to: $ENVIRONMENT"
+            echo "📁 Web directory: $WEB_DIR"
+
+            # Create directory if it doesn't exist
+            mkdir -p "$WEB_DIR"
+
+            # Create backup
+            if [ "$(ls -A $WEB_DIR 2>/dev/null)" ]; then
+              echo "Creating backup..."
+              tar -czf "$WEB_DIR-backup-$(date +%Y%m%d-%H%M%S).tar.gz" -C "$(dirname $WEB_DIR)" "$(basename $WEB_DIR)" --exclude='*.tar.gz'
+            fi
+
+            # Clear and deploy
+            if [ -f "$WEB_DIR/.htaccess" ]; then
+              cp "$WEB_DIR/.htaccess" /tmp/.htaccess.backup
+            fi
+
+            rm -rf "$WEB_DIR"/*
+
+            if [ -f "/tmp/.htaccess.backup" ]; then
+              mv /tmp/.htaccess.backup "$WEB_DIR/.htaccess"
+            fi
+
+            echo "Deploying new build..."
+            cp -r /tmp/subadmin-deploy/build/* "$WEB_DIR/"
+            rm -rf /tmp/subadmin-deploy
+
+            # Set permissions
+            chown -R $(whoami):psacln "$WEB_DIR"
+            chmod -R 755 "$WEB_DIR"
+
+            echo "✅ Sub-admin frontend deployment completed!"
+
+      - name: Health check
+        run: |
+          sleep 5
+          DOMAIN="${{ steps.set-env.outputs.DOMAIN }}"
+          if curl -f -s -k "https://$DOMAIN/subadmin" > /dev/null; then
+            echo "✅ Sub-admin frontend is accessible at https://$DOMAIN/subadmin!"
+          else
+            echo "⚠️ Sub-admin frontend health check failed - but deployment succeeded"
+            echo "This is normal if SSL is not set up yet or domain is still propagating"
+          fi
+
+# =============================================================================
+# REQUIRED GITHUB SECRETS (same as backend)
+# =============================================================================
+# PLESK_HOST        - dev.fanflix.be
+# PLESK_SSH_USER    - combell.fanflix.be_u1ngc1xttk (user unchanged)
+# PLESK_SSH_KEY     - SSH private key (from ~/.ssh/fanflix_plesk)
+# PLESK_SSH_PORT    - 22 (default)
+# =============================================================================

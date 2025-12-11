@@ -12,6 +12,7 @@ function Orders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
+  const jwt = localStorage.getItem('jwt');
 
   useEffect(() => {
     fetchData();
@@ -35,12 +36,21 @@ function Orders() {
       let ordersRes;
       try {
         // Probeer eerst met populate
-        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?populate=*`);
+        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?populate=*`, {
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
         console.log('Orders with populate=* response:', ordersRes.data);
       } catch (populateErr) {
         console.log('Populate * failed, trying without populate:', populateErr.message);
         // Fallback zonder populate
-        ordersRes = await axios.get(`${API_BASE_URL}/api/orders`);
+        try {
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders`, {
+            headers: { Authorization: `Bearer ${jwt}` }
+          });
+        } catch (authErr) {
+          // Try without auth as last resort
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders`);
+        }
         console.log('Orders without populate response:', ordersRes.data);
       }
       
@@ -59,7 +69,9 @@ function Orders() {
       console.log('Fetching talents...');
       let talentsRes;
       try {
-        talentsRes = await axios.get(`${API_BASE_URL}/api/talents`);
+        talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
         console.log('Talents response:', talentsRes.data);
       } catch (talentsErr) {
         console.error('Talents fetch failed:', talentsErr.message);
@@ -118,17 +130,17 @@ function Orders() {
         order.documentId === updatedOrder.documentId ? updatedOrder : order
       )
     );
+    
+    // Refresh orders after a short delay to ensure backend has updated
+    setTimeout(() => {
+      fetchData();
+    }, 500);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
   };
-
-  console.log('Orders:', orders);
-  console.log('Talents:', talents);
-  console.log('Filtered orders:', filteredOrders);
-  console.log('Tab filtered orders:', tabFilteredOrders);
 
   // Count orders for tabs
   const newOrdersCount = filteredOrders.filter(order => {
@@ -145,19 +157,10 @@ function Orders() {
     return hasVideo;
   }).length;
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'nieuw': return 'bg-blue-100 text-blue-800';
-      case 'behandeling': return 'bg-yellow-100 text-yellow-800';
-      case 'gearchiveerd': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <>
       <div className="bg-gray w-blocks mx-auto rounded-blocks p-8 h-[88vh]">
-        <h1 className="text-2xl font-bold mb-6">Orders</h1>
+        <h1 className="text-2xl font-bold mb-6 ml-4">Orders</h1>
         
         {/* Filter Section 
         <div className="mb-6 flex gap-4 items-center">
@@ -182,20 +185,20 @@ function Orders() {
           <div className="flex">
             <button
               onClick={() => setActiveTab('new')}
-              className={`px-6 py-3 font-medium transition-colors ${
+              className={`px-6 py-3 font-medium transition-colors cursor-pointer ${
                 activeTab === 'new' 
                   ? 'bg-white rounded-t-3xl' 
-                  : 'text-gray-600 hover:text-blue-600'
+                  : 'text-white bg-gray-dark rounded-t-3xl'
               }`}
             >
               New
             </button>
             <button
               onClick={() => setActiveTab('archived')}
-              className={`px-6 py-3 font-medium transition-colors ${
+              className={`px-6 py-3 font-medium transition-colors cursor-pointer ${
                 activeTab === 'archived' 
-                  ? 'border-b-2 border-blue-500 text-blue-600' 
-                  : 'text-gray-600 hover:text-blue-600'
+                  ? 'bg-white rounded-t-3xl' 
+                  : 'text-white bg-gray-dark rounded-t-3xl'
               }`}
             >
               Archived
@@ -211,8 +214,8 @@ function Orders() {
           <>
             {activeTab === 'new' ? (
               // New Orders Layout - Single line per order
-              <div className="bg-white p-8 rounded-b-3xl rounded-tr-3xl">
-                <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b">
+              <div className={`bg-white p-8 rounded-b-3xl rounded-tr-3xl`}>
+                <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b items-center">
                   <div>From</div>
                   <div>To</div>
                   <div>Gelegenheid</div>
@@ -225,7 +228,7 @@ function Orders() {
                   </p>
                 ) : (
                   tabFilteredOrders.map(order => (
-                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50">
+                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
                       <div className="font-medium">{order.from}</div>
                       <div>{order.to}</div>
                       <div className="capitalize">{order.gelegenheid}</div>
@@ -240,7 +243,7 @@ function Orders() {
                       <div>
                         <button
                           onClick={() => handleOrderClick(order)}
-                          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
+                          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
                         >
                           Upload video
                         </button>
@@ -250,69 +253,48 @@ function Orders() {
                 )}
               </div>
             ) : (
-              // Archived Orders Layout - Table view
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Order ID</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Van</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Voor</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Talent</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Gelegenheid</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Type</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Prijs</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">Datum</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tabFilteredOrders.length === 0 ? (
-                      <tr>
-                        <td colSpan="9" className="border border-gray-300 px-4 py-8 text-center text-gray-500">
-                          Geen gearchiveerde orders gevonden
-                        </td>
-                      </tr>
-                    ) : (
-                      tabFilteredOrders.map(order => (
-                        <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="border border-gray-300 px-4 py-2">
-                            {order.orderID || `#${order.id}`}
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2">{order.from}</td>
-                          <td className="border border-gray-300 px-4 py-2">{order.to}</td>
-                          <td className="border border-gray-300 px-4 py-2">
-                            {order.talent ? 
-                              `${order.talent.voornaam || order.talent.attributes?.voornaam} ${order.talent.achternaam || order.talent.attributes?.achternaam}` : 
-                              'Geen talent'
-                            }
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2 capitalize">{order.gelegenheid}</td>
-                          <td className="border border-gray-300 px-4 py-2">
-                            {order.orderType === 'video' ? 'Video' : 'Video + Shirt'}
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2">
-                            €{order.totalPrice || 'N/A'}
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.statusorder)}`}>
-                              {order.statusorder}
-                            </span>
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2">
-                            {new Date(order.createdAt).toLocaleDateString('nl-NL', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+              // Archived Orders Layout - Single line per order (same as New tab)
+              <div className={`bg-white p-8 rounded-b-3xl rounded-tr-3xl ${
+                activeTab === 'archived' 
+                  ? '' 
+                  : ''
+              }`}>
+                <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b">
+                  <div>From</div>
+                  <div>To</div>
+                  <div>Gelegenheid</div>
+                  <div>Price</div>
+                  <div>Date</div>
+                </div>
+                {tabFilteredOrders.length === 0 ? (
+                  <p className="text-center py-8 text-gray-500">
+                    Geen gearchiveerde orders gevonden
+                  </p>
+                ) : (
+                  tabFilteredOrders.map(order => (
+                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
+                      <div className="font-medium">{order.from}</div>
+                      <div>{order.to}</div>
+                      <div className="capitalize">{order.gelegenheid}</div>
+                      <div className="font-semibold text-green-600">€{order.totalPrice}</div>
+                      <div className="text-sm text-gray-600">
+                        {new Date(order.createdAt).toLocaleDateString('nl-NL', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })}
+                      </div>
+                      <div>
+                        <button
+                          onClick={() => handleOrderClick(order)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </>

@@ -280,10 +280,13 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                             <span className="text-3xl">📋</span>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                            Confirm Order
+                            Order bevestigen
                         </h2>
                         <p className="text-gray-600 mb-4">
-                            Confirm your order now.
+                            Video is succesvol geüpload voor {order.to}.
+                        </p>
+                        <p className="text-gray-600 mb-4">
+                            Wil je deze order als voltooid markeren? Dit zal het aantal voltooide orders voor dit talent verhogen.
                         </p>
                         
                         {/* Checkbox for profile display */}
@@ -293,10 +296,10 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                                 id="showOnProfile"
                                 checked={showOnProfile}
                                 onChange={(e) => setShowOnProfile(e.target.checked)}
-                                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-full"
+                                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
                             <label htmlFor="showOnProfile" className="text-sm text-gray-700 font-medium">
-                                Show video on talents profile page
+                                Video weergeven op profiel
                             </label>
                         </div>
                     </div>
@@ -306,13 +309,13 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                             onClick={handleCancelConfirmation}
                             className="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-medium"
                         >
-                            Cancel
+                            Annuleren
                         </button>
                         <button
                             onClick={handleConfirmOrder}
                             className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium"
                         >
-                            Send to {order.to}
+                            Bevestigen
                         </button>
                     </div>
                 </div>
@@ -333,7 +336,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                             Thank you for your submission!
                         </h2>
                         <p className="text-gray-600">
-                            Your video has been successfully sent to {order.to}.
+                            Your video has been successfully uploaded for {order.to}.
                         </p>
                     </div>
                     
@@ -350,7 +353,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
 
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
             {/* Header */}
@@ -360,7 +363,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                 </h2>
                 <button
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                className="text-gray-500 hover:text-gray-700 text-3xl cursor-pointer font-bold"
                 >
                 ×
                 </button>
@@ -374,6 +377,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                     <p><strong>Van:</strong> {order.from}</p>
                     <p><strong>Voor:</strong> {order.to}</p>
                     <p><strong>Gelegenheid:</strong> {order.gelegenheid}</p>
+                    <p><strong>Email:</strong> {order.userEmail}</p>
                     <p><strong>Aangemaakt:</strong> {new Date(order.createdAt).toLocaleString('nl-NL')}</p>
                 </div>
                 </div>
@@ -388,7 +392,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
             </div>
 
             {/* Video Section */}
-            <div className="border-t pt-6">
+            <div className="2xl:pt-4">
                 <h3 className="text-lg font-semibold text-gray-700 mb-4">Video</h3>
                 
                 {/* Camera preview when recording */}
@@ -435,7 +439,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                     <button
                         onClick={startRecording}
                         disabled={uploading}
-                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 flex items-center gap-2"
+                        className="px-4 py-2 bg-red-500 text-white rounded cursor-pointer hover:bg-red-600 disabled:opacity-50 flex items-center gap-2"
                     >
                         <span>📹</span>
                         Video opnemen
@@ -445,7 +449,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
+                        className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
                     >
                         <span>📁</span>
                         Video uploaden
