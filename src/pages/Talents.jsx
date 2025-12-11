@@ -73,7 +73,7 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
       <button onClick={onClose} className="text-4xl absolute right-0 top-0 cursor-pointer">&times;</button>
       <form onSubmit={handleSubmit} className="space-y-3">
         <h2 className="text-2xl font-bold mb-4">Add a new Talent</h2>
-        <div className='flex gap-4 h-[80vh]'>
+        <div className='flex gap-4 h-[85vh] 2xl:h-[80vh]'>
           <div className='w-[30%] h-full flex gap-4 flex-col'>
             <div 
               className='h-[40%] w-full rounded-[1rem]'
@@ -129,34 +129,34 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
               </div>
             </div>
             <div className='h-[70%] w-full bg-white rounded-[1rem] p-6 px-8 pr-20 overflow-y-auto'>
-              <div className='flex gap-24 items-center'>
+              <div className='flex gap-16 2xl:gap-24 items-center'>
                 <div className='w-[80%]'>
-                  <label className="block text-sm font-semibold ml-2 mb-2">Voornaam</label>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Firstname</label>
                   <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} className="border p-1 w-full rounded-full" required />
                 </div>
 
-                  <div className='w-[15%]'>
-                    <label className="block text-sm font-semibold ml-2 mb-2">Rugnummer</label>
+                  <div className='w-[25%] 2xl:w-[15%]'>
+                    <label className="block text-sm font-semibold ml-2 mb-2">Back number</label>
                     <input type="number" name="rugnummer" value={form.rugnummer} onChange={handleChange} className="border p-1 w-full rounded-full" min="0" max="99" />
                 </div>
               </div>
-              <div className='flex gap-24 items-center mt-5'>
+              <div className='flex gap-16 2xl:gap-24 items-center mt-5'>
                 <div className='w-[80%]'>
-                  <label className="block text-sm font-semibold ml-2 mb-2">Achternaam</label>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Lastname</label>
                   <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} className="border p-1 w-full rounded-full" required />
                 </div>
 
-                <div className='w-[15%]'>
-                  <label className="block text-sm font-semibold ml-2 mb-2">Prijs</label>
+                <div className='w-[25%] 2xl:w-[15%]'>
+                  <label className="block text-sm font-semibold ml-2 mb-2">Price</label>
                   <input type="number" name="price" value={form.price} onChange={handleChange} className="border p-1 w-full rounded-full" step="0.01" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold ml-2 mb-2 mt-5">Beschrijving</label>
+                <label className="block text-sm font-semibold ml-2 mb-2 mt-5">Description</label>
                 <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
               </div>
               <div className="mt-2">
-                <label className="block text-sm font-semibold">Categorieën</label>
+                <label className="block text-sm font-semibold">Categories</label>
                 <div className="flex flex-wrap gap-2">
                   {allCategories.map(cat => (
                     <label key={cat.id} className="flex items-center gap-1">
@@ -178,11 +178,11 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Actief</span>
+                  <span className="text-sm font-medium">Active</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Spoedlevering</span>
+                  <span className="text-sm font-medium">Fast delivery</span>
                 </label>
               </div>
             </div>  
@@ -470,34 +470,34 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
             <div className='h-[70%] w-full bg-white rounded-[1rem] p-6 px-8 pr-20 overflow-y-auto'>
               <div className="flex gap-12 2xl:gap-24 items-center">
                 <div className='w-[80%]'>
-                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Voornaam</label>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Firstname</label>
                   <input type="text" name="voornaam" value={form.voornaam || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" />
                 </div>
                 
                 <div className='w-[20%] 2xl:w-[15%]'>
-                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Rugnummer</label>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Backnumber</label>
                   <input type="number" name="rugnummer" value={form.rugnummer || 0} onChange={handleChange} className="border p-1 w-full rounded-full px-4" min="0" max="99" />
                 </div>
               </div>
 
               <div className='flex gap-12 2xl:gap-24 items-center mt-3 2xl:mt-5'>
                 <div className='w-[80%]'>
-                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Achternaam</label>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Lastname</label>
                   <input type="text" name="achternaam" value={form.achternaam || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" />
                 </div>
                 
                 <div className='w-[20%] 2xl:w-[15%]'>
-                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Prijs</label>
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Price</label>
                   <input type="number" name="price" value={form.price || ''} onChange={handleChange} className="border p-1 w-full rounded-full px-4" step="0.01" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2 mt-3 2xl:mt-5">Beschrijving</label>
+                <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2 mt-3 2xl:mt-5">Description</label>
                 <textarea name="description" value={form.description || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
               </div>
 
               <div className="mt-2">
-                <label className="block text-sm font-semibold">Categorieën</label>
+                <label className="block text-sm font-semibold">Categories</label>
                 <div className="flex flex-wrap gap-2">
                   {allCategories.map(cat => (
                     <label key={cat.id} className="flex items-center gap-1">
@@ -519,11 +519,11 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Actief</span>
+                  <span className="text-sm font-medium">Active</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Spoedlevering</span>
+                  <span className="text-sm font-medium">Fast Delivery</span>
                 </label>
               </div>
             </div>  
@@ -536,10 +536,10 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
             onClick={handleDeleteClick}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
           >
-            Talent Verwijderen
+            Delete talent
           </button>
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 bg-green rounded hover:bg-green/70 cursor-pointer">Save</button>
+            <button type="submit" className="px-4 py-2 bg-green rounded hover:bg-green/70 cursor-pointer">Save edits</button>
           </div>
         </div>
       </form>
@@ -562,6 +562,8 @@ function Talents() {
   const [allCategories, setAllCategories] = useState([]);
   const [allTags, setAllTags] = useState([]);
   const [sortBy, setSortBy] = useState('naam'); // Default to alphabetical sorting
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'active', 'archived'
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
 
@@ -796,7 +798,7 @@ function Talents() {
     }
     if (talent.active) {
       // Archiveer: zet altijd op false
-      const confirmArchive = window.confirm(`Ben je zeker dat je ${talent.voornaam} ${talent.achternaam} wilt archiveren?`);
+      const confirmArchive = window.confirm(`Are you sure you want to archive ${talent.voornaam} ${talent.achternaam}?`);
       if (!confirmArchive) return;
       try {
         await axios.put(
@@ -816,7 +818,7 @@ function Talents() {
       }
     } else {
       // Activeer: zet altijd op true
-      const confirmActivate = window.confirm(`Wil je ${talent.voornaam} ${talent.achternaam} opnieuw activeren?`);
+      const confirmActivate = window.confirm(`Activate ${talent.voornaam} ${talent.achternaam} again?`);
       if (!confirmActivate) return;
       try {
         await axios.put(
@@ -1023,16 +1025,58 @@ function Talents() {
         <div className="bg-white rounded-blocks p-8 min-h-screen">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-secondary-800">Manage Talents</h1>
-            <div className='flex gap-4 items-center'>
+            <div className='flex gap-2 2xl:gap-4 items-center'>
               <div className="text-sm text-secondary-600">
                 In total: {talents.length} talents
               </div>
-              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer' onClick={() => setShowAddModal(true)}>Add a talent</button>
+              <button className='bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer text-sm 2xl:text-base' onClick={() => setShowAddModal(true)}>Add a talent</button>
+              <div className="relative">
+                <button 
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className='bg-transparent text-black border px-4 py-2 rounded-blocks text-sm 2xl:text-base cursor-pointer flex items-center gap-2'
+                >
+                  Filter: {activeFilter === 'all' ? 'All' : activeFilter === 'active' ? 'Active' : 'Archived'}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showFilterDropdown && (
+                  <div className="absolute top-full mt-2 bg-white border rounded-xl shadow-lg z-999 min-w-[100px]">
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('all');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 transition-colors cursor-pointer"
+                    >
+                      All
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('active');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 transition-colors border-t cursor-pointer"
+                    >
+                      Active
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveFilter('archived');
+                        setShowFilterDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 transition-colors border-t cursor-pointer"
+                    >
+                      Archived
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="relative">
                 <select 
                   value={sortBy} 
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none rounded-blocks pr-10 min-w-[140px] bg-transparent text-black border px-4 py-2 rounded-blocks cursor-pointer"
+                  className="appearance-none rounded-blocks pr-10 min-w-[100px] bg-transparent text-black text-sm 2xl:text-base border px-3 py-2 rounded-blocks cursor-pointer"
                 >
                   <option value="naam">A-Z</option>
                   <option value="rugnummer">Back number</option>
@@ -1058,7 +1102,11 @@ function Talents() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-8 gap-y-4">
-              {talents.map((talent) => {
+              {talents.filter(talent => {
+                if (activeFilter === 'active') return talent.active === true;
+                if (activeFilter === 'archived') return talent.active === false;
+                return true; // 'all'
+              }).map((talent) => {
                 const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
                 const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
                 const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
@@ -1127,7 +1175,7 @@ function Talents() {
                           className={`rounded-full transition-colors cursor-pointer underline hover:no-underline`}
                           title={active ? "Archiveren" : "Activeren"}
                         >
-                          {active ? 'Archiveer' : 'Activeer'}
+                          {active ? 'Archive' : 'Activate'}
                         </button>
                       </div>
                     </div>

@@ -246,7 +246,7 @@ function Organize() {
               <button
                 onClick={() => handleDeliveryChange('normal', -1)}
                 disabled={normalDeliveryDays <= 0 || deliveryLoading}
-                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 −
               </button>
@@ -256,7 +256,7 @@ function Organize() {
               <button
                 onClick={() => handleDeliveryChange('normal', 1)}
                 disabled={normalDeliveryDays >= 14 || deliveryLoading}
-                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 +
               </button>
@@ -271,7 +271,7 @@ function Organize() {
               <button
                 onClick={() => handleDeliveryChange('fast', -1)}
                 disabled={fastDeliveryDays <= 0 || deliveryLoading}
-                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 −
               </button>
@@ -281,7 +281,7 @@ function Organize() {
               <button
                 onClick={() => handleDeliveryChange('fast', 1)}
                 disabled={fastDeliveryDays >= 14 || fastDeliveryDays >= normalDeliveryDays - 1 || deliveryLoading}
-                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 +
               </button>
