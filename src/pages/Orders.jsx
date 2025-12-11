@@ -194,7 +194,7 @@ function Orders() {
         </div>*/}
 
         {/* Tabs */}
-        <div className="">
+        <div className="flex justify-between items-center">
           <div className="flex">
             <button
               onClick={() => setActiveTab('new')}
@@ -216,6 +216,9 @@ function Orders() {
             >
               Archived
             </button>
+          </div>
+          <div className='mr-8'>
+              filter for player
           </div>
         </div>
 
@@ -265,11 +268,11 @@ function Orders() {
                       </div>
                     ))}
                     {/* Pagination Controls */}
-                    <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t">
+                    <div className="flex justify-end items-center mt-6 pt-2">
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
-                        className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 transition-colors cursor-pointer"
+                        className="px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                       >
                         ← Vorige
                       </button>
@@ -278,10 +281,10 @@ function Orders() {
                           <button
                             key={idx + 1}
                             onClick={() => setCurrentPage(idx + 1)}
-                            className={`px-3 py-2 rounded transition-colors cursor-pointer ${
+                            className={`px-2 py-2 rounded transition-colors cursor-pointer ${
                               currentPage === idx + 1
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-200 hover:bg-gray-300'
+                                ? 'text-blue-500 font-bold'
+                                : ''
                             }`}
                           >
                             {idx + 1}
@@ -291,7 +294,7 @@ function Orders() {
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 transition-colors cursor-pointer"
+                        className="px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                       >
                         Volgende →
                       </button>
@@ -343,7 +346,7 @@ function Orders() {
                       </div>
                     ))}
                     {/* Pagination Controls */}
-                    <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t">
+                    <div className="flex justify-end items-center gap-2 mt-6 pt-4">
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
