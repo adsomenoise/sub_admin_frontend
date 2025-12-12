@@ -10,6 +10,7 @@ import Navigation from './components/Navigation.jsx';
 import Talents from './pages/Talents.jsx';
 import Organize from './pages/Organize.jsx';
 import Financials from './pages/Financials.jsx';
+import Footer from './components/Footer.jsx';
 
 function App() {
   const basename = import.meta.env.MODE === 'production' ? '/subadmin' : '';
@@ -26,6 +27,7 @@ function App() {
               <div className="flex h-full">
                 <Dashboard />
               </div>
+              <Footer />
             </PrivateRoute>
           }
         />
@@ -38,6 +40,7 @@ function App() {
               <div className="flex">
                 <Orders />
               </div>
+              <Footer />
             </PrivateRoute>
           }
         />
@@ -50,6 +53,7 @@ function App() {
               <div className="flex">
                 <Financials />
               </div>
+              <Footer />
             </PrivateRoute>
           }
         />
@@ -62,6 +66,7 @@ function App() {
               <div className="flex">
                 <Talents />
               </div>
+              <Footer />
             </PrivateRoute>
           }
         />
@@ -74,6 +79,7 @@ function App() {
               <div className="flex">
                 <Organize />
               </div>
+              <Footer />
             </PrivateRoute>
           }
         />
