@@ -11,12 +11,18 @@ function Orders() {
   const [activeTab, setActiveTab] = useState('new');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 10;
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
   const jwt = localStorage.getItem('jwt');
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -118,6 +124,13 @@ function Orders() {
     return activeTab === 'new' ? !hasVideo : hasVideo;
   });
 
+  // Pagination logic
+  const paginatedOrders = tabFilteredOrders.slice(
+    (currentPage - 1) * ordersPerPage,
+    currentPage * ordersPerPage
+  );
+  const totalPages = Math.ceil(tabFilteredOrders.length / ordersPerPage);
+
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
@@ -159,7 +172,7 @@ function Orders() {
 
   return (
     <>
-      <div className="bg-gray w-blocks mx-auto rounded-blocks p-8 h-[88vh]">
+      <div className="bg-gray w-blocks mx-auto rounded-blocks p-8">
         <h1 className="text-2xl font-bold mb-6 ml-4">Orders</h1>
         
         {/* Filter Section 
@@ -181,7 +194,7 @@ function Orders() {
         </div>*/}
 
         {/* Tabs */}
-        <div className="">
+        <div className="flex justify-between items-center">
           <div className="flex">
             <button
               onClick={() => setActiveTab('new')}
@@ -203,6 +216,9 @@ function Orders() {
             >
               Archived
             </button>
+          </div>
+          <div className='mr-8'>
+              filter for player
           </div>
         </div>
 
@@ -227,29 +243,63 @@ function Orders() {
                     Geen nieuwe orders gevonden
                   </p>
                 ) : (
-                  tabFilteredOrders.map(order => (
-                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
-                      <div className="font-medium">{order.from}</div>
-                      <div>{order.to}</div>
-                      <div className="capitalize">{order.gelegenheid}</div>
-                      <div className="font-semibold text-green-600">€{order.totalPrice}</div>
-                      <div className="text-sm text-gray-600">
-                        {new Date(order.createdAt).toLocaleDateString('nl-NL', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        })}
+                  <>
+                    {paginatedOrders.map(order => (
+                      <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
+                        <div className="font-medium">{order.from}</div>
+                        <div>{order.to}</div>
+                        <div className="capitalize">{order.gelegenheid}</div>
+                        <div className="font-semibold text-green-600">€{order.totalPrice}</div>
+                        <div className="text-sm text-gray-600">
+                          {new Date(order.createdAt).toLocaleDateString('nl-NL', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          })}
+                        </div>
+                        <div>
+                          <button
+                            onClick={() => handleOrderClick(order)}
+                            className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
+                          >
+                            Upload video
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <button
-                          onClick={() => handleOrderClick(order)}
-                          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
-                        >
-                          Upload video
-                        </button>
+                    ))}
+                    {/* Pagination Controls */}
+                    <div className="flex justify-end items-center mt-6 pt-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      >
+                        ← Vorige
+                      </button>
+                      <div className="flex gap-1">
+                        {[...Array(totalPages)].map((_, idx) => (
+                          <button
+                            key={idx + 1}
+                            onClick={() => setCurrentPage(idx + 1)}
+                            className={`px-2 py-2 rounded transition-colors cursor-pointer ${
+                              currentPage === idx + 1
+                                ? 'text-blue-500 font-bold'
+                                : ''
+                            }`}
+                          >
+                            {idx + 1}
+                          </button>
+                        ))}
                       </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      >
+                        Volgende →
+                      </button>
                     </div>
-                  ))
+                  </>
                 )}
               </div>
             ) : (
@@ -271,29 +321,63 @@ function Orders() {
                     Geen gearchiveerde orders gevonden
                   </p>
                 ) : (
-                  tabFilteredOrders.map(order => (
-                    <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
-                      <div className="font-medium">{order.from}</div>
-                      <div>{order.to}</div>
-                      <div className="capitalize">{order.gelegenheid}</div>
-                      <div className="font-semibold text-green-600">€{order.totalPrice}</div>
-                      <div className="text-sm text-gray-600">
-                        {new Date(order.createdAt).toLocaleDateString('nl-NL', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        })}
+                  <>
+                    {paginatedOrders.map(order => (
+                      <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
+                        <div className="font-medium">{order.from}</div>
+                        <div>{order.to}</div>
+                        <div className="capitalize">{order.gelegenheid}</div>
+                        <div className="font-semibold text-green-600">€{order.totalPrice}</div>
+                        <div className="text-sm text-gray-600">
+                          {new Date(order.createdAt).toLocaleDateString('nl-NL', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          })}
+                        </div>
+                        <div>
+                          <button
+                            onClick={() => handleOrderClick(order)}
+                            className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
+                          >
+                            Details
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <button
-                          onClick={() => handleOrderClick(order)}
-                          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
-                        >
-                          Details
-                        </button>
+                    ))}
+                    {/* Pagination Controls */}
+                    <div className="flex justify-end items-center gap-2 mt-6 pt-4">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 transition-colors cursor-pointer"
+                      >
+                        ← Vorige
+                      </button>
+                      <div className="flex gap-1">
+                        {[...Array(totalPages)].map((_, idx) => (
+                          <button
+                            key={idx + 1}
+                            onClick={() => setCurrentPage(idx + 1)}
+                            className={`px-3 py-2 rounded transition-colors cursor-pointer ${
+                              currentPage === idx + 1
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-200 hover:bg-gray-300'
+                            }`}
+                          >
+                            {idx + 1}
+                          </button>
+                        ))}
                       </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 transition-colors cursor-pointer"
+                      >
+                        Volgende →
+                      </button>
                     </div>
-                  ))
+                  </>
                 )}
               </div>
             )}
