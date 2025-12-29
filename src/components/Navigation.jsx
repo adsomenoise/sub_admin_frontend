@@ -12,7 +12,7 @@ function Navigation() {
     <header className=''>
       <nav className='flex justify-between items-center w-smallblocks mx-auto py-6'>
         <Link to='/' className='flex gap-2 items-center'>
-          <img src="/images/logo.svg" width={150} height={30} alt="logo-svg" />
+          <img src={`${import.meta.env.BASE_URL}images/logo.svg`} width={150} height={30} alt="logo" />
         </Link>
           <ul className='flex gap-4'>
             <li className={`${isActive('/dashboard') ? 'bg-green' : 'bg-white hover:bg-white/80 transition-colors duration-300'}  rounded-blocks`}>

@@ -6,7 +6,8 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()],
   base: mode === 'production' ? '/subadmin/' : '/',
   define: {
-    'process.env': process.env
+    'process.env.REACT_APP_API_BASE_URL': JSON.stringify(process.env.REACT_APP_API_BASE_URL || ''),
+    'process.env.REACT_APP_TALENT_BASE_URL': JSON.stringify(process.env.REACT_APP_TALENT_BASE_URL || ''),
   },
   server: {
     port: 3000,
