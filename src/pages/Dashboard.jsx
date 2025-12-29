@@ -233,8 +233,8 @@ function Dashboard() {
           <div className="flex gap-4 justify-between h-full">
             <div
               className="w-[50%] 3xl:w-[52%] rounded-4xl relative p-4 text-black"
-              style={{ 
-                backgroundImage: "url('/images/orders-shape.svg')",
+              style={{
+                backgroundImage: `url('${import.meta.env.BASE_URL}images/orders-shape.svg')`,
                 backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center',
