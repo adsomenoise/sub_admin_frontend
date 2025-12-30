@@ -19,17 +19,18 @@ function Financials() {
 
     const fetchOrders = async () => {
       try {
+        // Alleen BETAALDE orders ophalen voor financials
         let ordersRes;
         try {
           ordersRes = await axios.get(
-            `${API_BASE_URL}/api/orders?sort=createdAt:desc&populate=*`,
+            `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&populate=*`,
             {
               headers: { Authorization: `Bearer ${jwt}` },
             }
           );
         } catch (authError) {
           ordersRes = await axios.get(
-            `${API_BASE_URL}/api/orders?sort=createdAt:desc&populate=*`
+            `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&populate=*`
           );
         }
 

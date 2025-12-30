@@ -29,35 +29,27 @@ function Orders() {
     try {
       console.log('Fetching data from:', API_BASE_URL);
       
-      // Test basic connection first
-      try {
-        const testRes = await axios.get(`${API_BASE_URL}/api/orders`);
-        console.log('Basic orders test response:', testRes.data);
-      } catch (testErr) {
-        console.error('Basic orders test failed:', testErr.response?.status, testErr.response?.data);
-      }
-
-      // Haal alle orders op - probeer verschillende approaches
-      console.log('Fetching orders...');
+      // Haal alleen BETAALDE orders op (paymentStatus=paid)
+      console.log('Fetching paid orders...');
       let ordersRes;
       try {
-        // Probeer eerst met populate
-        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?populate=*`, {
+        // Probeer eerst met populate en paymentStatus filter
+        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&populate=*`, {
           headers: { Authorization: `Bearer ${jwt}` }
         });
-        console.log('Orders with populate=* response:', ordersRes.data);
+        console.log('Paid orders response:', ordersRes.data);
       } catch (populateErr) {
         console.log('Populate * failed, trying without populate:', populateErr.message);
-        // Fallback zonder populate
+        // Fallback zonder populate maar met paymentStatus filter
         try {
-          ordersRes = await axios.get(`${API_BASE_URL}/api/orders`, {
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authErr) {
           // Try without auth as last resort
-          ordersRes = await axios.get(`${API_BASE_URL}/api/orders`);
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid`);
         }
-        console.log('Orders without populate response:', ordersRes.data);
+        console.log('Paid orders without populate response:', ordersRes.data);
       }
       
       // Check response structure en set data

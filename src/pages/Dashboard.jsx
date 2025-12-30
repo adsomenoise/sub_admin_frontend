@@ -23,11 +23,11 @@ function Dashboard() {
     try {
       console.log("Fetching 15 most recent orders...");
       
-      // Haal de 15 recentste orders op (net zoals in Orders.jsx maar beperkt)
+      // Haal de 15 recentste BETAALDE orders op (alleen paid orders tonen)
       let ordersRes;
       try {
         ordersRes = await axios.get(
-          `${API_BASE_URL}/api/orders?sort=createdAt:desc&pagination[limit]=15&populate=*`,
+          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&pagination[limit]=15&populate=*`,
           {
             headers: { Authorization: `Bearer ${jwtToken}` },
           }
@@ -36,7 +36,7 @@ function Dashboard() {
         console.log("Auth failed, trying without auth:", authError.message);
         // Try without auth
         ordersRes = await axios.get(
-          `${API_BASE_URL}/api/orders?sort=createdAt:desc&pagination[limit]=15&populate=*`
+          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&pagination[limit]=15&populate=*`
         );
       }
       
