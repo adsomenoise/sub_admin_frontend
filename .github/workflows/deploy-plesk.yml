@@ -78,7 +78,7 @@ jobs:
           username: ${{ secrets.PLESK_SSH_USER }}
           key: ${{ secrets.PLESK_SSH_KEY }}
           port: ${{ secrets.PLESK_SSH_PORT || 22 }}
-          source: "build/*"
+          source: "build"
           target: "/tmp/subadmin-deploy/"
 
       - name: Extract and deploy static files
