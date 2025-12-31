@@ -7,7 +7,9 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
     voornaam: '',
     achternaam: '',
     slug: '',
-    description: '',
+    description_nl: '',
+    description_en: '',
+    description_fr: '',
     rugnummer: 0,
     price: '',
     featured: false,
@@ -22,6 +24,35 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
   const [imagePreview, setImagePreview] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
+  const [translating, setTranslating] = useState(null);
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
+
+  const translateText = async (from, to) => {
+    const sourceField = `description_${from}`;
+    const targetField = `description_${to}`;
+    const sourceText = form[sourceField];
+    if (!sourceText || sourceText.trim() === '') {
+      alert('Source field is empty.');
+      return;
+    }
+    const token = localStorage.getItem('jwt');
+    setTranslating(`${from}-${to}`);
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/translate/text`,
+        { text: sourceText, from, to },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setForm(prev => ({ ...prev, [targetField]: response.data.data.translatedText }));
+      }
+    } catch (error) {
+      console.error('Translation failed:', error);
+      alert('Translation failed.');
+    } finally {
+      setTranslating(null);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -152,8 +183,34 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold ml-2 mb-2 mt-5">Description</label>
-                <textarea name="description" value={form.description} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
+                <div className="flex justify-between items-center mt-5">
+                  <label className="block text-sm font-semibold ml-2 mb-2">Description (NL)</label>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => translateText('en', 'nl')} disabled={translating === 'en-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'en-nl' ? '...' : 'from EN'}</button>
+                    <button type="button" onClick={() => translateText('fr', 'nl')} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'fr-nl' ? '...' : 'from FR'}</button>
+                  </div>
+                </div>
+                <textarea name="description_nl" value={form.description_nl} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mt-3">
+                  <label className="block text-sm font-semibold ml-2 mb-2">Description (EN)</label>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => translateText('nl', 'en')} disabled={translating === 'nl-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'nl-en' ? '...' : 'from NL'}</button>
+                    <button type="button" onClick={() => translateText('fr', 'en')} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'fr-en' ? '...' : 'from FR'}</button>
+                  </div>
+                </div>
+                <textarea name="description_en" value={form.description_en} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mt-3">
+                  <label className="block text-sm font-semibold ml-2 mb-2">Description (FR)</label>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => translateText('nl', 'fr')} disabled={translating === 'nl-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'nl-fr' ? '...' : 'from NL'}</button>
+                    <button type="button" onClick={() => translateText('en', 'fr')} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'en-fr' ? '...' : 'from EN'}</button>
+                  </div>
+                </div>
+                <textarea name="description_fr" value={form.description_fr} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
               </div>
               <div className="mt-2">
                 <label className="block text-sm font-semibold">Categories</label>
@@ -356,6 +413,29 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
     setBannerPreview(null);
   };
 
+  const [translating, setTranslating] = useState(null);
+
+  const translateField = async (from, to) => {
+    const talentId = form.documentId || form.id;
+    const token = localStorage.getItem('jwt');
+    setTranslating(`${from}-${to}`);
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/translate/talent/${talentId}?from=${from}&to=${to}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setForm(prev => ({ ...prev, [`description_${to}`]: response.data.data.translatedText }));
+      }
+    } catch (error) {
+      console.error('Translation failed:', error);
+      alert('Translation failed. Make sure source field is not empty.');
+    } finally {
+      setTranslating(null);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(form);
@@ -492,8 +572,34 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2 mt-3 2xl:mt-5">Description</label>
-                <textarea name="description" value={form.description || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
+                <div className="flex justify-between items-center mt-3 2xl:mt-5">
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Description (NL)</label>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => translateField('en', 'nl')} disabled={translating === 'en-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'en-nl' ? '...' : 'from EN'}</button>
+                    <button type="button" onClick={() => translateField('fr', 'nl')} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'fr-nl' ? '...' : 'from FR'}</button>
+                  </div>
+                </div>
+                <textarea name="description_nl" value={form.description_nl || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mt-3">
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Description (EN)</label>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => translateField('nl', 'en')} disabled={translating === 'nl-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'nl-en' ? '...' : 'from NL'}</button>
+                    <button type="button" onClick={() => translateField('fr', 'en')} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'fr-en' ? '...' : 'from FR'}</button>
+                  </div>
+                </div>
+                <textarea name="description_en" value={form.description_en || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mt-3">
+                  <label className="block text-sm font-semibold ml-2 mb-1 2xl:mb-2">Description (FR)</label>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => translateField('nl', 'fr')} disabled={translating === 'nl-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'nl-fr' ? '...' : 'from NL'}</button>
+                    <button type="button" onClick={() => translateField('en', 'fr')} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'en-fr' ? '...' : 'from EN'}</button>
+                  </div>
+                </div>
+                <textarea name="description_fr" value={form.description_fr || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
               </div>
 
               <div className="mt-2">
@@ -744,7 +850,9 @@ function Talents() {
         achternaam: form.achternaam,
         email: form.email,
         slug: form.slug,
-        description: form.description,
+        description_nl: form.description_nl,
+        description_en: form.description_en,
+        description_fr: form.description_fr,
         rugnummer: form.rugnummer ? Number(form.rugnummer) : 0,
         price: form.price ? Number(form.price) : null,
         gsm_nummer: form.gsm_nummer ? form.gsm_nummer : '',
@@ -913,7 +1021,9 @@ function Talents() {
         voornaam: form.voornaam,
         achternaam: form.achternaam,
         slug: form.slug,
-        description: form.description,
+        description_nl: form.description_nl,
+        description_en: form.description_en,
+        description_fr: form.description_fr,
         rugnummer: form.rugnummer ? Number(form.rugnummer) : 0,
         price: form.price ? Number(form.price) : null,
         featured: !!form.featured,
