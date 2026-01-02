@@ -4,13 +4,18 @@ import axios from 'axios';
 
 function Organize() {
   const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState("");
+  const [newCategoryNl, setNewCategoryNl] = useState("");
+  const [newCategoryEn, setNewCategoryEn] = useState("");
+  const [newCategoryFr, setNewCategoryFr] = useState("");
+  const [translating, setTranslating] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [editValue, setEditValue] = useState("");
+  const [editValueNl, setEditValueNl] = useState("");
+  const [editValueEn, setEditValueEn] = useState("");
+  const [editValueFr, setEditValueFr] = useState("");
   const [normalDeliveryDays, setNormalDeliveryDays] = useState(0);
   const [fastDeliveryDays, setFastDeliveryDays] = useState(0);
   const [deliveryLoading, setDeliveryLoading] = useState(false);
@@ -45,21 +50,63 @@ function Organize() {
       .replace(/-+$/, '');             // Koppeltekens aan eind weg
   };
 
+  const translateField = async (from, to, isEdit = false) => {
+    const fieldMap = isEdit
+      ? { nl: editValueNl, en: editValueEn, fr: editValueFr }
+      : { nl: newCategoryNl, en: newCategoryEn, fr: newCategoryFr };
+    const setterMap = isEdit
+      ? { nl: setEditValueNl, en: setEditValueEn, fr: setEditValueFr }
+      : { nl: setNewCategoryNl, en: setNewCategoryEn, fr: setNewCategoryFr };
+    const sourceText = fieldMap[from];
+
+    if (!sourceText || sourceText.trim() === '') {
+      setError('Source field is empty.');
+      return;
+    }
+
+    const token = localStorage.getItem('jwt');
+    setTranslating(`${isEdit ? 'edit-' : ''}${from}-${to}`);
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/translate/text`,
+        { text: sourceText, from, to },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setterMap[to](response.data.data.translatedText);
+      }
+    } catch (err) {
+      console.error('Translation failed:', err);
+      setError('Translation failed.');
+    } finally {
+      setTranslating(null);
+    }
+  };
+
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!newCategory.trim()) return;
+    if (!newCategoryNl.trim()) {
+      setError("Dutch name is required.");
+      return;
+    }
     try {
-      const slug = generateSlug(newCategory);
+      const slug = generateSlug(newCategoryNl);
       await axios.post(`${API_BASE_URL}/api/categories`, {
-        data: { 
-          name: newCategory,
+        data: {
+          name: newCategoryNl,
+          name_nl: newCategoryNl,
+          name_en: newCategoryEn || null,
+          name_fr: newCategoryFr || null,
           slug: slug
         }
       });
-      setNewCategory("");
+      setNewCategoryNl("");
+      setNewCategoryEn("");
+      setNewCategoryFr("");
+      setError(null);
       fetchCategories();
     } catch (err) {
-      setError("Categorie toevoegen mislukt.");
+      setError("Adding category failed.");
     }
   };
 
@@ -86,31 +133,43 @@ function Organize() {
 
   const handleEdit = (category) => {
     setEditingCategory(category.documentId || category.id);
-    setEditValue(category.attributes?.name || category.name);
+    const nameNl = category.attributes?.name_nl || category.name_nl || category.attributes?.name || category.name;
+    const nameEn = category.attributes?.name_en || category.name_en || '';
+    const nameFr = category.attributes?.name_fr || category.name_fr || '';
+    setEditValueNl(nameNl);
+    setEditValueEn(nameEn);
+    setEditValueFr(nameFr);
   };
 
   const handleCancelEdit = () => {
     setEditingCategory(null);
-    setEditValue("");
+    setEditValueNl("");
+    setEditValueEn("");
+    setEditValueFr("");
   };
 
   const handleSaveEdit = async () => {
-    if (!editValue.trim() || !editingCategory) return;
-    
+    if (!editValueNl.trim() || !editingCategory) return;
+
     try {
-      const slug = generateSlug(editValue);
+      const slug = generateSlug(editValueNl);
       await axios.put(`${API_BASE_URL}/api/categories/${editingCategory}`, {
-        data: { 
-          name: editValue,
+        data: {
+          name: editValueNl,
+          name_nl: editValueNl,
+          name_en: editValueEn || null,
+          name_fr: editValueFr || null,
           slug: slug
         }
       });
       setEditingCategory(null);
-      setEditValue("");
+      setEditValueNl("");
+      setEditValueEn("");
+      setEditValueFr("");
       fetchCategories();
     } catch (err) {
       console.error("Edit error:", err.response?.data || err);
-      setError("Categorie updaten mislukt.");
+      setError("Updating category failed.");
     }
   };
 
@@ -205,18 +264,67 @@ function Organize() {
     <div className="bg-gray w-[60%] rounded-blocks mx-auto p-6 2xl:p-8 2xl:h-[80vh] 2xl:mt-8 flex flex-col">
       <h1 className="text-2xl font-bold mb-4 2xl:mb-6 ml-8">Setup</h1>
       <div className='bg-white rounded-blocks w-full p-4 px-8 2xl:p-8 mb-4 flex-shrink-0'>
-        <form onSubmit={handleAddCategory} className="2xl:mb-6 flex gap-4 justify-between items-center">
-          <h3>Categories</h3>
-          <div className='flex gap-2 justify-between items-center'>
-            <input
-              type="text"
-              value={newCategory}
-              onChange={e => setNewCategory(e.target.value)}
-              placeholder="New category name"
-              className="border px-4 py-2 rounded-full"
-            />
-            <button type="submit" className="bg-green px-6 py-2 rounded-full">Add</button>
+        <form onSubmit={handleAddCategory} className="2xl:mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3>Categories</h3>
           </div>
+          <div className="grid grid-cols-3 gap-3 mb-3">
+            <div>
+              <label className="block text-xs font-medium mb-1">NL *</label>
+              <input
+                type="text"
+                value={newCategoryNl}
+                onChange={e => setNewCategoryNl(e.target.value)}
+                placeholder="Nederlands"
+                className="border px-3 py-2 rounded-full w-full text-sm"
+              />
+              <div className="flex gap-1 mt-1">
+                <button type="button" onClick={() => translateField('nl', 'en')} disabled={translating === 'nl-en'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
+                  {translating === 'nl-en' ? '...' : '→EN'}
+                </button>
+                <button type="button" onClick={() => translateField('nl', 'fr')} disabled={translating === 'nl-fr'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
+                  {translating === 'nl-fr' ? '...' : '→FR'}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">EN</label>
+              <input
+                type="text"
+                value={newCategoryEn}
+                onChange={e => setNewCategoryEn(e.target.value)}
+                placeholder="English"
+                className="border px-3 py-2 rounded-full w-full text-sm"
+              />
+              <div className="flex gap-1 mt-1">
+                <button type="button" onClick={() => translateField('en', 'nl')} disabled={translating === 'en-nl'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
+                  {translating === 'en-nl' ? '...' : '→NL'}
+                </button>
+                <button type="button" onClick={() => translateField('en', 'fr')} disabled={translating === 'en-fr'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
+                  {translating === 'en-fr' ? '...' : '→FR'}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">FR</label>
+              <input
+                type="text"
+                value={newCategoryFr}
+                onChange={e => setNewCategoryFr(e.target.value)}
+                placeholder="Français"
+                className="border px-3 py-2 rounded-full w-full text-sm"
+              />
+              <div className="flex gap-1 mt-1">
+                <button type="button" onClick={() => translateField('fr', 'nl')} disabled={translating === 'fr-nl'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
+                  {translating === 'fr-nl' ? '...' : '→NL'}
+                </button>
+                <button type="button" onClick={() => translateField('fr', 'en')} disabled={translating === 'fr-en'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
+                  {translating === 'fr-en' ? '...' : '→EN'}
+                </button>
+              </div>
+            </div>
+          </div>
+          <button type="submit" className="bg-green px-6 py-2 rounded-full">Add</button>
         </form>
         {loading ? (
           <p>Loading...</p>
@@ -225,51 +333,60 @@ function Organize() {
         ) : (
           <div className="flex flex-col gap-8">
             <ul className="space-y-2 w-full h-62 mt-4 overflow-y-auto">
-              {categories.map(cat => (
-                <li key={cat.documentId || cat.id} className="border-b border-gray py-2 flex justify-between items-center">
-                  {editingCategory === (cat.documentId || cat.id) ? (
-                    <div className="flex gap-2 items-center flex-1">
-                      <input
-                        type="text"
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        className="border px-2 py-1 rounded flex-1"
-                        autoFocus
-                      />
-                      <button 
-                        onClick={handleSaveEdit}
-                        className="bg-green text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-                      >
-                        Save
-                      </button>
-                      <button 
-                        onClick={handleCancelEdit}
-                        className="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <span>{cat.attributes?.name || cat.name}</span>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => handleEdit(cat)}
-                          className="text-blue-600 text-sm underline hover:no-underline cursor-pointer"
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => openDeleteModal(cat)}
-                          className="text-red-600 text-sm underline hover:no-underline cursor-pointer"
-                        >
-                          Delete
-                        </button>
+              {categories.map(cat => {
+                const nameNl = cat.attributes?.name_nl || cat.name_nl || cat.attributes?.name || cat.name;
+                const nameEn = cat.attributes?.name_en || cat.name_en;
+                const nameFr = cat.attributes?.name_fr || cat.name_fr;
+                return (
+                  <li key={cat.documentId || cat.id} className="border-b border-gray py-3">
+                    {editingCategory === (cat.documentId || cat.id) ? (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-xs mb-1">NL *</label>
+                            <input type="text" value={editValueNl} onChange={(e) => setEditValueNl(e.target.value)} className="border px-2 py-1 rounded w-full text-sm" autoFocus />
+                            <div className="flex gap-1 mt-1">
+                              <button type="button" onClick={() => translateField('nl', 'en', true)} disabled={translating === 'edit-nl-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-en' ? '...' : '→EN'}</button>
+                              <button type="button" onClick={() => translateField('nl', 'fr', true)} disabled={translating === 'edit-nl-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-fr' ? '...' : '→FR'}</button>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs mb-1">EN</label>
+                            <input type="text" value={editValueEn} onChange={(e) => setEditValueEn(e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
+                            <div className="flex gap-1 mt-1">
+                              <button type="button" onClick={() => translateField('en', 'nl', true)} disabled={translating === 'edit-en-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-nl' ? '...' : '→NL'}</button>
+                              <button type="button" onClick={() => translateField('en', 'fr', true)} disabled={translating === 'edit-en-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-fr' ? '...' : '→FR'}</button>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs mb-1">FR</label>
+                            <input type="text" value={editValueFr} onChange={(e) => setEditValueFr(e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
+                            <div className="flex gap-1 mt-1">
+                              <button type="button" onClick={() => translateField('fr', 'nl', true)} disabled={translating === 'edit-fr-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-nl' ? '...' : '→NL'}</button>
+                              <button type="button" onClick={() => translateField('fr', 'en', true)} disabled={translating === 'edit-fr-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-en' ? '...' : '→EN'}</button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <button onClick={handleSaveEdit} className="bg-green text-white px-3 py-1 rounded text-sm">Save</button>
+                          <button onClick={handleCancelEdit} className="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm">Cancel</button>
+                        </div>
                       </div>
-                    </>
-                  )}
-                </li>
-              ))}
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <div className="flex flex-col">
+                          <span className="font-medium">{nameNl}</span>
+                          <span className="text-xs text-gray-500">EN: {nameEn || '-'} | FR: {nameFr || '-'}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => handleEdit(cat)} className="text-blue-600 text-sm underline hover:no-underline cursor-pointer">Edit</button>
+                          <button onClick={() => openDeleteModal(cat)} className="text-red-600 text-sm underline hover:no-underline cursor-pointer">Delete</button>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
