@@ -416,21 +416,29 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
   const [translating, setTranslating] = useState(null);
 
   const translateField = async (from, to) => {
-    const talentId = form.documentId || form.id;
+    const sourceField = `description_${from}`;
+    const targetField = `description_${to}`;
+    const sourceText = form[sourceField];
+
+    if (!sourceText || sourceText.trim() === '') {
+      alert('Source field is empty. Cannot translate.');
+      return;
+    }
+
     const token = localStorage.getItem('jwt');
     setTranslating(`${from}-${to}`);
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/api/translate/talent/${talentId}?from=${from}&to=${to}`,
-        {},
+        `${API_BASE_URL}/api/translate/text`,
+        { text: sourceText, from, to },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.data.success) {
-        setForm(prev => ({ ...prev, [`description_${to}`]: response.data.data.translatedText }));
+        setForm(prev => ({ ...prev, [targetField]: response.data.data.translatedText }));
       }
     } catch (error) {
       console.error('Translation failed:', error);
-      alert('Translation failed. Make sure source field is not empty.');
+      alert('Translation failed.');
     } finally {
       setTranslating(null);
     }
