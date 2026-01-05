@@ -3,6 +3,17 @@ name: Deploy Sub-Admin Frontend to Plesk/Combell
 on:
   push:
     branches: [dev, staging, main]  # Multi-environment support
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - dev
+          - staging
+          - main
 
 jobs:
   deploy:
@@ -15,8 +26,12 @@ jobs:
       - name: Set environment variables
         id: set-env
         run: |
-          # Detect environment based on branch
-          BRANCH="${{ github.ref_name }}"
+          # Use workflow_dispatch input if available, otherwise use branch name
+          if [ -n "${{ inputs.environment }}" ]; then
+            BRANCH="${{ inputs.environment }}"
+          else
+            BRANCH="${{ github.ref_name }}"
+          fi
 
           case "$BRANCH" in
             dev)
