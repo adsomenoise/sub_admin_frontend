@@ -132,7 +132,12 @@ jobs:
             fi
 
             echo "Deploying new build..."
-            cp -r /tmp/subadmin-deploy/build/* "$WEB_DIR/"
+            # Handle both possible structures from SCP
+            if [ -d "/tmp/subadmin-deploy/build" ]; then
+              cp -r /tmp/subadmin-deploy/build/* "$WEB_DIR/"
+            else
+              cp -r /tmp/subadmin-deploy/* "$WEB_DIR/"
+            fi
             rm -rf /tmp/subadmin-deploy
 
             # Set permissions
