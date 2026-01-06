@@ -10,6 +10,7 @@ function Organize() {
   const [translating, setTranslating] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -83,6 +84,22 @@ function Organize() {
     }
   };
 
+  const openAddModal = () => {
+    setNewCategoryNl("");
+    setNewCategoryEn("");
+    setNewCategoryFr("");
+    setError(null);
+    setShowAddModal(true);
+  };
+
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    setNewCategoryNl("");
+    setNewCategoryEn("");
+    setNewCategoryFr("");
+    setError(null);
+  };
+
   const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!newCategoryNl.trim()) {
@@ -100,10 +117,7 @@ function Organize() {
           slug: slug
         }
       });
-      setNewCategoryNl("");
-      setNewCategoryEn("");
-      setNewCategoryFr("");
-      setError(null);
+      closeAddModal();
       fetchCategories();
     } catch (err) {
       setError("Adding category failed.");
@@ -264,68 +278,15 @@ function Organize() {
     <div className="bg-gray w-[60%] rounded-blocks mx-auto p-6 2xl:p-8 2xl:h-[80vh] 2xl:mt-8 flex flex-col">
       <h1 className="text-2xl font-bold mb-4 2xl:mb-6 ml-8">Setup</h1>
       <div className='bg-white rounded-blocks w-full p-4 px-8 2xl:p-8 mb-4 flex-shrink-0'>
-        <form onSubmit={handleAddCategory} className="2xl:mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3>Categories</h3>
-          </div>
-          <div className="grid grid-cols-3 gap-3 mb-3">
-            <div>
-              <label className="block text-xs font-medium mb-1">NL *</label>
-              <input
-                type="text"
-                value={newCategoryNl}
-                onChange={e => setNewCategoryNl(e.target.value)}
-                placeholder="Nederlands"
-                className="border px-3 py-2 rounded-full w-full text-sm"
-              />
-              <div className="flex gap-1 mt-1">
-                <button type="button" onClick={() => translateField('nl', 'en')} disabled={translating === 'nl-en'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
-                  {translating === 'nl-en' ? '...' : '→EN'}
-                </button>
-                <button type="button" onClick={() => translateField('nl', 'fr')} disabled={translating === 'nl-fr'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
-                  {translating === 'nl-fr' ? '...' : '→FR'}
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">EN</label>
-              <input
-                type="text"
-                value={newCategoryEn}
-                onChange={e => setNewCategoryEn(e.target.value)}
-                placeholder="English"
-                className="border px-3 py-2 rounded-full w-full text-sm"
-              />
-              <div className="flex gap-1 mt-1">
-                <button type="button" onClick={() => translateField('en', 'nl')} disabled={translating === 'en-nl'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
-                  {translating === 'en-nl' ? '...' : '→NL'}
-                </button>
-                <button type="button" onClick={() => translateField('en', 'fr')} disabled={translating === 'en-fr'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
-                  {translating === 'en-fr' ? '...' : '→FR'}
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">FR</label>
-              <input
-                type="text"
-                value={newCategoryFr}
-                onChange={e => setNewCategoryFr(e.target.value)}
-                placeholder="Français"
-                className="border px-3 py-2 rounded-full w-full text-sm"
-              />
-              <div className="flex gap-1 mt-1">
-                <button type="button" onClick={() => translateField('fr', 'nl')} disabled={translating === 'fr-nl'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
-                  {translating === 'fr-nl' ? '...' : '→NL'}
-                </button>
-                <button type="button" onClick={() => translateField('fr', 'en')} disabled={translating === 'fr-en'} className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300 disabled:opacity-50">
-                  {translating === 'fr-en' ? '...' : '→EN'}
-                </button>
-              </div>
-            </div>
-          </div>
-          <button type="submit" className="bg-green px-6 py-2 rounded-full">Add</button>
-        </form>
+        <div className="flex justify-between items-center mb-4">
+          <h3>Categories</h3>
+          <button
+            onClick={openAddModal}
+            className="bg-green px-4 py-2 rounded-full text-sm flex items-center gap-1"
+          >
+            <span>+</span> Add
+          </button>
+        </div>
         {loading ? (
           <p>Loading...</p>
         ) : error ? (
@@ -391,26 +352,119 @@ function Organize() {
           </div>
         )}
 
+        {/* Add Category Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+            <div className="bg-white rounded-lg shadow-xl p-6 max-w-lg w-full mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-800">New Category</h2>
+                <button onClick={closeAddModal} className="text-2xl text-gray-400 hover:text-gray-700">&times;</button>
+              </div>
+              <form onSubmit={handleAddCategory}>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-semibold">Nederlands *</label>
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => translateField('nl', 'en')} disabled={translating === 'nl-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'nl-en' ? '...' : '→ EN'}
+                        </button>
+                        <button type="button" onClick={() => translateField('nl', 'fr')} disabled={translating === 'nl-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'nl-fr' ? '...' : '→ FR'}
+                        </button>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={newCategoryNl}
+                      onChange={e => setNewCategoryNl(e.target.value)}
+                      placeholder="Category name (NL)"
+                      className="border px-4 py-2 rounded w-full"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-semibold">English</label>
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => translateField('en', 'nl')} disabled={translating === 'en-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'en-nl' ? '...' : '→ NL'}
+                        </button>
+                        <button type="button" onClick={() => translateField('en', 'fr')} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'en-fr' ? '...' : '→ FR'}
+                        </button>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={newCategoryEn}
+                      onChange={e => setNewCategoryEn(e.target.value)}
+                      placeholder="Category name (EN)"
+                      className="border px-4 py-2 rounded w-full"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-semibold">Français</label>
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => translateField('fr', 'nl')} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'fr-nl' ? '...' : '→ NL'}
+                        </button>
+                        <button type="button" onClick={() => translateField('fr', 'en')} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'fr-en' ? '...' : '→ EN'}
+                        </button>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={newCategoryFr}
+                      onChange={e => setNewCategoryFr(e.target.value)}
+                      placeholder="Category name (FR)"
+                      className="border px-4 py-2 rounded w-full"
+                    />
+                  </div>
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                </div>
+                <div className="flex gap-3 justify-end mt-6">
+                  <button
+                    type="button"
+                    onClick={closeAddModal}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-green text-black rounded hover:opacity-80 transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
             <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold mb-4 text-gray-800">Categorie verwijderen</h2>
+              <h2 className="text-xl font-bold mb-4 text-gray-800">Delete Category</h2>
               <p className="text-gray-600 mb-6">
-                Weet je zeker dat je de categorie <strong>"{categoryToDelete?.attributes?.name || categoryToDelete?.name}"</strong> wilt verwijderen?
+                Are you sure you want to delete the category <strong>"{categoryToDelete?.attributes?.name || categoryToDelete?.name_nl || categoryToDelete?.name}"</strong>?
               </p>
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={closeDeleteModal}
                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
                 >
-                  Annuleren
+                  Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                 >
-                  Verwijderen
+                  Delete
                 </button>
               </div>
             </div>
