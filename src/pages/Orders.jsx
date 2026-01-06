@@ -116,12 +116,20 @@ function Orders() {
     return activeTab === 'new' ? !hasVideo : hasVideo;
   });
 
+  // Sort orders by deadline (closest deadline first)
+  const sortedByDeadline = [...tabFilteredOrders].sort((a, b) => {
+    if (!a.deadline && !b.deadline) return 0;
+    if (!a.deadline) return 1; // Orders without deadline go to bottom
+    if (!b.deadline) return -1;
+    return new Date(a.deadline) - new Date(b.deadline);
+  });
+
   // Pagination logic
-  const paginatedOrders = tabFilteredOrders.slice(
+  const paginatedOrders = sortedByDeadline.slice(
     (currentPage - 1) * ordersPerPage,
     currentPage * ordersPerPage
   );
-  const totalPages = Math.ceil(tabFilteredOrders.length / ordersPerPage);
+  const totalPages = Math.ceil(sortedByDeadline.length / ordersPerPage);
 
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
@@ -148,14 +156,14 @@ function Orders() {
   };
 
   // Count orders for tabs
-  const newOrdersCount = filteredOrders.filter(order => {
+  const newOrdersCount = sortedByDeadline.filter(order => {
     const hasVideo = order.orderVideo && 
       ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
        (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
     return !hasVideo;
   }).length;
 
-  const archivedOrdersCount = filteredOrders.filter(order => {
+  const archivedOrdersCount = sortedByDeadline.filter(order => {
     const hasVideo = order.orderVideo && 
       ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
        (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
@@ -225,10 +233,10 @@ function Orders() {
               <div className={`bg-white p-8 rounded-b-3xl rounded-tr-3xl`}>
                 <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b items-center">
                   <div>From</div>
-                  <div>To</div>
+                  <div>For</div>
                   <div>Gelegenheid</div>
                   <div>Price</div>
-                  <div>Date</div>
+                  <div>Deadline</div>
                 </div>
                 {tabFilteredOrders.length === 0 ? (
                   <p className="text-center py-8 text-gray-500">
@@ -239,22 +247,22 @@ function Orders() {
                     {paginatedOrders.map(order => (
                       <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
                         <div className="font-medium">{order.from}</div>
-                        <div>{order.to}</div>
+                        <div>{order.talent?.voornaam || order.talent?.attributes?.voornaam} {order.talent?.achternaam || order.talent?.attributes?.achternaam}</div>
                         <div className="capitalize">{order.gelegenheid}</div>
                         <div className="font-semibold text-green-600">€{order.totalPrice}</div>
                         <div className="text-sm text-gray-600">
-                          {new Date(order.createdAt).toLocaleDateString('nl-NL', {
+                          {order.deadline ? new Date(order.deadline).toLocaleDateString('nl-NL', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric'
-                          })}
+                          }) : '-'}
                         </div>
                         <div>
                           <button
                             onClick={() => handleOrderClick(order)}
                             className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
                           >
-                            Upload video
+                            Details
                           </button>
                         </div>
                       </div>
@@ -303,10 +311,10 @@ function Orders() {
               }`}>
                 <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b">
                   <div>From</div>
-                  <div>To</div>
+                  <div>For</div>
                   <div>Gelegenheid</div>
                   <div>Price</div>
-                  <div>Date</div>
+                  <div>Deadline</div>
                 </div>
                 {tabFilteredOrders.length === 0 ? (
                   <p className="text-center py-8 text-gray-500">
@@ -317,15 +325,15 @@ function Orders() {
                     {paginatedOrders.map(order => (
                       <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
                         <div className="font-medium">{order.from}</div>
-                        <div>{order.to}</div>
+                        <div>{order.talent?.voornaam || order.talent?.attributes?.voornaam} {order.talent?.achternaam || order.talent?.attributes?.achternaam}</div>
                         <div className="capitalize">{order.gelegenheid}</div>
                         <div className="font-semibold text-green-600">€{order.totalPrice}</div>
                         <div className="text-sm text-gray-600">
-                          {new Date(order.createdAt).toLocaleDateString('nl-NL', {
+                          {order.deadline ? new Date(order.deadline).toLocaleDateString('nl-NL', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric'
-                          })}
+                          }) : '-'}
                         </div>
                         <div>
                           <button
