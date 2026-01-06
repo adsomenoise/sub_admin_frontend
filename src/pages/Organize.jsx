@@ -22,9 +22,15 @@ function Organize() {
   const addFormRef = useRef(addForm);
   const editFormRef = useRef(editForm);
 
-  // Keep refs in sync with state
-  useEffect(() => { addFormRef.current = addForm; }, [addForm]);
-  useEffect(() => { editFormRef.current = editForm; }, [editForm]);
+  // Helper to update form AND ref simultaneously
+  const updateAddForm = (field, value) => {
+    addFormRef.current = { ...addFormRef.current, [field]: value };
+    setAddForm(prev => ({ ...prev, [field]: value }));
+  };
+  const updateEditForm = (field, value) => {
+    editFormRef.current = { ...editFormRef.current, [field]: value };
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -89,7 +95,9 @@ function Organize() {
   };
 
   const openAddModal = () => {
-    setAddForm({ name_nl: '', name_en: '', name_fr: '' });
+    const emptyForm = { name_nl: '', name_en: '', name_fr: '' };
+    addFormRef.current = emptyForm;
+    setAddForm(emptyForm);
     setError(null);
     setShowAddModal(true);
   };
@@ -150,7 +158,9 @@ function Organize() {
     const nameNl = category.attributes?.name_nl || category.name_nl || category.attributes?.name || category.name || '';
     const nameEn = category.attributes?.name_en || category.name_en || '';
     const nameFr = category.attributes?.name_fr || category.name_fr || '';
-    setEditForm({ name_nl: nameNl, name_en: nameEn, name_fr: nameFr });
+    const formData = { name_nl: nameNl, name_en: nameEn, name_fr: nameFr };
+    editFormRef.current = formData;
+    setEditForm(formData);
   };
 
   const handleCancelEdit = () => {
@@ -299,7 +309,7 @@ function Organize() {
                         <div className="grid grid-cols-3 gap-2">
                           <div>
                             <label className="block text-xs mb-1">NL *</label>
-                            <input type="text" value={editForm.name_nl} onChange={(e) => setEditForm(prev => ({ ...prev, name_nl: e.target.value }))} className="border px-2 py-1 rounded w-full text-sm" autoFocus />
+                            <input type="text" value={editForm.name_nl} onChange={(e) => updateEditForm('name_nl', e.target.value)} className="border px-2 py-1 rounded w-full text-sm" autoFocus />
                             <div className="flex gap-1 mt-1">
                               <button type="button" onClick={() => translateField('nl', 'en', true)} disabled={translating === 'edit-nl-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-en' ? '...' : '→EN'}</button>
                               <button type="button" onClick={() => translateField('nl', 'fr', true)} disabled={translating === 'edit-nl-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-fr' ? '...' : '→FR'}</button>
@@ -307,7 +317,7 @@ function Organize() {
                           </div>
                           <div>
                             <label className="block text-xs mb-1">EN</label>
-                            <input type="text" value={editForm.name_en} onChange={(e) => setEditForm(prev => ({ ...prev, name_en: e.target.value }))} className="border px-2 py-1 rounded w-full text-sm" />
+                            <input type="text" value={editForm.name_en} onChange={(e) => updateEditForm('name_en', e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
                             <div className="flex gap-1 mt-1">
                               <button type="button" onClick={() => translateField('en', 'nl', true)} disabled={translating === 'edit-en-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-nl' ? '...' : '→NL'}</button>
                               <button type="button" onClick={() => translateField('en', 'fr', true)} disabled={translating === 'edit-en-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-fr' ? '...' : '→FR'}</button>
@@ -315,7 +325,7 @@ function Organize() {
                           </div>
                           <div>
                             <label className="block text-xs mb-1">FR</label>
-                            <input type="text" value={editForm.name_fr} onChange={(e) => setEditForm(prev => ({ ...prev, name_fr: e.target.value }))} className="border px-2 py-1 rounded w-full text-sm" />
+                            <input type="text" value={editForm.name_fr} onChange={(e) => updateEditForm('name_fr', e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
                             <div className="flex gap-1 mt-1">
                               <button type="button" onClick={() => translateField('fr', 'nl', true)} disabled={translating === 'edit-fr-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-nl' ? '...' : '→NL'}</button>
                               <button type="button" onClick={() => translateField('fr', 'en', true)} disabled={translating === 'edit-fr-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-en' ? '...' : '→EN'}</button>
@@ -371,7 +381,7 @@ function Organize() {
                     <input
                       type="text"
                       value={addForm.name_nl}
-                      onChange={e => setAddForm(prev => ({ ...prev, name_nl: e.target.value }))}
+                      onChange={e => updateAddForm('name_nl', e.target.value)}
                       placeholder="Category name (NL)"
                       className="border px-4 py-2 rounded w-full"
                       required
@@ -392,7 +402,7 @@ function Organize() {
                     <input
                       type="text"
                       value={addForm.name_en}
-                      onChange={e => setAddForm(prev => ({ ...prev, name_en: e.target.value }))}
+                      onChange={e => updateAddForm('name_en', e.target.value)}
                       placeholder="Category name (EN)"
                       className="border px-4 py-2 rounded w-full"
                     />
@@ -412,7 +422,7 @@ function Organize() {
                     <input
                       type="text"
                       value={addForm.name_fr}
-                      onChange={e => setAddForm(prev => ({ ...prev, name_fr: e.target.value }))}
+                      onChange={e => updateAddForm('name_fr', e.target.value)}
                       placeholder="Category name (FR)"
                       className="border px-4 py-2 rounded w-full"
                     />
