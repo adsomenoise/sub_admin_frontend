@@ -4,9 +4,8 @@ import axios from 'axios';
 
 function Organize() {
   const [categories, setCategories] = useState([]);
-  const [newCategoryNl, setNewCategoryNl] = useState("");
-  const [newCategoryEn, setNewCategoryEn] = useState("");
-  const [newCategoryFr, setNewCategoryFr] = useState("");
+  const [addForm, setAddForm] = useState({ name_nl: '', name_en: '', name_fr: '' });
+  const [editForm, setEditForm] = useState({ name_nl: '', name_en: '', name_fr: '' });
   const [translating, setTranslating] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,9 +13,6 @@ function Organize() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [editValueNl, setEditValueNl] = useState("");
-  const [editValueEn, setEditValueEn] = useState("");
-  const [editValueFr, setEditValueFr] = useState("");
   const [normalDeliveryDays, setNormalDeliveryDays] = useState(0);
   const [fastDeliveryDays, setFastDeliveryDays] = useState(0);
   const [deliveryLoading, setDeliveryLoading] = useState(false);
@@ -51,19 +47,10 @@ function Organize() {
       .replace(/-+$/, '');             // Koppeltekens aan eind weg
   };
 
-  const translateField = async (from, to, isEdit = false, sourceValue = null) => {
-    // Get source text - either passed directly or from state
-    let sourceText = sourceValue;
-    if (sourceText === null) {
-      const fieldMap = isEdit
-        ? { nl: editValueNl, en: editValueEn, fr: editValueFr }
-        : { nl: newCategoryNl, en: newCategoryEn, fr: newCategoryFr };
-      sourceText = fieldMap[from];
-    }
-
-    const setterMap = isEdit
-      ? { nl: setEditValueNl, en: setEditValueEn, fr: setEditValueFr }
-      : { nl: setNewCategoryNl, en: setNewCategoryEn, fr: setNewCategoryFr };
+  const translateField = async (from, to, isEdit = false) => {
+    const form = isEdit ? editForm : addForm;
+    const setForm = isEdit ? setEditForm : setAddForm;
+    const sourceText = form[`name_${from}`];
 
     if (!sourceText || sourceText.trim() === '') {
       setError('Source field is empty. Please enter text first.');
@@ -79,7 +66,7 @@ function Organize() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.data.success) {
-        setterMap[to](response.data.data.translatedText);
+        setForm(prev => ({ ...prev, [`name_${to}`]: response.data.data.translatedText }));
       }
     } catch (err) {
       console.error('Translation failed:', err);
@@ -90,35 +77,31 @@ function Organize() {
   };
 
   const openAddModal = () => {
-    setNewCategoryNl("");
-    setNewCategoryEn("");
-    setNewCategoryFr("");
+    setAddForm({ name_nl: '', name_en: '', name_fr: '' });
     setError(null);
     setShowAddModal(true);
   };
 
   const closeAddModal = () => {
     setShowAddModal(false);
-    setNewCategoryNl("");
-    setNewCategoryEn("");
-    setNewCategoryFr("");
+    setAddForm({ name_nl: '', name_en: '', name_fr: '' });
     setError(null);
   };
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!newCategoryNl.trim()) {
+    if (!addForm.name_nl.trim()) {
       setError("Dutch name is required.");
       return;
     }
     try {
-      const slug = generateSlug(newCategoryNl);
+      const slug = generateSlug(addForm.name_nl);
       await axios.post(`${API_BASE_URL}/api/categories`, {
         data: {
-          name: newCategoryNl,
-          name_nl: newCategoryNl,
-          name_en: newCategoryEn || null,
-          name_fr: newCategoryFr || null,
+          name: addForm.name_nl,
+          name_nl: addForm.name_nl,
+          name_en: addForm.name_en || null,
+          name_fr: addForm.name_fr || null,
           slug: slug
         }
       });
@@ -152,39 +135,33 @@ function Organize() {
 
   const handleEdit = (category) => {
     setEditingCategory(category.documentId || category.id);
-    const nameNl = category.attributes?.name_nl || category.name_nl || category.attributes?.name || category.name;
+    const nameNl = category.attributes?.name_nl || category.name_nl || category.attributes?.name || category.name || '';
     const nameEn = category.attributes?.name_en || category.name_en || '';
     const nameFr = category.attributes?.name_fr || category.name_fr || '';
-    setEditValueNl(nameNl);
-    setEditValueEn(nameEn);
-    setEditValueFr(nameFr);
+    setEditForm({ name_nl: nameNl, name_en: nameEn, name_fr: nameFr });
   };
 
   const handleCancelEdit = () => {
     setEditingCategory(null);
-    setEditValueNl("");
-    setEditValueEn("");
-    setEditValueFr("");
+    setEditForm({ name_nl: '', name_en: '', name_fr: '' });
   };
 
   const handleSaveEdit = async () => {
-    if (!editValueNl.trim() || !editingCategory) return;
+    if (!editForm.name_nl.trim() || !editingCategory) return;
 
     try {
-      const slug = generateSlug(editValueNl);
+      const slug = generateSlug(editForm.name_nl);
       await axios.put(`${API_BASE_URL}/api/categories/${editingCategory}`, {
         data: {
-          name: editValueNl,
-          name_nl: editValueNl,
-          name_en: editValueEn || null,
-          name_fr: editValueFr || null,
+          name: editForm.name_nl,
+          name_nl: editForm.name_nl,
+          name_en: editForm.name_en || null,
+          name_fr: editForm.name_fr || null,
           slug: slug
         }
       });
       setEditingCategory(null);
-      setEditValueNl("");
-      setEditValueEn("");
-      setEditValueFr("");
+      setEditForm({ name_nl: '', name_en: '', name_fr: '' });
       fetchCategories();
     } catch (err) {
       console.error("Edit error:", err.response?.data || err);
@@ -310,26 +287,26 @@ function Organize() {
                         <div className="grid grid-cols-3 gap-2">
                           <div>
                             <label className="block text-xs mb-1">NL *</label>
-                            <input type="text" value={editValueNl} onChange={(e) => setEditValueNl(e.target.value)} className="border px-2 py-1 rounded w-full text-sm" autoFocus />
+                            <input type="text" value={editForm.name_nl} onChange={(e) => setEditForm(prev => ({ ...prev, name_nl: e.target.value }))} className="border px-2 py-1 rounded w-full text-sm" autoFocus />
                             <div className="flex gap-1 mt-1">
-                              <button type="button" onClick={() => translateField('nl', 'en', true, editValueNl)} disabled={translating === 'edit-nl-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-en' ? '...' : '→EN'}</button>
-                              <button type="button" onClick={() => translateField('nl', 'fr', true, editValueNl)} disabled={translating === 'edit-nl-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-fr' ? '...' : '→FR'}</button>
+                              <button type="button" onClick={() => translateField('nl', 'en', true)} disabled={translating === 'edit-nl-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-en' ? '...' : '→EN'}</button>
+                              <button type="button" onClick={() => translateField('nl', 'fr', true)} disabled={translating === 'edit-nl-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-fr' ? '...' : '→FR'}</button>
                             </div>
                           </div>
                           <div>
                             <label className="block text-xs mb-1">EN</label>
-                            <input type="text" value={editValueEn} onChange={(e) => setEditValueEn(e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
+                            <input type="text" value={editForm.name_en} onChange={(e) => setEditForm(prev => ({ ...prev, name_en: e.target.value }))} className="border px-2 py-1 rounded w-full text-sm" />
                             <div className="flex gap-1 mt-1">
-                              <button type="button" onClick={() => translateField('en', 'nl', true, editValueEn)} disabled={translating === 'edit-en-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-nl' ? '...' : '→NL'}</button>
-                              <button type="button" onClick={() => translateField('en', 'fr', true, editValueEn)} disabled={translating === 'edit-en-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-fr' ? '...' : '→FR'}</button>
+                              <button type="button" onClick={() => translateField('en', 'nl', true)} disabled={translating === 'edit-en-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-nl' ? '...' : '→NL'}</button>
+                              <button type="button" onClick={() => translateField('en', 'fr', true)} disabled={translating === 'edit-en-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-fr' ? '...' : '→FR'}</button>
                             </div>
                           </div>
                           <div>
                             <label className="block text-xs mb-1">FR</label>
-                            <input type="text" value={editValueFr} onChange={(e) => setEditValueFr(e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
+                            <input type="text" value={editForm.name_fr} onChange={(e) => setEditForm(prev => ({ ...prev, name_fr: e.target.value }))} className="border px-2 py-1 rounded w-full text-sm" />
                             <div className="flex gap-1 mt-1">
-                              <button type="button" onClick={() => translateField('fr', 'nl', true, editValueFr)} disabled={translating === 'edit-fr-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-nl' ? '...' : '→NL'}</button>
-                              <button type="button" onClick={() => translateField('fr', 'en', true, editValueFr)} disabled={translating === 'edit-fr-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-en' ? '...' : '→EN'}</button>
+                              <button type="button" onClick={() => translateField('fr', 'nl', true)} disabled={translating === 'edit-fr-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-nl' ? '...' : '→NL'}</button>
+                              <button type="button" onClick={() => translateField('fr', 'en', true)} disabled={translating === 'edit-fr-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-en' ? '...' : '→EN'}</button>
                             </div>
                           </div>
                         </div>
@@ -371,18 +348,18 @@ function Organize() {
                     <div className="flex justify-between items-center mb-1">
                       <label className="block text-sm font-semibold">Nederlands *</label>
                       <div className="flex gap-1">
-                        <button type="button" onClick={() => translateField('nl', 'en', false, newCategoryNl)} disabled={translating === 'nl-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                        <button type="button" onClick={() => translateField('nl', 'en', false)} disabled={translating === 'nl-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
                           {translating === 'nl-en' ? '...' : '→ EN'}
                         </button>
-                        <button type="button" onClick={() => translateField('nl', 'fr', false, newCategoryNl)} disabled={translating === 'nl-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                        <button type="button" onClick={() => translateField('nl', 'fr', false)} disabled={translating === 'nl-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
                           {translating === 'nl-fr' ? '...' : '→ FR'}
                         </button>
                       </div>
                     </div>
                     <input
                       type="text"
-                      value={newCategoryNl}
-                      onChange={e => setNewCategoryNl(e.target.value)}
+                      value={addForm.name_nl}
+                      onChange={e => setAddForm(prev => ({ ...prev, name_nl: e.target.value }))}
                       placeholder="Category name (NL)"
                       className="border px-4 py-2 rounded w-full"
                       required
@@ -392,18 +369,18 @@ function Organize() {
                     <div className="flex justify-between items-center mb-1">
                       <label className="block text-sm font-semibold">English</label>
                       <div className="flex gap-1">
-                        <button type="button" onClick={() => translateField('en', 'nl', false, newCategoryEn)} disabled={translating === 'en-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                        <button type="button" onClick={() => translateField('en', 'nl', false)} disabled={translating === 'en-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
                           {translating === 'en-nl' ? '...' : '→ NL'}
                         </button>
-                        <button type="button" onClick={() => translateField('en', 'fr', false, newCategoryEn)} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                        <button type="button" onClick={() => translateField('en', 'fr', false)} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
                           {translating === 'en-fr' ? '...' : '→ FR'}
                         </button>
                       </div>
                     </div>
                     <input
                       type="text"
-                      value={newCategoryEn}
-                      onChange={e => setNewCategoryEn(e.target.value)}
+                      value={addForm.name_en}
+                      onChange={e => setAddForm(prev => ({ ...prev, name_en: e.target.value }))}
                       placeholder="Category name (EN)"
                       className="border px-4 py-2 rounded w-full"
                     />
@@ -412,18 +389,18 @@ function Organize() {
                     <div className="flex justify-between items-center mb-1">
                       <label className="block text-sm font-semibold">Français</label>
                       <div className="flex gap-1">
-                        <button type="button" onClick={() => translateField('fr', 'nl', false, newCategoryFr)} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                        <button type="button" onClick={() => translateField('fr', 'nl', false)} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
                           {translating === 'fr-nl' ? '...' : '→ NL'}
                         </button>
-                        <button type="button" onClick={() => translateField('fr', 'en', false, newCategoryFr)} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                        <button type="button" onClick={() => translateField('fr', 'en', false)} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
                           {translating === 'fr-en' ? '...' : '→ EN'}
                         </button>
                       </div>
                     </div>
                     <input
                       type="text"
-                      value={newCategoryFr}
-                      onChange={e => setNewCategoryFr(e.target.value)}
+                      value={addForm.name_fr}
+                      onChange={e => setAddForm(prev => ({ ...prev, name_fr: e.target.value }))}
                       placeholder="Category name (FR)"
                       className="border px-4 py-2 rounded w-full"
                     />
