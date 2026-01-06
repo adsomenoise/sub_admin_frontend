@@ -308,28 +308,34 @@ function Organize() {
                       <div className="space-y-2">
                         <div className="grid grid-cols-3 gap-2">
                           <div>
-                            <label className="block text-xs mb-1">NL *</label>
+                            <div className="flex justify-between items-center mb-1">
+                              <label className="block text-xs">NL *</label>
+                              <div className="flex gap-1">
+                                <button type="button" onClick={() => translateField('en', 'nl', true)} disabled={translating === 'edit-en-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-nl' ? '...' : 'from EN'}</button>
+                                <button type="button" onClick={() => translateField('fr', 'nl', true)} disabled={translating === 'edit-fr-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-nl' ? '...' : 'from FR'}</button>
+                              </div>
+                            </div>
                             <input type="text" value={editForm.name_nl} onChange={(e) => updateEditForm('name_nl', e.target.value)} className="border px-2 py-1 rounded w-full text-sm" autoFocus />
-                            <div className="flex gap-1 mt-1">
-                              <button type="button" onClick={() => translateField('nl', 'en', true)} disabled={translating === 'edit-nl-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-en' ? '...' : '→EN'}</button>
-                              <button type="button" onClick={() => translateField('nl', 'fr', true)} disabled={translating === 'edit-nl-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-fr' ? '...' : '→FR'}</button>
-                            </div>
                           </div>
                           <div>
-                            <label className="block text-xs mb-1">EN</label>
+                            <div className="flex justify-between items-center mb-1">
+                              <label className="block text-xs">EN</label>
+                              <div className="flex gap-1">
+                                <button type="button" onClick={() => translateField('nl', 'en', true)} disabled={translating === 'edit-nl-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-en' ? '...' : 'from NL'}</button>
+                                <button type="button" onClick={() => translateField('fr', 'en', true)} disabled={translating === 'edit-fr-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-en' ? '...' : 'from FR'}</button>
+                              </div>
+                            </div>
                             <input type="text" value={editForm.name_en} onChange={(e) => updateEditForm('name_en', e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
-                            <div className="flex gap-1 mt-1">
-                              <button type="button" onClick={() => translateField('en', 'nl', true)} disabled={translating === 'edit-en-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-nl' ? '...' : '→NL'}</button>
-                              <button type="button" onClick={() => translateField('en', 'fr', true)} disabled={translating === 'edit-en-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-fr' ? '...' : '→FR'}</button>
-                            </div>
                           </div>
                           <div>
-                            <label className="block text-xs mb-1">FR</label>
-                            <input type="text" value={editForm.name_fr} onChange={(e) => updateEditForm('name_fr', e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
-                            <div className="flex gap-1 mt-1">
-                              <button type="button" onClick={() => translateField('fr', 'nl', true)} disabled={translating === 'edit-fr-nl'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-nl' ? '...' : '→NL'}</button>
-                              <button type="button" onClick={() => translateField('fr', 'en', true)} disabled={translating === 'edit-fr-en'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-fr-en' ? '...' : '→EN'}</button>
+                            <div className="flex justify-between items-center mb-1">
+                              <label className="block text-xs">FR</label>
+                              <div className="flex gap-1">
+                                <button type="button" onClick={() => translateField('nl', 'fr', true)} disabled={translating === 'edit-nl-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-nl-fr' ? '...' : 'from NL'}</button>
+                                <button type="button" onClick={() => translateField('en', 'fr', true)} disabled={translating === 'edit-en-fr'} className="text-xs bg-gray-200 px-1 rounded">{translating === 'edit-en-fr' ? '...' : 'from EN'}</button>
+                              </div>
                             </div>
+                            <input type="text" value={editForm.name_fr} onChange={(e) => updateEditForm('name_fr', e.target.value)} className="border px-2 py-1 rounded w-full text-sm" />
                           </div>
                         </div>
                         <div className="flex gap-2 justify-end">
@@ -367,7 +373,17 @@ function Organize() {
               <form onSubmit={handleAddCategory}>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-1">Nederlands *</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-semibold">Nederlands *</label>
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => translateField('en', 'nl', false)} disabled={translating === 'en-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'en-nl' ? '...' : 'from EN'}
+                        </button>
+                        <button type="button" onClick={() => translateField('fr', 'nl', false)} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'fr-nl' ? '...' : 'from FR'}
+                        </button>
+                      </div>
+                    </div>
                     <input
                       type="text"
                       value={addForm.name_nl}
@@ -376,18 +392,19 @@ function Organize() {
                       className="border px-4 py-2 rounded w-full"
                       required
                     />
-                    <div className="flex gap-1 mt-1">
-                      <span className="text-xs text-gray-500">Translate NL to:</span>
-                      <button type="button" onClick={() => translateField('nl', 'en', false)} disabled={translating === 'nl-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-0.5 rounded">
-                        {translating === 'nl-en' ? '...' : 'EN'}
-                      </button>
-                      <button type="button" onClick={() => translateField('nl', 'fr', false)} disabled={translating === 'nl-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-0.5 rounded">
-                        {translating === 'nl-fr' ? '...' : 'FR'}
-                      </button>
-                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-1">English</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-semibold">English</label>
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => translateField('nl', 'en', false)} disabled={translating === 'nl-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'nl-en' ? '...' : 'from NL'}
+                        </button>
+                        <button type="button" onClick={() => translateField('fr', 'en', false)} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'fr-en' ? '...' : 'from FR'}
+                        </button>
+                      </div>
+                    </div>
                     <input
                       type="text"
                       value={addForm.name_en}
@@ -395,18 +412,19 @@ function Organize() {
                       placeholder="Category name (EN)"
                       className="border px-4 py-2 rounded w-full"
                     />
-                    <div className="flex gap-1 mt-1">
-                      <span className="text-xs text-gray-500">Translate EN to:</span>
-                      <button type="button" onClick={() => translateField('en', 'nl', false)} disabled={translating === 'en-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-0.5 rounded">
-                        {translating === 'en-nl' ? '...' : 'NL'}
-                      </button>
-                      <button type="button" onClick={() => translateField('en', 'fr', false)} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-0.5 rounded">
-                        {translating === 'en-fr' ? '...' : 'FR'}
-                      </button>
-                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-1">Français</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-semibold">Français</label>
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => translateField('nl', 'fr', false)} disabled={translating === 'nl-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'nl-fr' ? '...' : 'from NL'}
+                        </button>
+                        <button type="button" onClick={() => translateField('en', 'fr', false)} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">
+                          {translating === 'en-fr' ? '...' : 'from EN'}
+                        </button>
+                      </div>
+                    </div>
                     <input
                       type="text"
                       value={addForm.name_fr}
@@ -414,15 +432,6 @@ function Organize() {
                       placeholder="Category name (FR)"
                       className="border px-4 py-2 rounded w-full"
                     />
-                    <div className="flex gap-1 mt-1">
-                      <span className="text-xs text-gray-500">Translate FR to:</span>
-                      <button type="button" onClick={() => translateField('fr', 'nl', false)} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-0.5 rounded">
-                        {translating === 'fr-nl' ? '...' : 'NL'}
-                      </button>
-                      <button type="button" onClick={() => translateField('fr', 'en', false)} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-0.5 rounded">
-                        {translating === 'fr-en' ? '...' : 'EN'}
-                      </button>
-                    </div>
                   </div>
                   {error && <p className="text-red-500 text-sm">{error}</p>}
                 </div>
