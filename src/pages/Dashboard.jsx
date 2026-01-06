@@ -234,7 +234,8 @@ function Dashboard() {
             <div
               className="w-[50%] 3xl:w-[52%] rounded-4xl relative p-4 text-black"
               style={{
-                backgroundImage: `url('${import.meta.env.BASE_URL}images/orders-shape.svg')`,
+                // backgroundImage: `url('${import.meta.env.BASE_URL}images/orders-shape.svg')`,
+                backgroundColor: '#FFFFFF',
                 backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center',
@@ -269,8 +270,12 @@ function Dashboard() {
 
                           <div className='xl:w-[10%] 2xl:w-[24%]'>
                             <p className="text-xs text-gray-600 mt-1">
-                              {new Date(order.createdAt).getDate().toString().padStart(2, '0')}/
-                              {(new Date(order.createdAt).getMonth() + 1).toString().padStart(2, '0')}
+                              {order.deadline ? (
+                                <>
+                                  {new Date(order.deadline).getDate().toString().padStart(2, '0')}/
+                                  {(new Date(order.deadline).getMonth() + 1).toString().padStart(2, '0')}
+                                </>
+                              ) : '-'}
                             </p>
                           </div>
 
@@ -289,7 +294,7 @@ function Dashboard() {
               <div className="mt-4">
                 <button
                   onClick={() => navigate('/orders')}
-                  className="bg-white text-black absolute cursor-pointer right-2 bottom-0 2xl:right-5 2xl:bottom-0 text-lg px-8 py-1 2xl:px-12 2xl:py-3 rounded-[10rem]"
+                  className="bg-black font-bold text-white absolute cursor-pointer right-2 bottom-2 2xl:right-5 2xl:bottom-3 text-lg px-8 py-1 2xl:px-12 2xl:py-3 rounded-[10rem]"
                 >
                   View all
                 </button>
