@@ -1,97 +1,54 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
-
-import PrivateRoute from './components/PrivateRoute.jsx';
-import Login from './pages/Login.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import Orders from './pages/Orders.jsx';
-import Navigation from './components/Navigation.jsx';
-import Talents from './pages/Talents.jsx';
-import Organize from './pages/Organize.jsx';
-import Financials from './pages/Financials.jsx';
-import Footer from './components/Footer.jsx';
 
 function App() {
-  const basename = import.meta.env.MODE === 'production' ? '/subadmin' : '';
-
   return (
-    <Router basename={basename}>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Navigation />
-              <div className="flex h-full">
-                <Dashboard />
-              </div>
-              <Footer />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/orders"
-          element={
-            <PrivateRoute>
-              <Navigation />
-              <div className="flex">
-                <Orders />
-              </div>
-              <Footer />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/financials"
-          element={
-            <PrivateRoute>
-              <Navigation />
-              <div className="flex">
-                <Financials />
-              </div>
-              <Footer />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/talents"
-          element={
-            <PrivateRoute>
-              <Navigation />
-              <div className="flex">
-                <Talents />
-              </div>
-              <Footer />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/organize"
-          element={
-            <PrivateRoute>
-              <Navigation />
-              <div className="flex">
-                <Organize />
-              </div>
-              <Footer />
-            </PrivateRoute>
-          }
-        />
-
-
-        {/* Redirect "/" naar "/dashboard" */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+      color: 'white',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      textAlign: 'center',
+      padding: '2rem'
+    }}>
+      <h1 style={{
+        fontSize: 'clamp(2rem, 5vw, 4rem)',
+        fontWeight: 'bold',
+        marginBottom: '1rem',
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em'
+      }}>
+        Club Admin
+      </h1>
+      <h2 style={{
+        fontSize: 'clamp(1.5rem, 3vw, 2.5rem)',
+        fontWeight: 'bold',
+        marginBottom: '1rem',
+        opacity: 0.9
+      }}>
+        Coming Soon
+      </h2>
+      <p style={{
+        fontSize: 'clamp(1rem, 2vw, 1.5rem)',
+        opacity: 0.8,
+        maxWidth: '600px',
+        lineHeight: 1.6
+      }}>
+        The club admin portal is under development. Stay tuned!
+      </p>
+      <div style={{
+        marginTop: '3rem',
+        padding: '1rem 2rem',
+        border: '2px solid rgba(255,255,255,0.3)',
+        borderRadius: '50px',
+        fontSize: '1rem'
+      }}>
+        fanflix.be/subadmin
+      </div>
+    </div>
   );
 }
 
