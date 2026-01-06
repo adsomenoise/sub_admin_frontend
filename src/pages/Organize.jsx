@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 
 
@@ -17,6 +17,14 @@ function Organize() {
   const [fastDeliveryDays, setFastDeliveryDays] = useState(0);
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
+
+  // Refs to always have current values (no stale closure issues)
+  const addFormRef = useRef(addForm);
+  const editFormRef = useRef(editForm);
+
+  // Keep refs in sync with state
+  useEffect(() => { addFormRef.current = addForm; }, [addForm]);
+  useEffect(() => { editFormRef.current = editForm; }, [editForm]);
 
   useEffect(() => {
     fetchCategories();
@@ -48,9 +56,12 @@ function Organize() {
   };
 
   const translateField = async (from, to, isEdit = false) => {
-    const form = isEdit ? editForm : addForm;
+    // Read from refs to get CURRENT value (not stale closure value)
+    const formRef = isEdit ? editFormRef : addFormRef;
     const setForm = isEdit ? setEditForm : setAddForm;
-    const sourceText = form[`name_${from}`];
+    const sourceText = formRef.current[`name_${from}`];
+
+    console.log('translateField called:', { from, to, isEdit, sourceText, formRef: formRef.current });
 
     if (!sourceText || sourceText.trim() === '') {
       setError('Source field is empty. Please enter text first.');
@@ -59,6 +70,7 @@ function Organize() {
 
     const token = localStorage.getItem('jwt');
     setTranslating(`${isEdit ? 'edit-' : ''}${from}-${to}`);
+    setError(null);
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/translate/text`,
