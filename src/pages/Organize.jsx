@@ -67,8 +67,6 @@ function Organize() {
     const setForm = isEdit ? setEditForm : setAddForm;
     const sourceText = formRef.current[`name_${from}`];
 
-    console.log('translateField called:', { from, to, isEdit, sourceText, formRef: formRef.current });
-
     if (!sourceText || sourceText.trim() === '') {
       setError('Source field is empty. Please enter text first.');
       return;
@@ -84,7 +82,11 @@ function Organize() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.data.success) {
-        setForm(prev => ({ ...prev, [`name_${to}`]: response.data.data.translatedText }));
+        const translatedText = response.data.data.translatedText;
+        // Update ref immediately so subsequent translations can use this value
+        formRef.current = { ...formRef.current, [`name_${to}`]: translatedText };
+        // Update state for UI
+        setForm(prev => ({ ...prev, [`name_${to}`]: translatedText }));
       }
     } catch (err) {
       console.error('Translation failed:', err);
