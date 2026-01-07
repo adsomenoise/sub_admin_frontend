@@ -288,7 +288,7 @@ function Organize() {
           <h3>Categories</h3>
           <button
             onClick={openAddModal}
-            className="bg-green px-4 py-2 rounded-full text-sm flex items-center gap-1"
+            className="bg-green px-4 py-2 rounded-full text-sm flex items-center gap-1 cursor-pointer"
           >
             <span>+</span> Add
           </button>
@@ -342,7 +342,7 @@ function Organize() {
                         </div>
                         <div className="flex gap-2 justify-end">
                           <button onClick={handleSaveEdit} className="bg-green text-white px-3 py-1 rounded text-sm">Save</button>
-                          <button onClick={handleCancelEdit} className="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm">Cancel</button>
+                          <button onClick={handleCancelEdit} className="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm cursor-pointer">Cancel</button>
                         </div>
                       </div>
                     ) : (
@@ -441,13 +441,13 @@ function Organize() {
                   <button
                     type="button"
                     onClick={closeAddModal}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+                    className="cursor-pointer px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-green text-black rounded hover:opacity-80 transition-colors"
+                    className="cursor-pointer px-4 py-2 bg-green text-black rounded hover:opacity-80 transition-colors"
                   >
                     Add
                   </button>

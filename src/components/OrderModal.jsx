@@ -372,28 +372,31 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
             {/* Order Information */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700">Bestelling Info</h3>
-                <div className="bg-gray-50 text-black p-4 rounded">
-                    <p><strong>Van:</strong> {order.from}</p>
-                    <p><strong>Voor:</strong> {order.to}</p>
-                    <p><strong>Gelegenheid:</strong> {order.gelegenheid}</p>
-                    <p><strong>Email:</strong> {order.userEmail}</p>
-                    <p><strong>Aangemaakt:</strong> {new Date(order.createdAt).toLocaleString('nl-NL')}</p>
-                </div>
+                    <h3 className="text-lg font-semibold text-gray-700">Description </h3>
+                    <div className="bg-gray-50 p-4 text-black rounded">
+                        <p className="whitespace-pre-wrap">{order.requestDescription}</p>
+                    </div>
                 </div>
 
                 <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700">Bericht</h3>
-                <div className="bg-gray-50 p-4 text-black rounded">
-                    <p className="whitespace-pre-wrap">{order.requestDescription}</p>
-                </div>
-                
+                    <h3 className="text-lg font-semibold text-gray-700">Order Details</h3>
+                    <div className="bg-gray-50 text-black p-4 rounded">
+                        <p><strong>From:</strong> {order.from}</p>
+                        <p><strong>For:</strong> {order.to}</p>
+                        <p><strong>Occasion:</strong> {order.gelegenheid}</p>
+                        <p><strong>Email:</strong> {order.userEmail}</p>
+                        <p><strong>Deadline:</strong> {order.deadline ? new Date(order.deadline).toLocaleDateString('nl-NL', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          }) : '-'}</p>
+                    </div>
                 </div>
             </div>
 
             {/* Video Section */}
             <div className="2xl:pt-4">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Video</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">Finish the order</h3>
                 
                 {/* Camera preview when recording */}
                 {isRecording && (
@@ -442,7 +445,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                         className="px-4 py-2 bg-red-500 text-white rounded cursor-pointer hover:bg-red-600 disabled:opacity-50 flex items-center gap-2"
                     >
                         <span>📹</span>
-                        Video opnemen
+                        Record video
                     </button>
 
                     {/* Upload File Button */}
@@ -452,7 +455,7 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                         className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
                     >
                         <span>📁</span>
-                        Video uploaden
+                        Upload video
                     </button>
                     <input
                         type="file"

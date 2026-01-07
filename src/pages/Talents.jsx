@@ -190,7 +190,7 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
                     <button type="button" onClick={() => translateText('fr', 'nl')} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'fr-nl' ? '...' : 'from FR'}</button>
                   </div>
                 </div>
-                <textarea name="description_nl" value={form.description_nl} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
+                <textarea name="description_nl" value={form.description_nl} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={5} />
               </div>
               <div>
                 <div className="flex justify-between items-center mt-3">
@@ -200,7 +200,7 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
                     <button type="button" onClick={() => translateText('fr', 'en')} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'fr-en' ? '...' : 'from FR'}</button>
                   </div>
                 </div>
-                <textarea name="description_en" value={form.description_en} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
+                <textarea name="description_en" value={form.description_en} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={5} />
               </div>
               <div>
                 <div className="flex justify-between items-center mt-3">
@@ -210,7 +210,7 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
                     <button type="button" onClick={() => translateText('en', 'fr')} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'en-fr' ? '...' : 'from EN'}</button>
                   </div>
                 </div>
-                <textarea name="description_fr" value={form.description_fr} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={2} />
+                <textarea name="description_fr" value={form.description_fr} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={5} />
               </div>
               <div className="mt-2">
                 <label className="block text-sm font-semibold">Categories</label>
@@ -587,7 +587,7 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
                     <button type="button" onClick={() => translateField('fr', 'nl')} disabled={translating === 'fr-nl'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'fr-nl' ? '...' : 'from FR'}</button>
                   </div>
                 </div>
-                <textarea name="description_nl" value={form.description_nl || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
+                <textarea name="description_nl" value={form.description_nl || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={5} />
               </div>
               <div>
                 <div className="flex justify-between items-center mt-3">
@@ -597,7 +597,7 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
                     <button type="button" onClick={() => translateField('fr', 'en')} disabled={translating === 'fr-en'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'fr-en' ? '...' : 'from FR'}</button>
                   </div>
                 </div>
-                <textarea name="description_en" value={form.description_en || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
+                <textarea name="description_en" value={form.description_en || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={5} />
               </div>
               <div>
                 <div className="flex justify-between items-center mt-3">
@@ -607,7 +607,7 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
                     <button type="button" onClick={() => translateField('en', 'fr')} disabled={translating === 'en-fr'} className="text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-2 py-1 rounded">{translating === 'en-fr' ? '...' : 'from EN'}</button>
                   </div>
                 </div>
-                <textarea name="description_fr" value={form.description_fr || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={2} />
+                <textarea name="description_fr" value={form.description_fr || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={5} />
               </div>
 
               <div className="mt-2">
