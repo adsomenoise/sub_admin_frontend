@@ -258,8 +258,7 @@ function Dashboard() {
                       className="text-black p-3 rounded cursor-pointer hover:bg-gray-dark/30 transition-colors"
                     >
                       <div className="flex justify-between items-start">
-                        <div className='w-[50%] flex gap-8'>
-                          <p>For</p>
+                        <div className='w-[40%]'>
                           <p><strong>
                             {order.talent ? 
                               `${order.talent.voornaam} ${order.talent.achternaam}` : 
@@ -283,8 +282,8 @@ function Dashboard() {
                           <p className="font-semibold text-black">€{order.totalPrice}</p>
                         </div>
 
-                        <div className="text-base text-green-500 w-[12%] 2xl:w-[8%] text-right">
-                          More →
+                        <div className="text-base text-green-500 w-[20%] 2xl:w-[18%] text-right">
+                          Details →
                         </div>
                       </div>
                     </li>
