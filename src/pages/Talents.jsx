@@ -675,7 +675,7 @@ function Talents() {
   const [message, setMessage] = useState('');
   const [allCategories, setAllCategories] = useState([]);
   const [allTags, setAllTags] = useState([]);
-  const [sortBy, setSortBy] = useState('naam'); // Default to alphabetical sorting
+  const [sortBy, setSortBy] = useState('rugnummer'); // Default to back number sorting
   const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'active', 'archived'
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
