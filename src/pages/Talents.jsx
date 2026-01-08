@@ -234,11 +234,11 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
       
               <div className="grid grid-cols-4 gap-6 mt-4 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.featured ? 'border-main-dark bg-main-dark' : 'border-gray-300 bg-white hover:border-main-dark'}`}>
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.featured ? 'border-purple-500 bg-purple-500' : 'border-gray-300 bg-white hover:border-purple-500'}`}>
                     {form.featured && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
                   </div>
                   <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="hidden" />
-                  <span className="text-xs font-medium text-gray-700 group-hover:text-main-dark">Featured</span>
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-purple-600">Featured</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.active ? 'border-green-500 bg-green-500' : 'border-gray-300 bg-white hover:border-green-500'}`}>
@@ -656,11 +656,11 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
 
               <div className="grid grid-cols-4 gap-6 mt-4 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.featured ? 'border-main-dark bg-main-dark' : 'border-gray-300 bg-white hover:border-main-dark'}`}>
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.featured ? 'border-purple-500 bg-purple-500' : 'border-gray-300 bg-white hover:border-purple-500'}`}>
                     {form.featured && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
                   </div>
                   <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="hidden" />
-                  <span className="text-xs font-medium text-gray-700 group-hover:text-main-dark">Featured</span>
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-purple-600">Featured</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.active ? 'border-green-500 bg-green-500' : 'border-gray-300 bg-white hover:border-green-500'}`}>
