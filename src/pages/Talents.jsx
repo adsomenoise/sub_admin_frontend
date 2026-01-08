@@ -212,34 +212,54 @@ function AddTalentInline({ onClose, onSave, allCategories = [], allTags = [], al
                 </div>
                 <textarea name="description_fr" value={form.description_fr} onChange={handleChange} className="border p-1 w-full rounded-2xl" rows={5} />
               </div>
-              <div className="mt-2">
-                <label className="block text-sm font-semibold">Categories</label>
-                <div className="flex flex-wrap gap-2">
+              <div className="mt-3">
+                <label className="block text-sm font-semibold mb-3">Categories</label>
+                <div className="flex flex-wrap gap-3">
                   {allCategories.map(cat => (
-                    <label key={cat.id} className="flex items-center gap-1">
+                    <label key={cat.id} className="flex items-center gap-2 cursor-pointer group">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${form.categories.some(c => c.id === cat.id) ? 'border-black bg-black' : 'border-gray-300 bg-white hover:border-black'}`}>
+                        {form.categories.some(c => c.id === cat.id) && <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                      </div>
                       <input
                         type="checkbox"
                         checked={form.categories.some(c => c.id === cat.id)}
                         onChange={() => handleCheckboxChange('categories', cat.id)}
+                        className="hidden"
                       />
-                      {cat.name}
+                      <span className="text-sm text-gray-700 group-hover:text-main-dark">{cat.name}</span>
                     </label>
                   ))}
                 </div>
               </div>
       
-              <div className="grid grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Featured</span>
+              <div className="grid grid-cols-4 gap-6 mt-4 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.featured ? 'border-main-dark bg-main-dark' : 'border-gray-300 bg-white hover:border-main-dark'}`}>
+                    {form.featured && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                  </div>
+                  <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="hidden" />
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-main-dark">Featured</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Active</span>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.active ? 'border-green-500 bg-green-500' : 'border-gray-300 bg-white hover:border-green-500'}`}>
+                    {form.active && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                  </div>
+                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="hidden" />
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-green-600">Active</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Fast delivery</span>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.fastDelivery ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white hover:border-blue-500'}`}>
+                    {form.fastDelivery && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                  </div>
+                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="hidden" />
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600">Fast Delivery</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.spotlighted ? 'border-yellow-500 bg-yellow-500' : 'border-gray-300 bg-white hover:border-yellow-500'}`}>
+                    {form.spotlighted && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>}
+                  </div>
+                  <input type="checkbox" name="spotlighted" checked={!!form.spotlighted} onChange={handleChange} className="hidden" />
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-yellow-600">Spotlighted</span>
                 </label>
               </div>
             </div>  
@@ -610,34 +630,54 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
                 <textarea name="description_fr" value={form.description_fr || ''} onChange={handleChange} className="border p-1 w-full rounded-2xl px-4" rows={5} />
               </div>
 
-              <div className="mt-2">
-                <label className="block text-sm font-semibold">Categories</label>
-                <div className="flex flex-wrap gap-2">
+              <div className="mt-3">
+                <label className="block text-sm font-semibold mb-3">Categories</label>
+                <div className="flex flex-wrap gap-3">
                   {allCategories.map(cat => (
-                    <label key={cat.id} className="flex items-center gap-1">
+                    <label key={cat.id} className="flex items-center gap-2 cursor-pointer group">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${form.categories && Array.isArray(form.categories) && form.categories.some(c => c.id === cat.id) ? 'border-black bg-black' : 'border-gray-300 bg-white hover:border-black'}`}>
+                        {form.categories && Array.isArray(form.categories) && form.categories.some(c => c.id === cat.id) && <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                      </div>
                       <input
                         type="checkbox"
                         checked={form.categories && Array.isArray(form.categories) ? form.categories.some(c => c.id === cat.id) : false}
                         onChange={() => handleCheckboxChange('categories', cat.id)}
+                        className="hidden"
                       />
-                      {cat.name}
+                      <span className="text-sm text-gray-700 group-hover:text-main-dark">{cat.name}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Featured</span>
+              <div className="grid grid-cols-4 gap-6 mt-4 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.featured ? 'border-main-dark bg-main-dark' : 'border-gray-300 bg-white hover:border-main-dark'}`}>
+                    {form.featured && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                  </div>
+                  <input type="checkbox" name="featured" checked={!!form.featured} onChange={handleChange} className="hidden" />
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-main-dark">Featured</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Active</span>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.active ? 'border-green-500 bg-green-500' : 'border-gray-300 bg-white hover:border-green-500'}`}>
+                    {form.active && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                  </div>
+                  <input type="checkbox" name="active" checked={!!form.active} onChange={handleChange} className="hidden" />
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-green-600">Active</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Fast Delivery</span>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.fastDelivery ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white hover:border-blue-500'}`}>
+                    {form.fastDelivery && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                  </div>
+                  <input type="checkbox" name="fastDelivery" checked={!!form.fastDelivery} onChange={handleChange} className="hidden" />
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600">Fast Delivery</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.spotlighted ? 'border-yellow-500 bg-yellow-500' : 'border-gray-300 bg-white hover:border-yellow-500'}`}>
+                    {form.spotlighted && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>}
+                  </div>
+                  <input type="checkbox" name="spotlighted" checked={!!form.spotlighted} onChange={handleChange} className="hidden" />
+                  <span className="text-xs font-medium text-gray-700 group-hover:text-yellow-600">Spotlighted</span>
                 </label>
               </div>
             </div>  
@@ -869,6 +909,7 @@ function Talents() {
         featured: !!form.featured,
         active: !!form.active,
         fastDelivery: !!form.fastDelivery,
+        spotlighted: !!form.spotlighted,
         enrollAccepted: true,
         Image: imageId,
         banner: bannerId,
@@ -1037,6 +1078,7 @@ function Talents() {
         featured: !!form.featured,
         active: !!form.active,
         fastDelivery: !!form.fastDelivery,
+        spotlighted: !!form.spotlighted,
         enrollAccepted: true,
         categories: Array.isArray(form.categories) ? form.categories.map(cat => cat.id) : [],
         Image: imageId,
