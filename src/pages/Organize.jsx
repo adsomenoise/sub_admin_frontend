@@ -117,14 +117,12 @@ function Organize() {
       return;
     }
     try {
-      const slug = generateSlug(addForm.name_nl);
       await axios.post(`${API_BASE_URL}/api/categories`, {
         data: {
           name: addForm.name_nl,
           name_nl: addForm.name_nl,
           name_en: addForm.name_en || null,
-          name_fr: addForm.name_fr || null,
-          slug: slug
+          name_fr: addForm.name_fr || null
         }
       });
       closeAddModal();
@@ -174,14 +172,12 @@ function Organize() {
     if (!editForm.name_nl.trim() || !editingCategory) return;
 
     try {
-      const slug = generateSlug(editForm.name_nl);
       await axios.put(`${API_BASE_URL}/api/categories/${editingCategory}`, {
         data: {
           name: editForm.name_nl,
           name_nl: editForm.name_nl,
           name_en: editForm.name_en || null,
-          name_fr: editForm.name_fr || null,
-          slug: slug
+          name_fr: editForm.name_fr || null
         }
       });
       setEditingCategory(null);
