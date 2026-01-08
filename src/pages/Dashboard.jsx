@@ -143,54 +143,33 @@ function Dashboard() {
     const fetchTopPerformerTalent = async () => {
       try {
         console.log("Fetching top performer talent...");
-        
+
         let talentsRes;
         try {
-          // Haal alle talents op via categories zoals de werkende aanpak
-          talentsRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`, {
+          // Fetch all talents directly, sorted by completedOrders descending
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?populate=Image&sort=completedOrders:desc&pagination[limit]=1`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authError) {
           console.log("Auth failed for talents, trying without auth:", authError.message);
-          // Try without auth
-          talentsRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`);
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?populate=Image&sort=completedOrders:desc&pagination[limit]=1`);
         }
-        
-        console.log("Categories response for top performer:", talentsRes.data);
-        
-        // Verzamel alle talents uit alle categorieën
-        let allTalents = [];
-        if (talentsRes.data.data) {
-          talentsRes.data.data.forEach((category) => {
-            if (category.talents) {
-              category.talents.forEach((talent) => {
-                // Controleer of talent al bestaat (vermijd duplicaten)
-                if (!allTalents.find(t => t.id === talent.id)) {
-                  allTalents.push(talent);
-                }
-              });
-            }
-          });
+
+        console.log("Top performer response:", talentsRes.data);
+
+        const talents = talentsRes.data.data || [];
+
+        if (talents.length > 0) {
+          // Convert completedOrders to number for proper comparison
+          const topPerformer = talents[0];
+          console.log("Top performer talent:", topPerformer);
+          console.log("Completed orders:", topPerformer.completedOrders);
+          setTopPerformerTalent(topPerformer);
+        } else {
+          console.log("No talents found");
+          setTopPerformerTalent(null);
         }
-        
-        console.log("All talents collected:", allTalents.length);
-        
-        // Vind het talent met de hoogste completedOrders
-        let topPerformer = null;
-        let maxCompletedOrders = -1;
-        
-        allTalents.forEach(talent => {
-          const completedOrders = talent.completedOrders || 0;
-          if (completedOrders > maxCompletedOrders) {
-            maxCompletedOrders = completedOrders;
-            topPerformer = talent;
-          }
-        });
-        
-        console.log("Top performer talent:", topPerformer);
-        console.log("Max completed orders:", maxCompletedOrders);
-        setTopPerformerTalent(topPerformer);
-        
+
       } catch (error) {
         console.error('Fout bij ophalen top performer talent:', error);
       }
