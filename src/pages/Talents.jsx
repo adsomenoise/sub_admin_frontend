@@ -345,6 +345,10 @@ function EditTalentInline({ talent, onClose, onSave, onDelete, allCategories = [
         categories: normalizeRelation(talent.categories) || [],
         tags: normalizeRelation(talent.tags) || [],
         Introduction: talent.Introduction || null,
+        featured: talent.featured || false,
+        active: talent.active !== undefined ? talent.active : true,
+        fastDelivery: talent.fastDelivery || false,
+        spotlighted: talent.spotlighted || false,
       });
       let imageUrl = null;
       if (talent.Image) {
