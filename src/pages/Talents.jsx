@@ -725,6 +725,11 @@ function Talents() {
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
 
+  const getTeamId = () => {
+    const team = localStorage.getItem('team');
+    return team ? JSON.parse(team).id : null;
+  };
+
   // Sorteer talenten functie
   const sortTalents = useCallback((talentsArray, sortMethod) => {
     if (!sortMethod) return talentsArray; // Return original order if no sort method selected
@@ -749,12 +754,14 @@ function Talents() {
       setError(null);
       setMessage('');
       const token = localStorage.getItem('jwt');
-      
+      const teamId = getTeamId();
+      const teamFilter = teamId ? `&filters[team][id][$eq]=${teamId}` : '';
+
       // Probeer eerst de directe aanpak zoals in andere werkende componenten
       let response;
       try {
         response = await axios.get(
-          `${API_BASE_URL}/api/talents?filters[enrollAccepted][$eq]=true&populate=Image&populate=banner&populate=Introduction&populate=categories`,
+          `${API_BASE_URL}/api/talents?filters[enrollAccepted][$eq]=true${teamFilter}&populate=Image&populate=banner&populate=Introduction&populate=categories`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }
@@ -1030,12 +1037,13 @@ function Talents() {
       setMessage('Je bent niet ingelogd. Log opnieuw in.');
       return;
     }
+    const teamId = getTeamId();
 
     try {
       console.log('Form data received:', form);
       console.log('Categories in form:', form.categories);
       console.log('Tags in form:', form.tags);
-      
+
       // Eerst afbeeldingen uploaden indien aanwezig
       let imageId = null;
       let bannerId = null;
@@ -1088,6 +1096,7 @@ function Talents() {
         Image: imageId,
         banner: bannerId,
         Introduction: introductionId,
+        ...(teamId ? { team: teamId } : {}),
       };
 
       console.log('Creating talent with data (including relations):', talentData);

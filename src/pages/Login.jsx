@@ -50,20 +50,22 @@ function Login() {
       const roles = rolesResponse.data.roles;
       console.log('📋 Available roles:', roles);
 
-      // Nu proberen we de user data met rol op te halen
+      // Nu proberen we de user data met rol en team op te halen
       let userRole = null;
-      
+      let userTeam = null;
+
       try {
-        const userWithRoleResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}/api/users/me?populate=role`, {
+        const userWithRoleResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337'}/api/users/me?populate=role&populate=team`, {
           headers: { Authorization: `Bearer ${jwt}` }
         });
 
-        const userWithRole = userWithRoleResponse.data;
-        console.log('👤 User with role data:', userWithRole);
-        userRole = userWithRole?.role;
+        const completeUserData = userWithRoleResponse.data;
+        console.log('👤 User with role data:', completeUserData);
+        userRole = completeUserData?.role;
+        userTeam = completeUserData?.team;
       } catch (userError) {
         console.log('⚠️ Could not fetch user with role, trying alternative approach...');
-        
+
         // Alternatieve aanpak: gebruik rol ID uit user object als het bestaat
         if (user.role && typeof user.role === 'number') {
           console.log('🔍 User has role ID:', user.role);
@@ -91,14 +93,25 @@ function Login() {
 
       console.log('✅ Role check passed!');
 
+      // 3b. Controleer of de gebruiker een team heeft
+      if (!userTeam) {
+        console.error('❌ No team assigned to user');
+        setMessage('Geen team toegewezen. Contacteer admin.');
+        setLoading(false);
+        return;
+      }
+      console.log('✅ Team check passed:', userTeam);
+
       // 4. Success! Sla gegevens op en navigeer
       const completeUser = {
         ...user,
-        role: userRole
+        role: userRole,
+        team: userTeam
       };
 
       localStorage.setItem('jwt', jwt);
       localStorage.setItem('user', JSON.stringify(completeUser));
+      localStorage.setItem('team', JSON.stringify(userTeam));
       setMessage('Login succesvol! Je wordt doorgestuurd...');
       
       console.log('✅ Login successful, navigating to dashboard...');

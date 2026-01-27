@@ -19,15 +19,22 @@ function Dashboard() {
 
   const jwt = localStorage.getItem('jwt');
 
+  const getTeamId = () => {
+    const team = localStorage.getItem('team');
+    return team ? JSON.parse(team).id : null;
+  };
+
   const fetchOrders = async (jwtToken = jwt) => {
     try {
       console.log("Fetching 15 most recent orders...");
-      
+      const teamId = getTeamId();
+      const teamFilter = teamId ? `&filters[talent][team][id][$eq]=${teamId}` : '';
+
       // Haal de 15 recentste BETAALDE orders op (alleen paid orders tonen)
       let ordersRes;
       try {
         ordersRes = await axios.get(
-          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&pagination[limit]=15&populate=*`,
+          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}&sort=createdAt:desc&pagination[limit]=15&populate=*`,
           {
             headers: { Authorization: `Bearer ${jwtToken}` },
           }
@@ -36,7 +43,7 @@ function Dashboard() {
         console.log("Auth failed, trying without auth:", authError.message);
         // Try without auth
         ordersRes = await axios.get(
-          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&pagination[limit]=15&populate=*`
+          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}&sort=createdAt:desc&pagination[limit]=15&populate=*`
         );
       }
       
@@ -94,17 +101,17 @@ function Dashboard() {
     const fetchSpotlightedTalents = async () => {
       try {
         console.log("Fetching spotlighted talents...");
-        
+        const teamId = getTeamId();
+        const teamFilter = teamId ? `&filters[team][id][$eq]=${teamId}` : '';
+
         let talentsRes;
         try {
-          // Gebruik dezelfde URL format als in Header.jsx die wel werkt
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=7`, {
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true${teamFilter}&populate=Image&populate=banner&populate=categories&pagination[limit]=7`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authError) {
           console.log("Auth failed for talents, trying without auth:", authError.message);
-          // Try without auth
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=7`);
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true${teamFilter}&populate=Image&populate=banner&populate=categories&pagination[limit]=7`);
         }
         
         console.log("Spotlighted talents response:", talentsRes.data);
@@ -143,16 +150,17 @@ function Dashboard() {
     const fetchTopPerformerTalent = async () => {
       try {
         console.log("Fetching top performer talent...");
+        const teamId = getTeamId();
+        const teamFilter = teamId ? `&filters[team][id][$eq]=${teamId}` : '';
 
         let talentsRes;
         try {
-          // Fetch all talents directly, sorted by completedOrders descending
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?populate=Image&sort=completedOrders:desc&pagination[limit]=1`, {
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?populate=Image&sort=completedOrders:desc${teamFilter}&pagination[limit]=1`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authError) {
           console.log("Auth failed for talents, trying without auth:", authError.message);
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?populate=Image&sort=completedOrders:desc&pagination[limit]=1`);
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?populate=Image&sort=completedOrders:desc${teamFilter}&pagination[limit]=1`);
         }
 
         console.log("Top performer response:", talentsRes.data);

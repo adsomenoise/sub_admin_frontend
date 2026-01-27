@@ -61,6 +61,7 @@ function Navigation() {
                 onClick={() => {
                   localStorage.removeItem('jwt');
                   localStorage.removeItem('user');
+                  localStorage.removeItem('team');
                   navigate('/login');
                 }}
                 className="px-6 py-2 w-full text-left bg-green rounded-blocks cursor-pointer"

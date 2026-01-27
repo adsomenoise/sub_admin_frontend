@@ -16,6 +16,11 @@ function Orders() {
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
   const jwt = localStorage.getItem('jwt');
 
+  const getTeamId = () => {
+    const team = localStorage.getItem('team');
+    return team ? JSON.parse(team).id : null;
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -26,15 +31,17 @@ function Orders() {
 
   const fetchData = async () => {
     setLoading(true);
+    const teamId = getTeamId();
+    const teamFilter = teamId ? `&filters[talent][team][id][$eq]=${teamId}` : '';
     try {
       console.log('Fetching data from:', API_BASE_URL);
-      
+
       // Haal alleen BETAALDE orders op (paymentStatus=paid)
       console.log('Fetching paid orders...');
       let ordersRes;
       try {
         // Probeer eerst met populate en paymentStatus filter
-        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&populate=*`, {
+        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}&populate=*`, {
           headers: { Authorization: `Bearer ${jwt}` }
         });
         console.log('Paid orders response:', ordersRes.data);
@@ -42,12 +49,12 @@ function Orders() {
         console.log('Populate * failed, trying without populate:', populateErr.message);
         // Fallback zonder populate maar met paymentStatus filter
         try {
-          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid`, {
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authErr) {
           // Try without auth as last resort
-          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid`);
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}`);
         }
         console.log('Paid orders without populate response:', ordersRes.data);
       }
@@ -63,11 +70,12 @@ function Orders() {
           setOrders([]);
         }
       }
-      // Haal alle talents op
+      // Haal alle talents op (team-scoped)
+      const talentTeamFilter = teamId ? `?filters[team][id][$eq]=${teamId}` : '';
       console.log('Fetching talents...');
       let talentsRes;
       try {
-        talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+        talentsRes = await axios.get(`${API_BASE_URL}/api/talents${talentTeamFilter}`, {
           headers: { Authorization: `Bearer ${jwt}` }
         });
         console.log('Talents response:', talentsRes.data);
