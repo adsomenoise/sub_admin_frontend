@@ -399,16 +399,15 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                 <h3 className="text-lg font-semibold text-gray-700 mb-4">Finish the order</h3>
                 
                 {/* Camera preview when recording */}
-                {isRecording && (
-                <div className="mb-4">
+                <div className={`mb-4 ${isRecording ? '' : 'hidden'}`}>
                     <video
                     ref={videoRef}
                     autoPlay
                     muted
+                    playsInline
                     className="w-full max-w-md mx-auto rounded border"
                     />
                 </div>
-                )}
 
                 {/* Recorded video preview */}
                 {recordedBlob && (
