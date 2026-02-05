@@ -119,22 +119,25 @@ function Dashboard() {
         // Handle response data zoals in Header.jsx
         const talents = talentsRes.data.data || talentsRes.data;
         if (!talents || talents.length === 0) {
-          // Als direct niet werkt, probeer via categories zoals in Header.jsx
-          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`);
-          
+          // Als direct niet werkt, probeer via categories met team filter
+          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories&populate[talents][populate][3]=team`);
+
           let foundTalents = [];
           if (categoryRes.data.data) {
             categoryRes.data.data.forEach((category) => {
               if (category.talents) {
                 category.talents.forEach((talent) => {
-                  if (talent.spotlighted === true) {
+                  // Filter op team EN spotlighted
+                  const talentTeamId = talent.team?.id || talent.team;
+                  const matchesTeam = !teamId || talentTeamId === teamId;
+                  if (talent.spotlighted === true && matchesTeam) {
                     foundTalents.push(talent);
                   }
                 });
               }
             });
           }
-          
+
           console.log("Spotlighted talents found via categories:", foundTalents.length);
           setSpotlightedTalents(foundTalents);
         } else {
