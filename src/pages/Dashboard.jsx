@@ -297,13 +297,12 @@ function Dashboard() {
                   <p className="text-black text-center">No spotlighted talent found</p>
                 ) : (
                   <div className="h-[85%] 2xl:h-[90%] flex gap-4">
-                    {spotlightedTalents.map((talent) => {
+                    {spotlightedTalents.slice(0, 1).map((talent) => {
                       const imageUrl = talent.Image?.url ? `${API_BASE_URL}${talent.Image.url}` : null;
                       
                       return (
-                        <>
+                        <div key={talent.documentId || talent.id} className="w-full flex gap-4">
                           <div 
-                            key={talent.documentId || talent.id} 
                             className="flex h-full gap-4 rounded-3xl w-1/2 flex-col"
                           > 
                             <div 
@@ -347,7 +346,7 @@ function Dashboard() {
                               Manage Talents
                             </button>
                           </div>
-                        </>
+                        </div>
                       );
                     })}
                   </div>
