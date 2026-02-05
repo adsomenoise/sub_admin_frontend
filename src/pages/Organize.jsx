@@ -40,7 +40,11 @@ function Organize() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/categories`);
+      const teamId = localStorage.getItem('team');
+      const url = teamId
+        ? `${API_BASE_URL}/api/categories?filters[team][id][$eq]=${teamId}`
+        : `${API_BASE_URL}/api/categories`;
+      const res = await axios.get(url);
       setCategories(res.data.data || []);
       setError(null);
     } catch (err) {
@@ -117,12 +121,14 @@ function Organize() {
       return;
     }
     try {
+      const teamId = localStorage.getItem('team');
       await axios.post(`${API_BASE_URL}/api/categories`, {
         data: {
           name: addForm.name_nl,
           name_nl: addForm.name_nl,
           name_en: addForm.name_en || null,
-          name_fr: addForm.name_fr || null
+          name_fr: addForm.name_fr || null,
+          team: teamId || null
         }
       });
       closeAddModal();
