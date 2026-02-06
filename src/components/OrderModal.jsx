@@ -18,6 +18,11 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
     const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
     const jwt = localStorage.getItem('jwt');
 
+    const getTeamId = () => {
+        const team = localStorage.getItem('team');
+        return team ? JSON.parse(team).id : null;
+    };
+
     if (!isOpen || !order) return null;
 
     const startRecording = async () => {
@@ -147,8 +152,10 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
         try {
             // Increment completed orders count for the talent
             if (order.talent) {
-                // First get all talents to find the correct ID
-                const allTalentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+                // First get talents (filtered by team) to find the correct ID
+                const teamId = getTeamId();
+                const teamFilter = teamId ? `?filters[team][id][$eq]=${teamId}` : '';
+                const allTalentsRes = await axios.get(`${API_BASE_URL}/api/talents${teamFilter}`, {
                     headers: { Authorization: `Bearer ${jwt}` }
                 });
                 

@@ -119,22 +119,26 @@ function Dashboard() {
         // Handle response data zoals in Header.jsx
         const talents = talentsRes.data.data || talentsRes.data;
         if (!talents || talents.length === 0) {
-          // Als direct niet werkt, probeer via categories zoals in Header.jsx
-          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`);
-          
+          // Als direct niet werkt, probeer via categories met team filter
+          const categoryTeamFilter = teamId ? `filters[team][id][$eq]=${teamId}&` : '';
+          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?${categoryTeamFilter}populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories&populate[talents][populate][3]=team`);
+
           let foundTalents = [];
           if (categoryRes.data.data) {
             categoryRes.data.data.forEach((category) => {
               if (category.talents) {
                 category.talents.forEach((talent) => {
-                  if (talent.spotlighted === true) {
+                  // Filter op team EN spotlighted
+                  const talentTeamId = talent.team?.id || talent.team;
+                  const matchesTeam = !teamId || talentTeamId === teamId;
+                  if (talent.spotlighted === true && matchesTeam) {
                     foundTalents.push(talent);
                   }
                 });
               }
             });
           }
-          
+
           console.log("Spotlighted talents found via categories:", foundTalents.length);
           setSpotlightedTalents(foundTalents);
         } else {
@@ -294,13 +298,12 @@ function Dashboard() {
                   <p className="text-black text-center">No spotlighted talent found</p>
                 ) : (
                   <div className="h-[85%] 2xl:h-[90%] flex gap-4">
-                    {spotlightedTalents.map((talent) => {
+                    {spotlightedTalents.slice(0, 1).map((talent) => {
                       const imageUrl = talent.Image?.url ? `${API_BASE_URL}${talent.Image.url}` : null;
                       
                       return (
-                        <>
+                        <div key={talent.documentId || talent.id} className="w-full flex gap-4">
                           <div 
-                            key={talent.documentId || talent.id} 
                             className="flex h-full gap-4 rounded-3xl w-1/2 flex-col"
                           > 
                             <div 
@@ -344,7 +347,7 @@ function Dashboard() {
                               Manage Talents
                             </button>
                           </div>
-                        </>
+                        </div>
                       );
                     })}
                   </div>
