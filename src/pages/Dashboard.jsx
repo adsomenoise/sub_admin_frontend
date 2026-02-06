@@ -120,7 +120,8 @@ function Dashboard() {
         const talents = talentsRes.data.data || talentsRes.data;
         if (!talents || talents.length === 0) {
           // Als direct niet werkt, probeer via categories met team filter
-          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories&populate[talents][populate][3]=team`);
+          const categoryTeamFilter = teamId ? `filters[team][id][$eq]=${teamId}&` : '';
+          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?${categoryTeamFilter}populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories&populate[talents][populate][3]=team`);
 
           let foundTalents = [];
           if (categoryRes.data.data) {

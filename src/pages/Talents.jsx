@@ -800,11 +800,13 @@ function Talents() {
     }
   }, [sortBy, sortTalents]);
 
-  // Fetch categories and tags for checkboxes
+  // Fetch categories and tags for checkboxes - filtered by team
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/categories`);
+        const teamId = getTeamId();
+        const teamFilter = teamId ? `?filters[team][id][$eq]=${teamId}` : '';
+        const res = await axios.get(`${API_BASE_URL}/api/categories${teamFilter}`);
         const categories = res.data.data || [];
         console.log('Loaded categories:', categories);
         setAllCategories(categories);
