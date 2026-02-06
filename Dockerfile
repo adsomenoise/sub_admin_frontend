@@ -2,8 +2,15 @@ FROM node:22.18.0-alpine AS build
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN corepack enable
+
+ARG REACT_APP_API_BASE_URL
+ARG REACT_APP_TALENT_BASE_URL
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
+ENV REACT_APP_TALENT_BASE_URL=$REACT_APP_TALENT_BASE_URL
+
+COPY package.json yarn.lock .yarnrc.yml ./
+RUN yarn install --immutable
 
 COPY . .
 RUN yarn build
