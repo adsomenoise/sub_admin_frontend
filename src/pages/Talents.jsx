@@ -1257,7 +1257,7 @@ function Talents() {
               }).map((talent) => {
                 const { voornaam, achternaam, Image, active, enrollAccepted } = talent;
                 const fullName = `${voornaam || 'Onbekend'} ${achternaam || ''}`.trim();
-                const imageUrl = Image?.url ? `${API_BASE_URL}${Image.url}` : null;
+                const imageUrl = Image?.url ? (Image.url.startsWith('http') ? Image.url : `${API_BASE_URL}${Image.url}`) : null;
                 const talentId = talent.documentId || talent.id;
 
                 return (
