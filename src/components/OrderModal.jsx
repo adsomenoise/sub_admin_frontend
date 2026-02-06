@@ -18,6 +18,11 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
     const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
     const jwt = localStorage.getItem('jwt');
 
+    const getTeamId = () => {
+        const team = localStorage.getItem('team');
+        return team ? JSON.parse(team).id : null;
+    };
+
     if (!isOpen || !order) return null;
 
     const startRecording = async () => {
@@ -147,8 +152,10 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
         try {
             // Increment completed orders count for the talent
             if (order.talent) {
-                // First get all talents to find the correct ID
-                const allTalentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+                // First get talents (filtered by team) to find the correct ID
+                const teamId = getTeamId();
+                const teamFilter = teamId ? `?filters[team][id][$eq]=${teamId}` : '';
+                const allTalentsRes = await axios.get(`${API_BASE_URL}/api/talents${teamFilter}`, {
                     headers: { Authorization: `Bearer ${jwt}` }
                 });
                 
@@ -372,40 +379,42 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
             {/* Order Information */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700">Bestelling Info</h3>
-                <div className="bg-gray-50 text-black p-4 rounded">
-                    <p><strong>Van:</strong> {order.from}</p>
-                    <p><strong>Voor:</strong> {order.to}</p>
-                    <p><strong>Gelegenheid:</strong> {order.gelegenheid}</p>
-                    <p><strong>Email:</strong> {order.userEmail}</p>
-                    <p><strong>Aangemaakt:</strong> {new Date(order.createdAt).toLocaleString('nl-NL')}</p>
-                </div>
+                    <h3 className="text-lg font-semibold text-gray-700">Description </h3>
+                    <div className="bg-gray-50 p-4 text-black rounded">
+                        <p className="whitespace-pre-wrap">{order.requestDescription}</p>
+                    </div>
                 </div>
 
                 <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700">Bericht</h3>
-                <div className="bg-gray-50 p-4 text-black rounded">
-                    <p className="whitespace-pre-wrap">{order.requestDescription}</p>
-                </div>
-                
+                    <h3 className="text-lg font-semibold text-gray-700">Order Details</h3>
+                    <div className="bg-gray-50 text-black p-4 rounded">
+                        <p><strong>From:</strong> {order.from}</p>
+                        <p><strong>For:</strong> {order.to}</p>
+                        <p><strong>Occasion:</strong> {order.gelegenheid}</p>
+                        <p><strong>Email:</strong> {order.userEmail}</p>
+                        <p><strong>Deadline:</strong> {order.deadline ? new Date(order.deadline).toLocaleDateString('nl-NL', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          }) : '-'}</p>
+                    </div>
                 </div>
             </div>
 
             {/* Video Section */}
             <div className="2xl:pt-4">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Video</h3>
-                
+                <h3 className={`text-lg font-semibold mb-4 ${order.orderVideo ? 'text-gray-400' : 'text-gray-700'}`}>Finish the order</h3>
+
                 {/* Camera preview when recording */}
-                {isRecording && (
-                <div className="mb-4">
+                <div className={`mb-4 ${isRecording ? '' : 'hidden'}`}>
                     <video
                     ref={videoRef}
                     autoPlay
                     muted
+                    playsInline
                     className="w-full max-w-md mx-auto rounded border"
                     />
                 </div>
-                )}
 
                 {/* Recorded video preview */}
                 {recordedBlob && (
@@ -438,21 +447,29 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                     {/* Record Video Button */}
                     <button
                         onClick={startRecording}
-                        disabled={uploading}
-                        className="px-4 py-2 bg-red-500 text-white rounded cursor-pointer hover:bg-red-600 disabled:opacity-50 flex items-center gap-2"
+                        disabled={uploading || order.orderVideo}
+                        className={`px-4 py-2 rounded flex items-center gap-2 ${
+                            order.orderVideo
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-red-500 text-white cursor-pointer hover:bg-red-600 disabled:opacity-50'
+                        }`}
                     >
                         <span>📹</span>
-                        Video opnemen
+                        Record video
                     </button>
 
                     {/* Upload File Button */}
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
-                        className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
+                        disabled={uploading || order.orderVideo}
+                        className={`px-4 py-2 rounded flex items-center gap-2 ${
+                            order.orderVideo
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600 disabled:opacity-50'
+                        }`}
                     >
                         <span>📁</span>
-                        Video uploaden
+                        Upload video
                     </button>
                     <input
                         type="file"
@@ -496,13 +513,29 @@ function OrderModal({ order, isOpen, onClose, onOrderUpdate }) {
                 </div>
 
                 {/* Existing video info */}
-                {order.orderVideo && (
-                <div className="mt-4 p-4 bg-green-50 rounded">
-                    <p className="text-green-800">
-                    <strong>✅ Video al geüpload voor deze order</strong>
-                    </p>
-                </div>
-                )}
+                {order.orderVideo && (() => {
+                    const video = Array.isArray(order.orderVideo) ? order.orderVideo[0] : order.orderVideo;
+                    const videoUrl = video?.url
+                        ? (video.url.startsWith('/') ? `${API_BASE_URL}${video.url}` : video.url)
+                        : null;
+                    return (
+                        <div className="mt-4 p-4 bg-green-50 rounded">
+                            <p className="text-green-800 mb-2">
+                                <strong>✅ Video al geüpload voor deze order</strong>
+                            </p>
+                            {videoUrl && (
+                                <a
+                                    href={videoUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
+                                >
+                                    <span>🎬</span> Bekijk video
+                                </a>
+                            )}
+                        </div>
+                    );
+                })()}
             </div>
             </div>
         </div>

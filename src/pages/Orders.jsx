@@ -16,6 +16,11 @@ function Orders() {
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:1337';
   const jwt = localStorage.getItem('jwt');
 
+  const getTeamId = () => {
+    const team = localStorage.getItem('team');
+    return team ? JSON.parse(team).id : null;
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -26,15 +31,17 @@ function Orders() {
 
   const fetchData = async () => {
     setLoading(true);
+    const teamId = getTeamId();
+    const teamFilter = teamId ? `&filters[talent][team][id][$eq]=${teamId}` : '';
     try {
       console.log('Fetching data from:', API_BASE_URL);
-      
+
       // Haal alleen BETAALDE orders op (paymentStatus=paid)
       console.log('Fetching paid orders...');
       let ordersRes;
       try {
         // Probeer eerst met populate en paymentStatus filter
-        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&populate=*`, {
+        ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}&populate=*`, {
           headers: { Authorization: `Bearer ${jwt}` }
         });
         console.log('Paid orders response:', ordersRes.data);
@@ -42,12 +49,12 @@ function Orders() {
         console.log('Populate * failed, trying without populate:', populateErr.message);
         // Fallback zonder populate maar met paymentStatus filter
         try {
-          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid`, {
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authErr) {
           // Try without auth as last resort
-          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid`);
+          ordersRes = await axios.get(`${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}`);
         }
         console.log('Paid orders without populate response:', ordersRes.data);
       }
@@ -63,11 +70,12 @@ function Orders() {
           setOrders([]);
         }
       }
-      // Haal alle talents op
+      // Haal alle talents op (team-scoped)
+      const talentTeamFilter = teamId ? `?filters[team][id][$eq]=${teamId}` : '';
       console.log('Fetching talents...');
       let talentsRes;
       try {
-        talentsRes = await axios.get(`${API_BASE_URL}/api/talents`, {
+        talentsRes = await axios.get(`${API_BASE_URL}/api/talents${talentTeamFilter}`, {
           headers: { Authorization: `Bearer ${jwt}` }
         });
         console.log('Talents response:', talentsRes.data);
@@ -116,12 +124,20 @@ function Orders() {
     return activeTab === 'new' ? !hasVideo : hasVideo;
   });
 
+  // Sort orders by deadline (closest deadline first)
+  const sortedByDeadline = [...tabFilteredOrders].sort((a, b) => {
+    if (!a.deadline && !b.deadline) return 0;
+    if (!a.deadline) return 1; // Orders without deadline go to bottom
+    if (!b.deadline) return -1;
+    return new Date(a.deadline) - new Date(b.deadline);
+  });
+
   // Pagination logic
-  const paginatedOrders = tabFilteredOrders.slice(
+  const paginatedOrders = sortedByDeadline.slice(
     (currentPage - 1) * ordersPerPage,
     currentPage * ordersPerPage
   );
-  const totalPages = Math.ceil(tabFilteredOrders.length / ordersPerPage);
+  const totalPages = Math.ceil(sortedByDeadline.length / ordersPerPage);
 
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
@@ -148,14 +164,14 @@ function Orders() {
   };
 
   // Count orders for tabs
-  const newOrdersCount = filteredOrders.filter(order => {
+  const newOrdersCount = sortedByDeadline.filter(order => {
     const hasVideo = order.orderVideo && 
       ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
        (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
     return !hasVideo;
   }).length;
 
-  const archivedOrdersCount = filteredOrders.filter(order => {
+  const archivedOrdersCount = sortedByDeadline.filter(order => {
     const hasVideo = order.orderVideo && 
       ((!Array.isArray(order.orderVideo) && order.orderVideo) || 
        (Array.isArray(order.orderVideo) && order.orderVideo.length > 0));
@@ -225,10 +241,10 @@ function Orders() {
               <div className={`bg-white p-8 rounded-b-3xl rounded-tr-3xl`}>
                 <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b items-center">
                   <div>From</div>
-                  <div>To</div>
+                  <div>For</div>
                   <div>Gelegenheid</div>
                   <div>Price</div>
-                  <div>Date</div>
+                  <div>Deadline</div>
                 </div>
                 {tabFilteredOrders.length === 0 ? (
                   <p className="text-center py-8 text-gray-500">
@@ -239,22 +255,22 @@ function Orders() {
                     {paginatedOrders.map(order => (
                       <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
                         <div className="font-medium">{order.from}</div>
-                        <div>{order.to}</div>
+                        <div>{order.talent?.voornaam || order.talent?.attributes?.voornaam} {order.talent?.achternaam || order.talent?.attributes?.achternaam}</div>
                         <div className="capitalize">{order.gelegenheid}</div>
                         <div className="font-semibold text-green-600">€{order.totalPrice}</div>
                         <div className="text-sm text-gray-600">
-                          {new Date(order.createdAt).toLocaleDateString('nl-NL', {
+                          {order.deadline ? new Date(order.deadline).toLocaleDateString('nl-NL', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric'
-                          })}
+                          }) : '-'}
                         </div>
                         <div>
                           <button
                             onClick={() => handleOrderClick(order)}
                             className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
                           >
-                            Upload video
+                            Details
                           </button>
                         </div>
                       </div>
@@ -297,16 +313,17 @@ function Orders() {
             ) : (
               // Archived Orders Layout - Single line per order (same as New tab)
               <div className={`bg-white p-8 rounded-b-3xl rounded-tr-3xl ${
-                activeTab === 'archived' 
-                  ? '' 
+                activeTab === 'archived'
+                  ? ''
                   : ''
               }`}>
-                <div className="grid grid-cols-6 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b">
+                <div className="grid grid-cols-7 gap-4 font-semibold text-gray-700 pb-2 mb-4 border-b">
                   <div>From</div>
-                  <div>To</div>
+                  <div>For</div>
                   <div>Gelegenheid</div>
                   <div>Price</div>
-                  <div>Date</div>
+                  <div>Deadline</div>
+                  <div>Video</div>
                 </div>
                 {tabFilteredOrders.length === 0 ? (
                   <p className="text-center py-8 text-gray-500">
@@ -314,29 +331,49 @@ function Orders() {
                   </p>
                 ) : (
                   <>
-                    {paginatedOrders.map(order => (
-                      <div key={order.id} className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
-                        <div className="font-medium">{order.from}</div>
-                        <div>{order.to}</div>
-                        <div className="capitalize">{order.gelegenheid}</div>
-                        <div className="font-semibold text-green-600">€{order.totalPrice}</div>
-                        <div className="text-sm text-gray-600">
-                          {new Date(order.createdAt).toLocaleDateString('nl-NL', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                          })}
+                    {paginatedOrders.map(order => {
+                      const video = Array.isArray(order.orderVideo) ? order.orderVideo[0] : order.orderVideo;
+                      const videoUrl = video?.url
+                        ? (video.url.startsWith('/') ? `${API_BASE_URL}${video.url}` : video.url)
+                        : null;
+                      return (
+                        <div key={order.id} className="grid grid-cols-7 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 items-center">
+                          <div className="font-medium">{order.from}</div>
+                          <div>{order.talent?.voornaam || order.talent?.attributes?.voornaam} {order.talent?.achternaam || order.talent?.attributes?.achternaam}</div>
+                          <div className="capitalize">{order.gelegenheid}</div>
+                          <div className="font-semibold text-green-600">€{order.totalPrice}</div>
+                          <div className="text-sm text-gray-600">
+                            {order.deadline ? new Date(order.deadline).toLocaleDateString('nl-NL', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            }) : '-'}
+                          </div>
+                          <div>
+                            {videoUrl ? (
+                              <a
+                                href={videoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-600 hover:text-purple-800 font-medium text-sm"
+                              >
+                                Watch
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
+                          </div>
+                          <div>
+                            <button
+                              onClick={() => handleOrderClick(order)}
+                              className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
+                            >
+                              Details
+                            </button>
+                          </div>
                         </div>
-                        <div>
-                          <button
-                            onClick={() => handleOrderClick(order)}
-                            className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors cursor-pointer"
-                          >
-                            Details
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {/* Pagination Controls */}
                     <div className="flex justify-end items-center gap-2 mt-6 pt-4">
                       <button

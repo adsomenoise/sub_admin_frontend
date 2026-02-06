@@ -19,15 +19,22 @@ function Dashboard() {
 
   const jwt = localStorage.getItem('jwt');
 
+  const getTeamId = () => {
+    const team = localStorage.getItem('team');
+    return team ? JSON.parse(team).id : null;
+  };
+
   const fetchOrders = async (jwtToken = jwt) => {
     try {
       console.log("Fetching 15 most recent orders...");
-      
+      const teamId = getTeamId();
+      const teamFilter = teamId ? `&filters[talent][team][id][$eq]=${teamId}` : '';
+
       // Haal de 15 recentste BETAALDE orders op (alleen paid orders tonen)
       let ordersRes;
       try {
         ordersRes = await axios.get(
-          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&pagination[limit]=15&populate=*`,
+          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}&sort=createdAt:desc&pagination[limit]=15&populate=*`,
           {
             headers: { Authorization: `Bearer ${jwtToken}` },
           }
@@ -36,7 +43,7 @@ function Dashboard() {
         console.log("Auth failed, trying without auth:", authError.message);
         // Try without auth
         ordersRes = await axios.get(
-          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&pagination[limit]=15&populate=*`
+          `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}&sort=createdAt:desc&pagination[limit]=15&populate=*`
         );
       }
       
@@ -94,17 +101,17 @@ function Dashboard() {
     const fetchSpotlightedTalents = async () => {
       try {
         console.log("Fetching spotlighted talents...");
-        
+        const teamId = getTeamId();
+        const teamFilter = teamId ? `&filters[team][id][$eq]=${teamId}` : '';
+
         let talentsRes;
         try {
-          // Gebruik dezelfde URL format als in Header.jsx die wel werkt
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=7`, {
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true${teamFilter}&populate=Image&populate=banner&populate=categories&pagination[limit]=7`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authError) {
           console.log("Auth failed for talents, trying without auth:", authError.message);
-          // Try without auth
-          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true&populate=Image&populate=banner&populate=categories&pagination[limit]=7`);
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?filters[spotlighted][$eq]=true${teamFilter}&populate=Image&populate=banner&populate=categories&pagination[limit]=7`);
         }
         
         console.log("Spotlighted talents response:", talentsRes.data);
@@ -112,22 +119,26 @@ function Dashboard() {
         // Handle response data zoals in Header.jsx
         const talents = talentsRes.data.data || talentsRes.data;
         if (!talents || talents.length === 0) {
-          // Als direct niet werkt, probeer via categories zoals in Header.jsx
-          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`);
-          
+          // Als direct niet werkt, probeer via categories met team filter
+          const categoryTeamFilter = teamId ? `filters[team][id][$eq]=${teamId}&` : '';
+          const categoryRes = await axios.get(`${API_BASE_URL}/api/categories?${categoryTeamFilter}populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories&populate[talents][populate][3]=team`);
+
           let foundTalents = [];
           if (categoryRes.data.data) {
             categoryRes.data.data.forEach((category) => {
               if (category.talents) {
                 category.talents.forEach((talent) => {
-                  if (talent.spotlighted === true) {
+                  // Filter op team EN spotlighted
+                  const talentTeamId = talent.team?.id || talent.team;
+                  const matchesTeam = !teamId || talentTeamId === teamId;
+                  if (talent.spotlighted === true && matchesTeam) {
                     foundTalents.push(talent);
                   }
                 });
               }
             });
           }
-          
+
           console.log("Spotlighted talents found via categories:", foundTalents.length);
           setSpotlightedTalents(foundTalents);
         } else {
@@ -143,54 +154,34 @@ function Dashboard() {
     const fetchTopPerformerTalent = async () => {
       try {
         console.log("Fetching top performer talent...");
-        
+        const teamId = getTeamId();
+        const teamFilter = teamId ? `&filters[team][id][$eq]=${teamId}` : '';
+
         let talentsRes;
         try {
-          // Haal alle talents op via categories zoals de werkende aanpak
-          talentsRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`, {
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?populate=Image&sort=completedOrders:desc${teamFilter}&pagination[limit]=1`, {
             headers: { Authorization: `Bearer ${jwt}` }
           });
         } catch (authError) {
           console.log("Auth failed for talents, trying without auth:", authError.message);
-          // Try without auth
-          talentsRes = await axios.get(`${API_BASE_URL}/api/categories?populate[talents][populate][0]=Image&populate[talents][populate][1]=banner&populate[talents][populate][2]=categories`);
+          talentsRes = await axios.get(`${API_BASE_URL}/api/talents?populate=Image&sort=completedOrders:desc${teamFilter}&pagination[limit]=1`);
         }
-        
-        console.log("Categories response for top performer:", talentsRes.data);
-        
-        // Verzamel alle talents uit alle categorieën
-        let allTalents = [];
-        if (talentsRes.data.data) {
-          talentsRes.data.data.forEach((category) => {
-            if (category.talents) {
-              category.talents.forEach((talent) => {
-                // Controleer of talent al bestaat (vermijd duplicaten)
-                if (!allTalents.find(t => t.id === talent.id)) {
-                  allTalents.push(talent);
-                }
-              });
-            }
-          });
+
+        console.log("Top performer response:", talentsRes.data);
+
+        const talents = talentsRes.data.data || [];
+
+        if (talents.length > 0) {
+          // Convert completedOrders to number for proper comparison
+          const topPerformer = talents[0];
+          console.log("Top performer talent:", topPerformer);
+          console.log("Completed orders:", topPerformer.completedOrders);
+          setTopPerformerTalent(topPerformer);
+        } else {
+          console.log("No talents found");
+          setTopPerformerTalent(null);
         }
-        
-        console.log("All talents collected:", allTalents.length);
-        
-        // Vind het talent met de hoogste completedOrders
-        let topPerformer = null;
-        let maxCompletedOrders = -1;
-        
-        allTalents.forEach(talent => {
-          const completedOrders = talent.completedOrders || 0;
-          if (completedOrders > maxCompletedOrders) {
-            maxCompletedOrders = completedOrders;
-            topPerformer = talent;
-          }
-        });
-        
-        console.log("Top performer talent:", topPerformer);
-        console.log("Max completed orders:", maxCompletedOrders);
-        setTopPerformerTalent(topPerformer);
-        
+
       } catch (error) {
         console.error('Fout bij ophalen top performer talent:', error);
       }
@@ -234,7 +225,8 @@ function Dashboard() {
             <div
               className="w-[50%] 3xl:w-[52%] rounded-4xl relative p-4 text-black"
               style={{
-                backgroundImage: `url('${import.meta.env.BASE_URL}images/orders-shape.svg')`,
+                // backgroundImage: `url('${import.meta.env.BASE_URL}images/orders-shape.svg')`,
+                backgroundColor: '#FFFFFF',
                 backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center',
@@ -257,8 +249,7 @@ function Dashboard() {
                       className="text-black p-3 rounded cursor-pointer hover:bg-gray-dark/30 transition-colors"
                     >
                       <div className="flex justify-between items-start">
-                        <div className='w-[50%] flex gap-8'>
-                          <p>For</p>
+                        <div className='w-[40%]'>
                           <p><strong>
                             {order.talent ? 
                               `${order.talent.voornaam} ${order.talent.achternaam}` : 
@@ -269,8 +260,12 @@ function Dashboard() {
 
                           <div className='xl:w-[10%] 2xl:w-[24%]'>
                             <p className="text-xs text-gray-600 mt-1">
-                              {new Date(order.createdAt).getDate().toString().padStart(2, '0')}/
-                              {(new Date(order.createdAt).getMonth() + 1).toString().padStart(2, '0')}
+                              {order.deadline ? (
+                                <>
+                                  {new Date(order.deadline).getDate().toString().padStart(2, '0')}/
+                                  {(new Date(order.deadline).getMonth() + 1).toString().padStart(2, '0')}
+                                </>
+                              ) : '-'}
                             </p>
                           </div>
 
@@ -278,8 +273,8 @@ function Dashboard() {
                           <p className="font-semibold text-black">€{order.totalPrice}</p>
                         </div>
 
-                        <div className="text-base text-green-500 w-[12%] 2xl:w-[8%] text-right">
-                          More →
+                        <div className="text-base text-green-500 w-[20%] 2xl:w-[18%] text-right">
+                          Details →
                         </div>
                       </div>
                     </li>
@@ -289,7 +284,7 @@ function Dashboard() {
               <div className="mt-4">
                 <button
                   onClick={() => navigate('/orders')}
-                  className="bg-white text-black absolute cursor-pointer right-2 bottom-0 2xl:right-5 2xl:bottom-0 text-lg px-8 py-1 2xl:px-12 2xl:py-3 rounded-[10rem]"
+                  className="bg-black font-bold text-white absolute cursor-pointer right-2 bottom-2 2xl:right-5 2xl:bottom-3 text-lg px-8 py-1 2xl:px-12 2xl:py-3 rounded-[10rem]"
                 >
                   View all
                 </button>
@@ -303,13 +298,12 @@ function Dashboard() {
                   <p className="text-black text-center">No spotlighted talent found</p>
                 ) : (
                   <div className="h-[85%] 2xl:h-[90%] flex gap-4">
-                    {spotlightedTalents.map((talent) => {
+                    {spotlightedTalents.slice(0, 1).map((talent) => {
                       const imageUrl = talent.Image?.url ? `${API_BASE_URL}${talent.Image.url}` : null;
                       
                       return (
-                        <>
+                        <div key={talent.documentId || talent.id} className="w-full flex gap-4">
                           <div 
-                            key={talent.documentId || talent.id} 
                             className="flex h-full gap-4 rounded-3xl w-1/2 flex-col"
                           > 
                             <div 
@@ -353,7 +347,7 @@ function Dashboard() {
                               Manage Talents
                             </button>
                           </div>
-                        </>
+                        </div>
                       );
                     })}
                   </div>

@@ -11,6 +11,11 @@ function Financials() {
 
   const jwt = localStorage.getItem('jwt');
 
+  const getTeamId = () => {
+    const team = localStorage.getItem('team');
+    return team ? JSON.parse(team).id : null;
+  };
+
   useEffect(() => {
     if (!jwt) {
       setLoading(false);
@@ -19,18 +24,20 @@ function Financials() {
 
     const fetchOrders = async () => {
       try {
+        const teamId = getTeamId();
+        const teamFilter = teamId ? `&filters[talent][team][id][$eq]=${teamId}` : '';
         // Alleen BETAALDE orders ophalen voor financials
         let ordersRes;
         try {
           ordersRes = await axios.get(
-            `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&populate=*`,
+            `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}&sort=createdAt:desc&populate=*`,
             {
               headers: { Authorization: `Bearer ${jwt}` },
             }
           );
         } catch (authError) {
           ordersRes = await axios.get(
-            `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid&sort=createdAt:desc&populate=*`
+            `${API_BASE_URL}/api/orders?filters[paymentStatus][$eq]=paid${teamFilter}&sort=createdAt:desc&populate=*`
           );
         }
 
