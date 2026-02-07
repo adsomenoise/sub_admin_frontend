@@ -37,10 +37,16 @@ function Organize() {
     fetchDeliveryDays();
   }, []);
 
+  const getTeamId = () => {
+    const team = localStorage.getItem('team');
+    if (!team) return null;
+    try { return JSON.parse(team).id; } catch { return team; }
+  };
+
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const teamId = localStorage.getItem('team');
+      const teamId = getTeamId();
       const url = teamId
         ? `${API_BASE_URL}/api/categories?filters[team][id][$eq]=${teamId}`
         : `${API_BASE_URL}/api/categories`;
@@ -121,7 +127,7 @@ function Organize() {
       return;
     }
     try {
-      const teamId = localStorage.getItem('team');
+      const teamId = getTeamId();
       await axios.post(`${API_BASE_URL}/api/categories`, {
         data: {
           name: addForm.name_nl,
