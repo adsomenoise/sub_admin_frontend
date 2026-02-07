@@ -299,7 +299,7 @@ function Dashboard() {
                 ) : (
                   <div className="h-[85%] 2xl:h-[90%] flex gap-4">
                     {spotlightedTalents.slice(0, 1).map((talent) => {
-                      const imageUrl = talent.Image?.url ? `${API_BASE_URL}${talent.Image.url}` : null;
+                      const imageUrl = talent.Image?.url ? (talent.Image.url.startsWith('http') ? talent.Image.url : `${API_BASE_URL}${talent.Image.url}`) : null;
                       
                       return (
                         <div key={talent.documentId || talent.id} className="w-full flex gap-4">
