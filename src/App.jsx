@@ -13,10 +13,8 @@ import Financials from './pages/Financials.jsx';
 import Footer from './components/Footer.jsx';
 
 function App() {
-  const basename = import.meta.env.MODE === 'production' ? '/subadmin' : '';
-
   return (
-    <Router basename={basename}>
+    <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
