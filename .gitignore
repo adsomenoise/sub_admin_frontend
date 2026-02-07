@@ -13,10 +13,12 @@
 
 # misc
 .DS_Store
+*.log
 
 # Environment files
 .env
 .env.local
+.env.local.current
 .env.dev
 .env.staging
 .env.main
